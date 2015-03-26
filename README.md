@@ -1,6 +1,6 @@
 # bimg
 
-Go library for fast image processing using [libvips](https://github.com/jcupitt/libvips) C bindings
+Go library for blazing fast image processing based on [libvips](https://github.com/jcupitt/libvips)
 
 `Work in progress`
 
