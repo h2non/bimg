@@ -2,7 +2,6 @@ package bimg
 
 import (
 	"io/ioutil"
-	"net/http"
 	"os"
 	"testing"
 )
@@ -25,9 +24,7 @@ func TestResize(t *testing.T) {
 		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
 	}
 
-	debug("Image %s", http.DetectContentType(newImg))
-
-	if http.DetectContentType(newImg) != "image/jpeg" {
+	if DetermineType(newImg) != JPEG {
 		t.Fatal("Image is not jpeg")
 	}
 

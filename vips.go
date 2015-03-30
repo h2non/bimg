@@ -87,10 +87,6 @@ func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, heigh
 	return buf, nil
 }
 
-type vipsSaveOptions struct {
-	Quality int
-}
-
 func vipsImageType(buf []byte) string {
 	imageType := UNKNOWN
 
@@ -117,6 +113,10 @@ func vipsImageType(buf []byte) string {
 	}
 
 	return imageType
+}
+
+type vipsSaveOptions struct {
+	Quality int
 }
 
 func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {

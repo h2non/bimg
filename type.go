@@ -9,11 +9,6 @@ const (
 	MAGICK  = "magick"
 )
 
-type Type struct {
-	Name string
-	Mime string
-}
-
-func DetermineType(buf []byte) *Type {
-	return &Type{Name: "jpg", Mime: "image/jpg"}
+func DetermineType(buf []byte) string {
+	return vipsImageType(buf)
 }
