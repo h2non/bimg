@@ -9,6 +9,7 @@ import "C"
 import (
 	"errors"
 	"runtime"
+	"strings"
 	"unsafe"
 )
 
@@ -44,8 +45,23 @@ func vipsRotate(image *C.struct__VipsImage, degrees int) (*C.struct__VipsImage, 
 	return out, nil
 }
 
+func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsImage, error) {
+	var out *C.struct__VipsImage
+
+	err := C.vips_flip_seq(image, &out)
+	C.g_object_unref(C.gpointer(image))
+	if err != 0 {
+		return nil, vipsError()
+	}
+	defer C.g_object_unref(C.gpointer(out))
+
+	return out, nil
+}
+
 func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
+
+	debug("Format: %s", vipsImageType(buf))
 
 	// feed it
 	length := C.size_t(len(buf))
@@ -73,6 +89,34 @@ func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, heigh
 
 type vipsSaveOptions struct {
 	Quality int
+}
+
+func vipsImageType(buf []byte) string {
+	imageType := UNKNOWN
+
+	length := C.size_t(len(buf))
+	imageBuf := unsafe.Pointer(&buf[0])
+	bufferType := C.GoString(C.vips_foreign_find_load_buffer(imageBuf, length))
+
+	switch {
+	case strings.HasSuffix(bufferType, "JpegBuffer"):
+		imageType = JPEG
+		break
+	case strings.HasSuffix(bufferType, "PngBuffer"):
+		imageType = PNG
+		break
+	case strings.HasSuffix(bufferType, "TiffBuffer"):
+		imageType = TIFF
+		break
+	case strings.HasSuffix(bufferType, "WebpBuffer"):
+		imageType = WEBP
+		break
+	case strings.HasSuffix(bufferType, "MagickBuffer"):
+		imageType = MAGICK
+		break
+	}
+
+	return imageType
 }
 
 func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {

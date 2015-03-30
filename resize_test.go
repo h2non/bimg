@@ -8,7 +8,7 @@ import (
 )
 
 func TestResize(t *testing.T) {
-	options := Options{Width: 800, Height: 600, Crop: false}
+	options := Options{Width: 800, Height: 600, Crop: false, Rotate: 270}
 	img, err := os.Open("fixtures/space.jpg")
 	if err != nil {
 		t.Fatal(err)
