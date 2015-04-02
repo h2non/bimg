@@ -80,13 +80,13 @@ vips_rotate(VipsImage *in, VipsImage **buf, int angle)
 };
 
 int
-vips_embed_extend(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
+vips_embed_adapter(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
 {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
 };
 
 int
-vips_colourspace_0(VipsImage *in, VipsImage **out, VipsInterpretation space)
+vips_colourspace_adapter(VipsImage *in, VipsImage **out, VipsInterpretation space)
 {
 	return vips_colourspace(in, out, space, NULL);
 };
