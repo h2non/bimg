@@ -10,7 +10,7 @@ Go library for blazing fast image processing based on [libvips](https://github.c
 go get gopkg.in/h2non/bimg.v0
 ```
 
-Only supports Go 1.3+
+Requires Go 1.3+
 
 ## API
 
