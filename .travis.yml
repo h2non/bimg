@@ -5,3 +5,5 @@ go:
   - 1.2
   - release
   - tip
+before_install:
+  - curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
