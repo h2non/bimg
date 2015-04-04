@@ -62,8 +62,6 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
 	imageType := vipsImageType(buf)
 
-	debug("Image format: %s", imageType)
-
 	if imageType == UNKNOWN {
 		return nil, errors.New("Input buffer contains unsupported image format")
 	}
@@ -71,8 +69,10 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
 	// feed it
 	length := C.size_t(len(buf))
 	imageBuf := unsafe.Pointer(&buf[0])
+	imageTypeC := C.int(imageType)
 
-	err := C.vips_jpegload_buffer_seq(imageBuf, length, &image)
+	err := C.vips_init_image(imageBuf, length, imageTypeC, &image)
+	//err := C.vips_jpegload_buffer_seq(imageBuf, length, &image)
 	if err != 0 {
 		return nil, vipsError()
 	}
@@ -92,7 +92,7 @@ func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, heigh
 	return buf, nil
 }
 
-func vipsImageType(buf []byte) string {
+func vipsImageType(buf []byte) int {
 	imageType := UNKNOWN
 
 	length := C.size_t(len(buf))

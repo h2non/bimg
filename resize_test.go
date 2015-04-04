@@ -8,7 +8,7 @@ import (
 
 func TestResize(t *testing.T) {
 	options := Options{Width: 800, Height: 600, Crop: false, Rotate: 270}
-	img, err := os.Open("fixtures/space.jpg")
+	img, err := os.Open("fixtures/test.jpg")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -24,11 +24,11 @@ func TestResize(t *testing.T) {
 		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
 	}
 
-	if DetermineType(newImg) != JPEG {
+	if DetermineImageType(newImg) != JPEG {
 		t.Fatal("Image is not jpeg")
 	}
 
-	err = ioutil.WriteFile("fixtures/test.jpg", newImg, 0644)
+	err = ioutil.WriteFile("result.jpg", newImg, 0644)
 	if err != nil {
 		t.Fatal("Cannot save the image")
 	}

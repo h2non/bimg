@@ -2,6 +2,24 @@
 #include <vips/vips.h>
 #include <vips/vips7compat.h>
 
+enum types {
+	UNKNOWN = 0,
+	JPEG,
+	WEBP,
+	PNG,
+	TIFF,
+	MAGICK
+};
+
+/*
+#define JPEG    0
+#define WEBP    "WEBP"
+#define PNG     "PNG"
+#define TIFF    "TIFF"
+#define MAGICK  "MAGICK"
+#define UNKNOWN "UNKNOWN"
+*/
+
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
@@ -71,6 +89,27 @@ vips_rotate(VipsImage *in, VipsImage **buf, int angle)
 	}
 
 	return vips_rot(in, buf, rotate, NULL);
+};
+
+int
+vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
+ 	int code = 1;
+
+  if (imageType == JPEG) {
+    code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+  } else if (imageType == PNG) {
+    code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+  } else if (imageType == WEBP) {
+    code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+  } else if (imageType == TIFF) {
+    code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+#if (VIPS_MAJOR_VERSION >= 8)
+  } else if (imageType == MAGICK) {
+    code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+#endif
+  }
+
+  return code;
 };
 
 int
