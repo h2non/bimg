@@ -13,6 +13,8 @@ import (
 	"unsafe"
 )
 
+type vipsImage *C.struct__VipsImage
+
 func init() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()

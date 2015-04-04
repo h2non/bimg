@@ -11,25 +11,10 @@ enum types {
 	MAGICK
 };
 
-/*
-#define JPEG    0
-#define WEBP    "WEBP"
-#define PNG     "PNG"
-#define TIFF    "TIFF"
-#define MAGICK  "MAGICK"
-#define UNKNOWN "UNKNOWN"
-*/
-
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
 	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, NULL);
-};
-
-int
-vips_jpegload_buffer_seq(void *buf, size_t len, VipsImage **out)
-{
-	return vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 };
 
 VipsImage*
