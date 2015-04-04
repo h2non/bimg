@@ -3,12 +3,6 @@
 #include <vips/vips7compat.h>
 
 int
-vips_initialize()
-{
-	return vips_init("bimg");
-};
-
-int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
 	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, NULL);

@@ -60,8 +60,13 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 
 func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
+	imageType := vipsImageType(buf)
 
-	debug("Format: %s", vipsImageType(buf))
+	debug("Image format: %s", imageType)
+
+	if imageType == UNKNOWN {
+		return nil, errors.New("Input buffer contains unsupported image format")
+	}
 
 	// feed it
 	length := C.size_t(len(buf))
