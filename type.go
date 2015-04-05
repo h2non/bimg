@@ -1,7 +1,9 @@
 package bimg
 
+type ImageType int
+
 const (
-	UNKNOWN = iota
+	UNKNOWN ImageType = iota
 	JPEG
 	WEBP
 	PNG
@@ -9,7 +11,7 @@ const (
 	MAGICK
 )
 
-func DetermineImageType(buf []byte) int {
+func DetermineImageType(buf []byte) ImageType {
 	return vipsImageType(buf)
 }
 
@@ -28,7 +30,7 @@ func DetermineImageTypeName(buf []byte) string {
 		imageType = "png"
 		break
 	case imageCode == TIFF:
-		imageType = "png"
+		imageType = "tiff"
 		break
 	case imageCode == MAGICK:
 		imageType = "magick"
@@ -36,4 +38,13 @@ func DetermineImageTypeName(buf []byte) string {
 	}
 
 	return imageType
+}
+
+func IsTypeSupported(t ImageType) bool {
+	return t == JPEG || t == PNG || t == WEBP
+}
+
+func IsTypeNameSupported(t string) bool {
+	return t == "jpeg" || t == "jpg" ||
+		t == "png" || t == "webp"
 }

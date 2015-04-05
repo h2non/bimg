@@ -7,6 +7,7 @@ package bimg
 import "C"
 
 import (
+	"errors"
 	"math"
 )
 
@@ -27,7 +28,7 @@ const (
 func Resize(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
-	image, err := vipsRead(buf)
+	image, imageType, err := vipsRead(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +36,12 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	// defaults
 	if o.Quality == 0 {
 		o.Quality = QUALITY
+	}
+	if o.Compression == 0 {
+		o.Compression = 6
+	}
+	if o.Type == 0 {
+		o.Type = imageType
 	}
 
 	// get WxH
@@ -74,7 +81,17 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
-	buf, err = vipsSave(image, vipsSaveOptions{Quality: o.Quality})
+	if IsTypeSupported(o.Type) == false {
+		return nil, errors.New("Unsupported image output type")
+	}
+
+	saveOptions := vipsSaveOptions{
+		Quality:     o.Quality,
+		Type:        o.Type,
+		Compression: o.Compression,
+	}
+
+	buf, err = vipsSave(image, saveOptions)
 	if err != nil {
 		return nil, err
 	}

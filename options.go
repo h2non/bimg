@@ -48,6 +48,8 @@ type Options struct {
 	Extend       int
 	Embed        bool
 	Quality      int
+	Compression  int
+	Type         ImageType
 	Rotate       Angle
 	Flip         Direction
 	Gravity      Gravity

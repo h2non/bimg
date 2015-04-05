@@ -9,7 +9,7 @@ func (i *Image) Resize(width int, height int) ([]byte, error) {
 		Width:  width,
 		Height: height,
 	}
-	return Resize(i.buffer, options)
+	return i.Process(options)
 }
 
 func (i *Image) Extract(top int, left int, width int, height int) ([]byte, error) {
@@ -19,22 +19,36 @@ func (i *Image) Extract(top int, left int, width int, height int) ([]byte, error
 		Top:    top,
 		Left:   left,
 	}
-	return Resize(i.buffer, options)
+	return i.Process(options)
 }
 
-func (i *Image) Rotate(degrees Angle) ([]byte, error) {
-	options := Options{Rotate: degrees}
-	return Resize(i.buffer, options)
+func (i *Image) Rotate(a Angle) ([]byte, error) {
+	options := Options{Rotate: a}
+	return i.Process(options)
 }
 
 func (i *Image) Flip() ([]byte, error) {
 	options := Options{Flip: VERTICAL}
-	return Resize(i.buffer, options)
+	return i.Process(options)
 }
 
 func (i *Image) Flop() ([]byte, error) {
 	options := Options{Flip: HORIZONTAL}
-	return Resize(i.buffer, options)
+	return i.Process(options)
+}
+
+func (i *Image) Convert(t ImageType) ([]byte, error) {
+	options := Options{Type: t}
+	return i.Process(options)
+}
+
+func (i *Image) Process(o Options) ([]byte, error) {
+	image, err := Resize(i.buffer, o)
+	if err != nil {
+		return nil, err
+	}
+	i.buffer = image
+	return image, nil
 }
 
 func (i *Image) Type() string {

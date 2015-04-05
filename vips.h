@@ -37,21 +37,9 @@ vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink)
 };
 
 int
-vips_webpload_buffer_seq(void *buf, size_t len, VipsImage **out)
-{
-	return vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-};
-
-int
 vips_flip_seq(VipsImage *in, VipsImage **out)
 {
 	return vips_flip(in, out, VIPS_DIRECTION_HORIZONTAL, NULL);
-};
-
-int
-vips_pngload_buffer_seq(void *buf, size_t len, VipsImage **out)
-{
-	return vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 };
 
 int
@@ -80,32 +68,6 @@ vips_rotate(VipsImage *in, VipsImage **buf, int angle)
 	}
 
 	return vips_rot(in, buf, rotate, NULL);
-};
-
-int
-vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
- 	int code = 1;
-
-  if (imageType == JPEG) {
-    code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-  } else if (imageType == PNG) {
-    code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-  } else if (imageType == WEBP) {
-    code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-  } else if (imageType == TIFF) {
-    code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-#if (VIPS_MAJOR_VERSION >= 8)
-  } else if (imageType == MAGICK) {
-    code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-#endif
-  }
-
-  if (out != NULL) {
-  	// Listen for "postclose" signal to delete input buffer
-  	//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
-	}
-
-  return code;
 };
 
 int
@@ -143,4 +105,48 @@ int
 vips_jpegsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
 {
 	return vips_jpegsave_buffer(in, buf, len, "strip", strip, "Q", quality, "optimize_coding", TRUE, "interlace", interlace, NULL);
+};
+
+int
+vips_pngsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace)
+{
+#if (VIPS_MAJOR_VERSION >= 8 || (VIPS_MAJOR_VERSION >= 7 && VIPS_MINOR_VERSION >= 42))
+  return vips_pngsave_buffer(in, buf, len, "strip", FALSE, "compression", compression,
+  	"interlace", interlace, "filter", VIPS_FOREIGN_PNG_FILTER_NONE, NULL);
+#else
+  return vips_pngsave_buffer(image, buf, len, "strip", FALSE, "compression", compression,
+		"interlace", interlace, NULL);
+#endif
+};
+
+int
+vips_webpsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
+{
+	return vips_webpsave_buffer(in, buf, len, "strip", strip, "Q", quality, "optimize_coding", TRUE, "interlace", interlace, NULL);
+};
+
+int
+vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
+ 	int code = 1;
+
+  if (imageType == JPEG) {
+    code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+  } else if (imageType == PNG) {
+    code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+  } else if (imageType == WEBP) {
+    code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+  } else if (imageType == TIFF) {
+    code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+#if (VIPS_MAJOR_VERSION >= 8)
+  } else if (imageType == MAGICK) {
+    code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+#endif
+  }
+
+  if (out != NULL) {
+  	// Listen for "postclose" signal to delete input buffer
+  	//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
+	}
+
+  return code;
 };

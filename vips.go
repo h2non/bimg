@@ -60,12 +60,12 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 	return out, nil
 }
 
-func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
+func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 	var image *C.struct__VipsImage
 	imageType := vipsImageType(buf)
 
 	if imageType == UNKNOWN {
-		return nil, errors.New("Input buffer contains unsupported image format")
+		return nil, UNKNOWN, errors.New("Input buffer contains unsupported image format")
 	}
 
 	// feed it
@@ -75,10 +75,10 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
 
 	err := C.vips_init_image(imageBuf, length, imageTypeC, &image)
 	if err != 0 {
-		return nil, catchVipsError()
+		return nil, UNKNOWN, catchVipsError()
 	}
 
-	return image, nil
+	return image, imageType, nil
 }
 
 func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, height int) (*C.struct__VipsImage, error) {
@@ -93,7 +93,7 @@ func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, heigh
 	return buf, nil
 }
 
-func vipsImageType(buf []byte) int {
+func vipsImageType(buf []byte) ImageType {
 	imageType := UNKNOWN
 
 	length := C.size_t(len(buf))
@@ -126,18 +126,32 @@ func vipsExifOrientation(image *C.struct__VipsImage) int {
 }
 
 type vipsSaveOptions struct {
-	Quality int
+	Quality     int
+	Compression int
+	Type        ImageType
 }
 
 func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	var ptr unsafe.Pointer
 	length := C.size_t(0)
+	err := C.int(0)
 
-	err := C.vips_jpegsave_custom(image, &ptr, &length, 1, C.int(o.Quality), 0)
+	switch {
+	case o.Type == PNG:
+		err = C.vips_pngsave_custom(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
+		break
+	case o.Type == WEBP:
+		err = C.vips_webpsave_custom(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		break
+	default:
+		err = C.vips_jpegsave_custom(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		break
+	}
+
+	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	C.g_object_unref(C.gpointer(image))
 
 	buf := C.GoBytes(ptr, C.int(length))
 	// cleanup
