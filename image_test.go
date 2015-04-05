@@ -3,12 +3,11 @@ package bimg
 import (
 	"io/ioutil"
 	"os"
-	"path"
 	"testing"
 )
 
 func TestImageResize(t *testing.T) {
-	data, _ := os.Open(path.Join("fixtures/test.jpg"))
+	data, _ := os.Open("fixtures/test.jpg")
 	buf, err := ioutil.ReadAll(data)
 
 	image := NewImage(buf)
