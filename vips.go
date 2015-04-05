@@ -13,7 +13,7 @@ import (
 	"unsafe"
 )
 
-type vipsImage *C.struct__VipsImage
+type vipsImage C.struct__VipsImage
 
 func init() {
 	runtime.LockOSThread()
@@ -34,13 +34,13 @@ type Vips struct {
 	buf []byte
 }
 
-func vipsRotate(image *C.struct__VipsImage, degrees int) (*C.struct__VipsImage, error) {
+func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
 
-	err := C.vips_rotate(image, &out, C.int(degrees))
+	err := C.vips_rotate(image, &out, C.int(angle))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
-		return nil, vipsError()
+		return nil, catchVipsError()
 	}
 	defer C.g_object_unref(C.gpointer(out))
 
@@ -53,7 +53,7 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 	err := C.vips_flip_seq(image, &out)
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
-		return nil, vipsError()
+		return nil, catchVipsError()
 	}
 	defer C.g_object_unref(C.gpointer(out))
 
@@ -74,9 +74,8 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, error) {
 	imageTypeC := C.int(imageType)
 
 	err := C.vips_init_image(imageBuf, length, imageTypeC, &image)
-	//err := C.vips_jpegload_buffer_seq(imageBuf, length, &image)
 	if err != 0 {
-		return nil, vipsError()
+		return nil, catchVipsError()
 	}
 
 	return image, nil
@@ -88,7 +87,7 @@ func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, heigh
 	err := C.vips_extract_area_0(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
-		return nil, vipsError()
+		return nil, catchVipsError()
 	}
 
 	return buf, nil
@@ -122,6 +121,10 @@ func vipsImageType(buf []byte) int {
 	return imageType
 }
 
+func vipsExifOrientation(image *C.struct__VipsImage) int {
+	return int(C.vips_exif_orientation(image))
+}
+
 type vipsSaveOptions struct {
 	Quality int
 }
@@ -132,7 +135,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 
 	err := C.vips_jpegsave_custom(image, &ptr, &length, 1, C.int(o.Quality), 0)
 	if err != 0 {
-		return nil, vipsError()
+		return nil, catchVipsError()
 	}
 	C.g_object_unref(C.gpointer(image))
 
@@ -143,7 +146,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
-func vipsError() error {
+func catchVipsError() error {
 	s := C.GoString(C.vips_error_buffer())
 	C.vips_error_clear()
 	C.vips_thread_shutdown()

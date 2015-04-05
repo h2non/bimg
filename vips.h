@@ -11,6 +11,12 @@ enum types {
 	MAGICK
 };
 
+void
+vips_malloc_cb(VipsObject *object, char *buf)
+{
+	g_free(buf);
+};
+
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
@@ -94,7 +100,25 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 #endif
   }
 
+  if (out != NULL) {
+  	// Listen for "postclose" signal to delete input buffer
+  	//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
+	}
+
   return code;
+};
+
+int
+vips_exif_orientation(VipsImage *image) {
+  int orientation = 0;
+  const char **exif;
+  if (
+    vips_image_get_typeof(image, "exif-ifd0-Orientation") != 0 &&
+    !vips_image_get_string(image, "exif-ifd0-Orientation", exif)
+  ) {
+    orientation = atoi(exif[0]);
+  }
+  return orientation;
 };
 
 int

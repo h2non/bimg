@@ -22,18 +22,14 @@ func (i Interpolator) String() string {
 	return interpolations[i]
 }
 
-type Rotation struct {
-	angle int
-}
+type Angle int
 
-func (a Rotation) calculate() int {
-	angle := a.angle
-	divisor := angle % 90
-	if divisor != 0 {
-		angle = a.angle - divisor
-	}
-	return angle
-}
+const (
+	D0   Angle = C.VIPS_ANGLE_D0
+	D90  Angle = C.VIPS_ANGLE_D90
+	D180 Angle = C.VIPS_ANGLE_D180
+	D270 Angle = C.VIPS_ANGLE_D270
+)
 
 type Direction int
 
@@ -45,12 +41,14 @@ const (
 type Options struct {
 	Height       int
 	Width        int
+	Top          int
+	Left         int
 	Crop         bool
 	Enlarge      bool
 	Extend       int
 	Embed        bool
 	Quality      int
-	Rotate       int
+	Rotate       Angle
 	Flip         Direction
 	Gravity      Gravity
 	Interpolator Interpolator
