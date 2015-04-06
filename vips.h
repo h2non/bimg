@@ -59,15 +59,15 @@ vips_rotate(VipsImage *in, VipsImage **buf, int angle)
 
 int
 vips_exif_orientation(VipsImage *image) {
-  int orientation = 0;
-  const char **exif;
-  if (
-    vips_image_get_typeof(image, "exif-ifd0-Orientation") != 0 &&
-    !vips_image_get_string(image, "exif-ifd0-Orientation", exif)
-  ) {
-    orientation = atoi(exif[0]);
-  }
-  return orientation;
+	int orientation = 0;
+	const char **exif;
+	if (
+		vips_image_get_typeof(image, "exif-ifd0-Orientation") != 0 &&
+		!vips_image_get_string(image, "exif-ifd0-Orientation", exif)
+	) {
+		orientation = atoi(exif[0]);
+	}
+	return orientation;
 };
 
 int
@@ -78,28 +78,23 @@ has_profile_embed(VipsImage *image) {
 int
 has_alpha_channel(VipsImage *image) {
 	return (
-    (image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
-    (image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
-    (image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
-  ) ? 1 : 0;
+		(image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
+		(image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
+		(image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
+	) ? 1 : 0;
 };
 
 int
 interpolator_window_size(char const *name) {
-  VipsInterpolate *interpolator = vips_interpolate_new(name);
-  int window_size = vips_interpolate_get_window_size(interpolator);
-  g_object_unref(interpolator);
-  return window_size;
+	VipsInterpolate *interpolator = vips_interpolate_new(name);
+	int window_size = vips_interpolate_get_window_size(interpolator);
+	g_object_unref(interpolator);
+	return window_size;
 };
 
 const char *
 vips_enum_nick_bridge(VipsImage *image) {
 	return vips_enum_nick(VIPS_TYPE_INTERPRETATION, image->Type);
-};
-
-int
-vips_image_bands(VipsImage *image) {
-	return image->Bands;
 };
 
 int
@@ -130,10 +125,10 @@ int
 vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace)
 {
 #if (VIPS_MAJOR_VERSION >= 8 || (VIPS_MAJOR_VERSION >= 7 && VIPS_MINOR_VERSION >= 42))
-  return vips_pngsave_buffer(in, buf, len, "strip", FALSE, "compression", compression,
-  	"interlace", interlace, "filter", VIPS_FOREIGN_PNG_FILTER_NONE, NULL);
+	return vips_pngsave_buffer(in, buf, len, "strip", FALSE, "compression", compression,
+		"interlace", interlace, "filter", VIPS_FOREIGN_PNG_FILTER_NONE, NULL);
 #else
-  return vips_pngsave_buffer(image, buf, len, "strip", FALSE, "compression", compression,
+	return vips_pngsave_buffer(image, buf, len, "strip", FALSE, "compression", compression,
 		"interlace", interlace, NULL);
 #endif
 };
@@ -146,26 +141,26 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
- 	int code = 1;
+	int code = 1;
 
-  if (imageType == JPEG) {
-    code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-  } else if (imageType == PNG) {
-    code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-  } else if (imageType == WEBP) {
-    code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-  } else if (imageType == TIFF) {
-    code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+	if (imageType == JPEG) {
+		code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+	} else if (imageType == PNG) {
+		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+	} else if (imageType == WEBP) {
+		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+	} else if (imageType == TIFF) {
+		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 #if (VIPS_MAJOR_VERSION >= 8)
-  } else if (imageType == MAGICK) {
-    code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+	} else if (imageType == MAGICK) {
+		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 #endif
-  }
-
-  if (out != NULL) {
-  	// Listen for "postclose" signal to delete input buffer
-  	//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
 	}
 
-  return code;
+	if (out != NULL) {
+		// Listen for "postclose" signal to delete input buffer
+		//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
+	}
+
+	return code;
 };

@@ -15,13 +15,13 @@ bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great n
 
 - [libvips](https://github.com/jcupitt/libvips) v7.40.0+ (7.42.0+ recommended)
 - C compatible compiler such as gcc 4.6+ or clang 3.0+
+- Go 1.3+
 
 ## Installation
 
 ```bash
 go get gopkg.in/h2non/bimg.v0
 ```
-Requires Go 1.3+
 
 ### libvips
 
@@ -37,12 +37,21 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Resize
 - Enlarge
 - Crop
-- Zoom
 - Rotate
 - Flip/Flop
 - Extract area
 - Extract image metadata (size, format, profile, orientation...)
 - Image conversion to multiple formats
+
+## Performance
+
+libvips is probably the faster open source solution for image processing. 
+Here you can see some performance test comparisons for multiple scenarios:
+
+- [libvips speed and memory usage](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
+- [sharp performance tests](https://github.com/lovell/sharp#the-task) 
+
+bimg performance tests coming soon!
 
 ## API
 

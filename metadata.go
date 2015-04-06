@@ -48,13 +48,13 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 	}
 
 	metadata := ImageMetadata{
+		Size:        size,
+		Channels:    int(image.Bands),
 		Orientation: vipsExifOrientation(image),
 		Alpha:       vipsHasAlpha(image),
 		Profile:     vipsHasProfile(image),
 		Space:       vipsSpace(image),
-		Channels:    vipsImageBands(image),
 		Type:        getImageTypeName(imageType),
-		Size:        size,
 	}
 
 	return metadata, nil

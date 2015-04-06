@@ -11,14 +11,6 @@ import (
 	"math"
 )
 
-const (
-	CENTRE Gravity = iota
-	NORTH
-	EAST
-	SOUTH
-	WEST
-)
-
 func Resize(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
@@ -46,37 +38,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
-	// prepare for factor
-	factor := 0.0
-
 	// image calculations
-	switch {
-	// Fixed width and height
-	case o.Width > 0 && o.Height > 0:
-		xf := float64(inWidth) / float64(o.Width)
-		yf := float64(inHeight) / float64(o.Height)
-		if o.Crop {
-			factor = math.Min(xf, yf)
-		} else {
-			factor = math.Max(xf, yf)
-		}
-	// Fixed width, auto height
-	case o.Width > 0:
-		factor = float64(inWidth) / float64(o.Width)
-		o.Height = int(math.Floor(float64(inHeight) / factor))
-	// Fixed height, auto width
-	case o.Height > 0:
-		factor = float64(inHeight) / float64(o.Height)
-		o.Width = int(math.Floor(float64(inWidth) / factor))
-	// Identity transform
-	default:
-		factor = 1
-		o.Width = inWidth
-		o.Height = inHeight
-	}
-
-	debug("transform from %dx%d to %dx%d", inWidth, inHeight, o.Width, o.Height)
-
+	factor := imageCalculations(o, inWidth, inHeight)
 	shrink := int(math.Max(math.Floor(factor), 1))
 	residual := float64(shrink) / factor
 
@@ -91,12 +54,10 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
-	debug("factor: %v, shrink: %v, residual: %v", factor, shrink, residual)
-
 	// Try to use libjpeg shrink-on-load
 	if imageType == JPEG && shrink >= 2 {
 		// Recalculate integral shrink and double residual
-		tmpImage, factor, err := shrinkJpeg(buf, factor, shrink)
+		tmpImage, factor, err := shrinkJpegImage(buf, factor, shrink)
 		if err != nil {
 			return nil, err
 		}
@@ -108,58 +69,35 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
+	// Calculate integral box shrink
+	windowSize := vipsWindowSize(o.Interpolator.String())
+	if factor >= 2 && windowSize > 3 {
+		// Shrink less, affine more with interpolators that use at least 4x4 pixel window, e.g. bicubic
+		shrink = int(math.Max(float64(math.Floor(factor*3.0/windowSize)), 1))
+	}
+
+	// Use vips_shrink with the integral reduction
 	if shrink > 1 {
-		debug("shrink %d", shrink)
-		// Use vips_shrink with the integral reduction
-		image, err = vipsShrink(image, shrink)
+		image, residual, err = shrinkImage(image, o, residual, shrink)
 		if err != nil {
 			return nil, err
-		}
-
-		// Recalculate residual float based on dimensions of required vs shrunk images
-		shrunkWidth := int(image.Xsize)
-		shrunkHeight := int(image.Ysize)
-
-		residualx := float64(o.Width) / float64(shrunkWidth)
-		residualy := float64(o.Height) / float64(shrunkHeight)
-		if o.Crop {
-			residual = math.Max(residualx, residualy)
-		} else {
-			residual = math.Min(residualx, residualy)
 		}
 	}
 
 	// Use vips_affine with the remaining float part
 	if residual != 0 {
-		debug("residual %.2f", residual)
 		image, err = vipsAffine(image, residual, o.Interpolator)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	// Crop/embed
-	affinedWidth := int(image.Xsize)
-	affinedHeight := int(image.Ysize)
+	debug("factor: %v, shrink: %v, residual: %v", factor, shrink, residual)
 
-	if affinedWidth != o.Width || affinedHeight != o.Height {
-		if o.Crop {
-			left, top := calculateCrop(affinedWidth, affinedHeight, o.Width, o.Height, o.Gravity)
-			o.Width = int(math.Min(float64(inWidth), float64(o.Width)))
-			o.Height = int(math.Min(float64(inHeight), float64(o.Height)))
-			debug("crop image to %dx%d to %dx%d", left, top, o.Width, o.Height)
-			image, err = vipsExtract(image, left, top, o.Width, o.Height)
-			if err != nil {
-				return nil, err
-			}
-		} else if o.Embed {
-			left := (o.Width - affinedWidth) / 2
-			top := (o.Height - affinedHeight) / 2
-			image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend)
-			if err != nil {
-				return nil, err
-			}
-		}
+	// Extract image
+	image, err = extractImage(image, o)
+	if err != nil {
+		return nil, err
 	}
 
 	rotation, flip := calculateRotationAndFlip(image, o.Rotate)
@@ -171,8 +109,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	if o.Rotate > 0 {
-		rotation := calculateRotation(o.Rotate)
-		image, err = vipsRotate(image, rotation)
+		image, err = vipsRotate(image, getAngle(o.Rotate))
 		if err != nil {
 			return nil, err
 		}
@@ -195,9 +132,65 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	C.vips_error_clear()
 
 	return buf, nil
+}
+
+func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
+	var err error = nil
+	affinedWidth := int(image.Xsize)
+	affinedHeight := int(image.Ysize)
+
+	if affinedWidth != o.Width || affinedHeight != o.Height {
+		width := int(math.Min(float64(affinedWidth), float64(o.Width)))
+		height := int(math.Min(float64(affinedHeight), float64(o.Height)))
+
+		switch {
+		case o.Crop:
+			left, top := calculateCrop(affinedWidth, affinedHeight, o.Width, o.Height, o.Gravity)
+			image, err = vipsExtract(image, left, top, width, height)
+			break
+		case o.Embed:
+			left, top := (o.Width-affinedWidth)/2, (o.Height-affinedHeight)/2
+			image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend)
+			break
+		case o.Top > 0 && o.Left > 0:
+			image, err = vipsExtract(image, o.Left, o.Top, width, height)
+			break
+		}
+	}
+
+	return image, err
+}
+
+func imageCalculations(o Options, inWidth, inHeight int) float64 {
+	factor := 1.0
+
+	switch {
+	// Fixed width and height
+	case o.Width > 0 && o.Height > 0:
+		xf := float64(inWidth) / float64(o.Width)
+		yf := float64(inHeight) / float64(o.Height)
+		if o.Crop {
+			factor = math.Min(xf, yf)
+		} else {
+			factor = math.Max(xf, yf)
+		}
+	// Fixed width, auto height
+	case o.Width > 0:
+		factor = float64(inWidth) / float64(o.Width)
+		o.Height = int(math.Floor(float64(inHeight) / factor))
+	// Fixed height, auto width
+	case o.Height > 0:
+		factor = float64(inHeight) / float64(o.Height)
+		o.Width = int(math.Floor(float64(inWidth) / factor))
+	// Identity transform
+	default:
+		o.Width = inWidth
+		o.Height = inHeight
+	}
+
+	return factor
 }
 
 func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) (int, int) {
@@ -266,7 +259,27 @@ func calculateRotationAndFlip(image *C.struct__VipsImage, angle Angle) (Angle, b
 	return rotate, flip
 }
 
-func shrinkJpeg(buf []byte, factor float64, shrink int) (*C.struct__VipsImage, float64, error) {
+func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {
+	// Use vips_shrink with the integral reduction
+	image, err := vipsShrink(image, shrink)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Recalculate residual float based on dimensions of required vs shrunk images
+	residualx := float64(o.Width) / float64(image.Xsize)
+	residualy := float64(o.Height) / float64(image.Ysize)
+
+	if o.Crop {
+		residual = math.Max(residualx, residualy)
+	} else {
+		residual = math.Min(residualx, residualy)
+	}
+
+	return image, residual, nil
+}
+
+func shrinkJpegImage(buf []byte, factor float64, shrink int) (*C.struct__VipsImage, float64, error) {
 	shrinkOnLoad := 1
 
 	switch {
@@ -293,7 +306,7 @@ func shrinkJpeg(buf []byte, factor float64, shrink int) (*C.struct__VipsImage, f
 	return nil, factor, nil
 }
 
-func calculateRotation(angle Angle) Angle {
+func getAngle(angle Angle) Angle {
 	divisor := angle % 90
 	if divisor != 0 {
 		angle = angle - divisor

@@ -10,6 +10,14 @@ const QUALITY = 80
 
 type Gravity int
 
+const (
+	CENTRE Gravity = iota
+	NORTH
+	EAST
+	SOUTH
+	WEST
+)
+
 type Interpolator int
 
 const (

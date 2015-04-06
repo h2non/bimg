@@ -209,16 +209,12 @@ func vipsHasProfile(image *C.struct__VipsImage) bool {
 	return int(C.has_profile_embed(image)) > 0
 }
 
-func vipsWindowSize(name string) int {
-	return int(C.interpolator_window_size(C.CString(name)))
+func vipsWindowSize(name string) float64 {
+	return float64(C.interpolator_window_size(C.CString(name)))
 }
 
 func vipsSpace(image *C.struct__VipsImage) string {
 	return C.GoString(C.vips_enum_nick_bridge(image))
-}
-
-func vipsImageBands(image *C.struct__VipsImage) int {
-	return int(C.vips_image_bands(image))
 }
 
 type vipsSaveOptions struct {
@@ -232,6 +228,10 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	length := C.size_t(0)
 	err := C.int(0)
 
+	// cleanup
+	defer C.g_object_unref(C.gpointer(image))
+	defer C.g_free(C.gpointer(ptr))
+
 	switch {
 	case o.Type == PNG:
 		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
@@ -244,14 +244,12 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 		break
 	}
 
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
 	buf := C.GoBytes(ptr, C.int(length))
-	// cleanup
-	C.g_free(C.gpointer(ptr))
+	C.vips_error_clear()
 
 	return buf, nil
 }
