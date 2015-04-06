@@ -54,7 +54,7 @@ func TestImageConvert(t *testing.T) {
 }
 
 func TestImageMetadata(t *testing.T) {
-	data, err := initImage("test.png").Metadata(PNG)
+	data, err := initImage("test.png").Metadata()
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
@@ -63,6 +63,9 @@ func TestImageMetadata(t *testing.T) {
 	}
 	if data.Size.Width != 400 {
 		t.Fatal("Invalid width size")
+	}
+	if data.Type != "png" {
+		t.Fatal("Invalid image type")
 	}
 }
 
