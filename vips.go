@@ -10,7 +10,13 @@ import (
 	"errors"
 	"runtime"
 	"strings"
+	"sync"
 	"unsafe"
+)
+
+var (
+	initialized bool = false
+	m           sync.Mutex
 )
 
 type vipsImage C.struct__VipsImage
@@ -23,19 +29,30 @@ func init() {
 		panic("unsupported old vips version")
 	}
 
-	err := C.vips_init(C.CString("bimg"))
-	if err != 0 {
-		C.vips_shutdown()
-		panic("unable to start vips!")
-	}
+	Initialize()
 
-	C.vips_concurrency_set(1)                   // single-thread
+	C.vips_concurrency_set(0)                   // single-thread
 	C.vips_cache_set_max_mem(100 * 1024 * 1024) // 100 MB
 	C.vips_cache_set_max(500)                   // 500 operations
 }
 
-type Vips struct {
-	buf []byte
+func Initialize() {
+	err := C.vips_init(C.CString("bimg"))
+	if err != 0 {
+		Shutdown()
+		panic("unable to start vips!")
+	}
+
+	m.Lock()
+	defer m.Unlock()
+	initialized = true
+}
+
+func Shutdown() {
+	m.Lock()
+	defer m.Unlock()
+	C.vips_shutdown()
+	initialized = false
 }
 
 func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
