@@ -2,7 +2,10 @@
 
 Go library for blazing fast image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. 
 
-libvips is typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings, and even 8x faster with JPEG format. It support JPEG, PNG, WEBP, TIFF and Magick image formats.
+bimg is designed to be a small and efficient library with a limited by generic specific set of features. 
+Thanks to libvips it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings 
+or Go native image processing package, and in some cases it's even 8x faster processing JPEG images. 
+It supports JPEG, PNG, WEBP, TIFF and Magick image formats.
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
 
