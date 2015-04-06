@@ -30,7 +30,7 @@ vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink)
 };
 
 int
-vips_flip_custom(VipsImage *in, VipsImage **out, int direction)
+vips_flip_bridge(VipsImage *in, VipsImage **out, int direction)
 {
 	return vips_flip(in, out, direction, NULL);
 };
@@ -71,31 +71,63 @@ vips_exif_orientation(VipsImage *image) {
 };
 
 int
-vips_embed_custom(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
+has_profile_embed(VipsImage *image) {
+	return (vips_image_get_typeof(image, VIPS_META_ICC_NAME) > 0) ? 1 : 0;
+};
+
+int
+has_alpha_channel(VipsImage *image) {
+	return (
+    (image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
+    (image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
+    (image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
+  ) ? 1 : 0;
+};
+
+int
+interpolator_window_size(char const *name) {
+  VipsInterpolate *interpolator = vips_interpolate_new(name);
+  int window_size = vips_interpolate_get_window_size(interpolator);
+  g_object_unref(interpolator);
+  return window_size;
+};
+
+const char *
+vips_enum_nick_bridge(VipsImage *image) {
+	return vips_enum_nick(VIPS_TYPE_INTERPRETATION, image->Type);
+};
+
+int
+vips_image_bands(VipsImage *image) {
+	return image->Bands;
+};
+
+int
+vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
 {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
 };
 
 int
-vips_colourspace_custom(VipsImage *in, VipsImage **out, VipsInterpretation space)
+vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space)
 {
 	return vips_colourspace(in, out, space, NULL);
 };
 
 int
-vips_extract_area_custom(VipsImage *in, VipsImage **out, int left, int top, int width, int height)
+vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height)
 {
 	return vips_extract_area(in, out, left, top, width, height, NULL);
 };
 
 int
-vips_jpegsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
+vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
 {
 	return vips_jpegsave_buffer(in, buf, len, "strip", strip, "Q", quality, "optimize_coding", TRUE, "interlace", interlace, NULL);
 };
 
 int
-vips_pngsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace)
+vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace)
 {
 #if (VIPS_MAJOR_VERSION >= 8 || (VIPS_MAJOR_VERSION >= 7 && VIPS_MINOR_VERSION >= 42))
   return vips_pngsave_buffer(in, buf, len, "strip", FALSE, "compression", compression,
@@ -107,7 +139,7 @@ vips_pngsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int compr
 };
 
 int
-vips_webpsave_custom(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
+vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
 {
 	return vips_webpsave_buffer(in, buf, len, "strip", strip, "Q", quality, "optimize_coding", TRUE, "interlace", interlace, NULL);
 };

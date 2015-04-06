@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	initialized bool = false
 	m           sync.Mutex
+	initialized bool = false
 )
 
 type vipsImage C.struct__VipsImage
@@ -31,7 +31,7 @@ func init() {
 
 	Initialize()
 
-	C.vips_concurrency_set(0)                   // single-thread
+	C.vips_concurrency_set(0)                   // default
 	C.vips_cache_set_max_mem(100 * 1024 * 1024) // 100 MB
 	C.vips_cache_set_max(500)                   // 500 operations
 }
@@ -49,10 +49,12 @@ func Initialize() {
 }
 
 func Shutdown() {
-	m.Lock()
-	defer m.Unlock()
-	C.vips_shutdown()
-	initialized = false
+	if initialized == true {
+		m.Lock()
+		defer m.Unlock()
+		C.vips_shutdown()
+		initialized = false
+	}
 }
 
 func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
@@ -71,7 +73,7 @@ func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, 
 func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
 
-	err := C.vips_flip_custom(image, &out, C.int(direction))
+	err := C.vips_flip_bridge(image, &out, C.int(direction))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
@@ -105,7 +107,7 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.struct__VipsImage, error) {
 	var buf *C.struct__VipsImage
 
-	err := C.vips_extract_area_custom(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
+	err := C.vips_extract_area_bridge(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
@@ -141,7 +143,7 @@ func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, e
 func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
 
-	err := C.vips_embed_custom(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
+	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
@@ -199,6 +201,26 @@ func vipsExifOrientation(image *C.struct__VipsImage) int {
 	return int(C.vips_exif_orientation(image))
 }
 
+func vipsHasAlpha(image *C.struct__VipsImage) bool {
+	return int(C.has_alpha_channel(image)) > 0
+}
+
+func vipsHasProfile(image *C.struct__VipsImage) bool {
+	return int(C.has_profile_embed(image)) > 0
+}
+
+func vipsWindowSize(name string) int {
+	return int(C.interpolator_window_size(C.CString(name)))
+}
+
+func vipsSpace(image *C.struct__VipsImage) string {
+	return C.GoString(C.vips_enum_nick_bridge(image))
+}
+
+func vipsImageBands(image *C.struct__VipsImage) int {
+	return int(C.vips_image_bands(image))
+}
+
 type vipsSaveOptions struct {
 	Quality     int
 	Compression int
@@ -212,13 +234,13 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 
 	switch {
 	case o.Type == PNG:
-		err = C.vips_pngsave_custom(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
+		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
 		break
 	case o.Type == WEBP:
-		err = C.vips_webpsave_custom(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	default:
-		err = C.vips_jpegsave_custom(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	}
 

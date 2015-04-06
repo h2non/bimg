@@ -94,30 +94,17 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	debug("factor: %v, shrink: %v, residual: %v", factor, shrink, residual)
 
 	// Try to use libjpeg shrink-on-load
-	shrinkOnLoad := 1
 	if imageType == JPEG && shrink >= 2 {
-		switch {
-		case shrink >= 8:
-			factor = factor / 8
-			shrinkOnLoad = 8
-		case shrink >= 4:
-			factor = factor / 4
-			shrinkOnLoad = 4
-		case shrink >= 2:
-			factor = factor / 2
-			shrinkOnLoad = 2
+		// Recalculate integral shrink and double residual
+		tmpImage, factor, err := shrinkJpeg(buf, factor, shrink)
+		if err != nil {
+			return nil, err
 		}
-
-		if shrinkOnLoad > 1 {
-			// Recalculate integral shrink and double residual
+		if tmpImage != nil {
+			image = tmpImage
 			factor = math.Max(factor, 1.0)
 			shrink = int(math.Floor(factor))
 			residual = float64(shrink) / factor
-			// Reload input using shrink-on-load
-			image, err = vipsShrinkJpeg(buf, shrinkOnLoad)
-			if err != nil {
-				return nil, err
-			}
 		}
 	}
 
@@ -277,6 +264,33 @@ func calculateRotationAndFlip(image *C.struct__VipsImage, angle Angle) (Angle, b
 	}
 
 	return rotate, flip
+}
+
+func shrinkJpeg(buf []byte, factor float64, shrink int) (*C.struct__VipsImage, float64, error) {
+	shrinkOnLoad := 1
+
+	switch {
+	case shrink >= 8:
+		factor = factor / 8
+		shrinkOnLoad = 8
+	case shrink >= 4:
+		factor = factor / 4
+		shrinkOnLoad = 4
+	case shrink >= 2:
+		factor = factor / 2
+		shrinkOnLoad = 2
+	}
+
+	if shrinkOnLoad > 1 {
+		// Reload input using shrink-on-load
+		image, err := vipsShrinkJpeg(buf, shrinkOnLoad)
+		if err != nil {
+			return nil, factor, err
+		}
+		return image, factor, err
+	}
+
+	return nil, factor, nil
 }
 
 func calculateRotation(angle Angle) Angle {

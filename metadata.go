@@ -6,8 +6,6 @@ package bimg
 */
 import "C"
 
-import ()
-
 type ImageSize struct {
 	Width  int
 	Height int
@@ -16,9 +14,10 @@ type ImageSize struct {
 type ImageMetadata struct {
 	Orientation int
 	Alpha       bool
+	Channels    int
 	Profile     bool
-	Space       int
 	Type        string
+	Space       string
 	Size        ImageSize
 }
 
@@ -43,12 +42,19 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 	}
 	defer C.g_object_unref(C.gpointer(image))
 
+	size := ImageSize{
+		Width:  int(image.Xsize),
+		Height: int(image.Ysize),
+	}
+
 	metadata := ImageMetadata{
-		Type: getImageTypeName(imageType),
-		Size: ImageSize{
-			Width:  int(image.Xsize),
-			Height: int(image.Ysize),
-		},
+		Orientation: vipsExifOrientation(image),
+		Alpha:       vipsHasAlpha(image),
+		Profile:     vipsHasProfile(image),
+		Space:       vipsSpace(image),
+		Channels:    vipsImageBands(image),
+		Type:        getImageTypeName(imageType),
+		Size:        size,
 	}
 
 	return metadata, nil

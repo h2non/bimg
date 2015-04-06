@@ -14,7 +14,7 @@ bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great n
 ## Prerequisites
 
 - [libvips](https://github.com/jcupitt/libvips) v7.40.0+ (7.42.0+ recommended)
-- C++11 compatible compiler such as gcc 4.6+ or clang 3.0+
+- C compatible compiler such as gcc 4.6+ or clang 3.0+
 
 ## Installation
 
