@@ -53,6 +53,19 @@ func TestImageConvert(t *testing.T) {
 	Write("fixtures/test_image_convert_out.png", buf)
 }
 
+func TestImageMetadata(t *testing.T) {
+	data, err := initImage("test.png").Metadata(PNG)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	if data.Alpha != true {
+		t.Fatal("Invalid alpha channel")
+	}
+	if data.Size.Width != 400 {
+		t.Fatal("Invalid width size")
+	}
+}
+
 func initImage(file string) *Image {
 	buf, _ := Read(path.Join("fixtures", file))
 	return NewImage(buf)

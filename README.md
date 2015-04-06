@@ -58,7 +58,7 @@ bimg performance tests coming soon!
 
 ## API
 
-### Example
+### Examples
 
 ```go
 import (
@@ -66,24 +66,97 @@ import (
   "os"
   "gopkg.in/h2non/bimg.v0"
 )
+```
 
-options := bimg.Options{
-    Width:        800,
-    Height:       600,
-    Crop:         true,
-    Quality:      95,
-}
+#### Resize
 
-newImage, err := bimg.Resize(image, options)
+```go
+buffer, err := bimg.Read("image.jpg")
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }
+
+newImage, err := bimg.NewImage(buffer).Resize(800, 600)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+size, err := bimg.NewImage(newImage).Size()
+if size.Width == 400 && size.Height == 300 {
+  fmt.Println("The image size is valid")
+}
+
+bimg.Write("new.jpg", newImage)
+```
+
+#### Rotate
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+newImage, err := bimg.NewImage(buffer).Rotate(90)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+bimg.Write("new.jpg", newImage)
+```
+
+#### Convert
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+newImage, err := bimg.NewImage(buffer).Convert(bimg.PNG)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+if bimg.NewImage(newImage).Type() == "png" {
+  fmt.Fprintln(os.Stderr, "The image was converted into png")
+}
+```
+
+#### Process
+
+```go
+options := bimg.Options{
+  Width:        800,
+  Height:       600,
+  Crop:         true,
+  Quality:      95,
+  Rotate:       180,
+}
+
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+newImage, err := bimg.NewImage(buffer).Process(options)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+bimg.Write("new.jpg", newImage)
 ```
 
 #### func  DetermineImageTypeName
 
 ```go
 func DetermineImageTypeName(buf []byte) string
+```
+
+#### func  Initialize
+
+```go
+func Initialize()
 ```
 
 #### func  IsTypeNameSupported
@@ -108,6 +181,12 @@ func Read(path string) ([]byte, error)
 
 ```go
 func Resize(buf []byte, o Options) ([]byte, error)
+```
+
+#### func  Shutdown
+
+```go
+func Shutdown()
 ```
 
 #### type Angle
@@ -291,7 +370,7 @@ const (
 )
 ```
 
-#### func DetermineImageType
+#### func  DetermineImageType
 
 ```go
 func DetermineImageType(buf []byte) ImageType
@@ -337,14 +416,6 @@ type Options struct {
   Flip         Direction
   Gravity      Gravity
   Interpolator Interpolator
-}
-```
-
-
-#### type Vips
-
-```go
-type Vips struct {
 }
 ```
 
