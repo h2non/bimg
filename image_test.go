@@ -46,7 +46,7 @@ func TestImageRotate(t *testing.T) {
 }
 
 func TestImageConvert(t *testing.T) {
-	buf, err := initImage("test_rotate_out.jpg").Convert(PNG)
+	buf, err := initImage("test.jpg").Convert(PNG)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}

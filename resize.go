@@ -15,6 +15,10 @@ import (
 func Resize(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
+	if len(buf) == 0 {
+		return nil, errors.New("Image buffer is empty")
+	}
+
 	image, imageType, err := vipsRead(buf)
 	if err != nil {
 		return nil, err
