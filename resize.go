@@ -34,6 +34,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, errors.New("Unsupported image output type")
 	}
 
+	debug("Options: %#v", o)
+
 	// get WxH
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
@@ -100,12 +102,14 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
-	rotation, flip := calculateRotationAndFlip(image, o.Rotate)
-	if flip {
-		o.Flip = HORIZONTAL
-	}
-	if rotation != D0 {
-		o.Rotate = rotation
+	if o.Rotate == 0 {
+		rotation, flip := calculateRotationAndFlip(image, o.Rotate)
+		if flip {
+			o.Flip = HORIZONTAL
+		}
+		if rotation > D0 {
+			o.Rotate = rotation
+		}
 	}
 
 	if o.Rotate > 0 {
