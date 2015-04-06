@@ -27,18 +27,18 @@ Run the following script as `sudo` (supports OSX, Debian/Ubuntu, Redhat, Fedora,
 curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
 ```
 
-The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) requires `curl` and `pkg-config`.
+The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) requires `curl` and `pkg-config`
 
-## Image operations
+## Supported image operations
 
 - Resize
-- Crop
 - Enlarge
+- Crop
 - Zoom
-- Rotate by degrees
+- Rotate
 - Flip/Flop
 - Extract area
-- Extract image metadata
+- Extract image metadata (size, format, profile, orientation...)
 - Image conversion to multiple formats
 
 ## API
