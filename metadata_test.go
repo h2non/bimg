@@ -32,22 +32,35 @@ func TestSize(t *testing.T) {
 
 func TestMetadata(t *testing.T) {
 	files := []struct {
-		name   string
-		format string
+		name        string
+		format      string
+		orientation int
+		alpha       bool
+		profile     bool
+		space       string
 	}{
-		{"test.jpg", "jpeg"},
-		{"test.png", "png"},
-		{"test.webp", "webp"},
+		{"test.jpg", "jpeg", 0, false, false, "bicubic"},
+		{"test.png", "png", 0, true, false, "bicubic"},
+		{"test.webp", "webp", 0, false, false, "bicubic"},
 	}
 
 	for _, file := range files {
-		size, err := Metadata(readFile(file.name))
+		metadata, err := Metadata(readFile(file.name))
 		if err != nil {
 			t.Fatalf("Cannot read the image: %#v", err)
 		}
 
-		if size.Type != file.format {
+		if metadata.Type != file.format {
 			t.Fatalf("Unexpected image format: %s", file.format)
+		}
+		if metadata.Orientation != file.orientation {
+			t.Fatalf("Unexpected image orientation: %d != %d", metadata.Orientation, file.orientation)
+		}
+		if metadata.Alpha != file.alpha {
+			t.Fatalf("Unexpected image alpha: %s != ", metadata.Alpha, file.alpha)
+		}
+		if metadata.Profile != file.profile {
+			t.Fatalf("Unexpected image profile: %s != %s", metadata.Profile, file.profile)
 		}
 	}
 }

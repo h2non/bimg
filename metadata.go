@@ -13,8 +13,8 @@ type ImageSize struct {
 
 type ImageMetadata struct {
 	Orientation int
-	Alpha       bool
 	Channels    int
+	Alpha       bool
 	Profile     bool
 	Type        string
 	Space       string
