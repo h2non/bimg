@@ -12,6 +12,12 @@ type Gravity int
 
 type Interpolator int
 
+const (
+	BICUBIC Interpolator = iota
+	BILINEAR
+	NOHALO
+)
+
 var interpolations = map[Interpolator]string{
 	BICUBIC:  "bicubic",
 	BILINEAR: "bilinear",

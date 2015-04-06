@@ -16,23 +16,26 @@ func DetermineImageType(buf []byte) ImageType {
 }
 
 func DetermineImageTypeName(buf []byte) string {
-	imageCode := vipsImageType(buf)
+	return getImageTypeName(vipsImageType(buf))
+}
+
+func getImageTypeName(code ImageType) string {
 	imageType := "unknown"
 
 	switch {
-	case imageCode == JPEG:
+	case code == JPEG:
 		imageType = "jpeg"
 		break
-	case imageCode == WEBP:
+	case code == WEBP:
 		imageType = "webp"
 		break
-	case imageCode == PNG:
+	case code == PNG:
 		imageType = "png"
 		break
-	case imageCode == TIFF:
+	case code == TIFF:
 		imageType = "tiff"
 		break
-	case imageCode == MAGICK:
+	case code == MAGICK:
 		imageType = "magick"
 		break
 	}

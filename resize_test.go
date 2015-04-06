@@ -35,7 +35,7 @@ func TestResize(t *testing.T) {
 }
 
 func TestConvert(t *testing.T) {
-	options := Options{Width: 640, Height: 480, Crop: false, Type: PNG}
+	options := Options{Width: 640, Height: 480, Crop: true, Type: PNG}
 	img, err := os.Open("fixtures/test.jpg")
 	if err != nil {
 		t.Fatal(err)

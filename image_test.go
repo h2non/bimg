@@ -16,7 +16,7 @@ func TestImageResize(t *testing.T) {
 
 func TestImageCrop(t *testing.T) {
 	image := readImage()
-	_, err := image.Crop(300, 240)
+	_, err := image.Crop(800, 600)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}

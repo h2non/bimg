@@ -12,12 +12,6 @@ import (
 )
 
 const (
-	BICUBIC Interpolator = iota
-	BILINEAR
-	NOHALO
-)
-
-const (
 	CENTRE Gravity = iota
 	NORTH
 	EAST
@@ -163,9 +157,10 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	if affinedWidth != o.Width || affinedHeight != o.Height {
 		if o.Crop {
-			left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
+			left, top := calculateCrop(affinedWidth, affinedHeight, o.Width, o.Height, o.Gravity)
 			o.Width = int(math.Min(float64(inWidth), float64(o.Width)))
 			o.Height = int(math.Min(float64(inHeight), float64(o.Height)))
+			debug("crop image to %dx%d to %dx%d", left, top, o.Width, o.Height)
 			image, err = vipsExtract(image, left, top, o.Width, o.Height)
 			if err != nil {
 				return nil, err

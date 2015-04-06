@@ -64,6 +64,14 @@ func (i *Image) Type() string {
 	return DetermineImageTypeName(i.buffer)
 }
 
+func (i *Image) Metadata() (ImageMetadata, error) {
+	return Metadata(i.buffer)
+}
+
+func (i *Image) Size() (ImageSize, error) {
+	return Size(i.buffer)
+}
+
 func NewImage(buf []byte) *Image {
 	return &Image{buf}
 }

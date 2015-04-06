@@ -35,8 +35,10 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Crop
 - Enlarge
 - Zoom
-- Extract
-- Image metadata
+- Rotate by degrees
+- Flip/Flop
+- Extract area
+- Extract image metadata
 - Image conversion to multiple formats
 
 ## API
