@@ -8,11 +8,11 @@ bimg can read JPEG, PNG, WEBP, TIFF and Magick formats and it can output to JPEG
 
 It support common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and image conversion into multiple formats. 
 
-To getting started see the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
+To getting start take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
 
-**Note**: bimg is still a beta package. PR and issues are highly appreciated
+**Note**: bimg is still a beta package. Pull requests and issues are highly appreciated
 
 ## Prerequisites
 
