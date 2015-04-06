@@ -2,9 +2,9 @@
 
 Go library for blazing fast image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. 
 
-**bimg** was focused on performance, resizing an image with libvips is typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings.
+libvips is typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings, and even 8x faster with JPEG format. It support JPEG, PNG, WEBP, TIFF and Magick image formats.
 
-**bimg** was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
+bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
 
 `Work in progress`
 
@@ -28,6 +28,16 @@ curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | su
 ```
 
 The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) requires `curl` and `pkg-config`.
+
+## Image operations
+
+- Resize
+- Crop
+- Enlarge
+- Zoom
+- Extract
+- Image metadata
+- Image conversion to multiple formats
 
 ## API
 

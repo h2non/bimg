@@ -22,6 +22,15 @@ func (i *Image) Extract(top int, left int, width int, height int) ([]byte, error
 	return i.Process(options)
 }
 
+func (i *Image) Crop(width int, height int) ([]byte, error) {
+	options := Options{
+		Width:  width,
+		Height: height,
+		Crop:   true,
+	}
+	return i.Process(options)
+}
+
 func (i *Image) Rotate(a Angle) ([]byte, error) {
 	options := Options{Rotate: a}
 	return i.Process(options)
