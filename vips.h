@@ -23,13 +23,6 @@ vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, dou
 	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, NULL);
 };
 
-VipsImage*
-vips_image_buffer_seq(void *buf, size_t len)
-{
-	// todo: handle postclose callback
-	return vips_image_new_from_buffer(buf, len, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-};
-
 int
 vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink)
 {
@@ -37,21 +30,15 @@ vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink)
 };
 
 int
-vips_flip_seq(VipsImage *in, VipsImage **out)
+vips_flip_custom(VipsImage *in, VipsImage **out, int direction)
 {
-	return vips_flip(in, out, VIPS_DIRECTION_HORIZONTAL, NULL);
+	return vips_flip(in, out, direction, NULL);
 };
 
 int
 vips_shrink_0(VipsImage *in, VipsImage **out, double xshrink, double yshrink)
 {
 	return vips_shrink(in, out, xshrink, yshrink, NULL);
-};
-
-int
-vips_copy_0(VipsImage *in, VipsImage **out)
-{
-	return vips_copy(in, out, NULL);
 };
 
 int
@@ -84,19 +71,19 @@ vips_exif_orientation(VipsImage *image) {
 };
 
 int
-vips_embed_extend(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
+vips_embed_custom(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
 {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
 };
 
 int
-vips_colourspace_0(VipsImage *in, VipsImage **out, VipsInterpretation space)
+vips_colourspace_custom(VipsImage *in, VipsImage **out, VipsInterpretation space)
 {
 	return vips_colourspace(in, out, space, NULL);
 };
 
 int
-vips_extract_area_0(VipsImage *in, VipsImage **out, int left, int top, int width, int height)
+vips_extract_area_custom(VipsImage *in, VipsImage **out, int left, int top, int width, int height)
 {
 	return vips_extract_area(in, out, left, top, width, height, NULL);
 };

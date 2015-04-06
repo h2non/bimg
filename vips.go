@@ -19,13 +19,17 @@ func init() {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 
+	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
+		panic("unsupported old vips version")
+	}
+
 	err := C.vips_init(C.CString("bimg"))
 	if err != 0 {
 		C.vips_shutdown()
 		panic("unable to start vips!")
 	}
 
-	C.vips_concurrency_set(1)                   // default
+	C.vips_concurrency_set(1)                   // single-thread
 	C.vips_cache_set_max_mem(100 * 1024 * 1024) // 100 MB
 	C.vips_cache_set_max(500)                   // 500 operations
 }
@@ -50,7 +54,7 @@ func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, 
 func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
 
-	err := C.vips_flip_seq(image, &out)
+	err := C.vips_flip_custom(image, &out, C.int(direction))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
@@ -81,16 +85,69 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 	return image, imageType, nil
 }
 
-func vipsExtract(image *C.struct__VipsImage, left int, top int, width int, height int) (*C.struct__VipsImage, error) {
+func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.struct__VipsImage, error) {
 	var buf *C.struct__VipsImage
 
-	err := C.vips_extract_area_0(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
+	err := C.vips_extract_area_custom(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
 	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
 	return buf, nil
+}
+
+func vipsShrinkJpeg(buf []byte, shrink int) (*C.struct__VipsImage, error) {
+	var image *C.struct__VipsImage
+
+	err := C.vips_jpegload_buffer_shrink(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), &image, C.int(shrink))
+	C.g_object_unref(C.gpointer(image))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
+func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, error) {
+	var image *C.struct__VipsImage
+
+	err := C.vips_shrink_0(input, &image, C.double(float64(shrink)), C.double(float64(shrink)))
+	C.g_object_unref(C.gpointer(image))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
+func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int) (*C.struct__VipsImage, error) {
+	var image *C.struct__VipsImage
+
+	err := C.vips_embed_custom(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
+	C.g_object_unref(C.gpointer(image))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
+func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*C.struct__VipsImage, error) {
+	var image *C.struct__VipsImage
+
+	istring := C.CString(i.String())
+	interpolator := C.vips_interpolate_new(istring)
+
+	// Perform affine transformation
+	err := C.vips_affine_interpolator(input, &image, C.double(residual), 0, 0, C.double(residual), interpolator)
+	C.g_object_unref(C.gpointer(image))
+	C.free(unsafe.Pointer(istring))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
 }
 
 func vipsImageType(buf []byte) ImageType {

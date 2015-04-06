@@ -44,17 +44,139 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		o.Type = imageType
 	}
 
+	if IsTypeSupported(o.Type) == false {
+		return nil, errors.New("Unsupported image output type")
+	}
+
 	// get WxH
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
-	if o.Crop {
-		left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
-		o.Width = int(math.Min(float64(inWidth), float64(o.Width)))
-		o.Height = int(math.Min(float64(inHeight), float64(o.Height)))
-		image, err = vipsExtract(image, left, top, o.Width, o.Height)
+	// prepare for factor
+	factor := 0.0
+
+	// image calculations
+	switch {
+	// Fixed width and height
+	case o.Width > 0 && o.Height > 0:
+		xf := float64(inWidth) / float64(o.Width)
+		yf := float64(inHeight) / float64(o.Height)
+		if o.Crop {
+			factor = math.Min(xf, yf)
+		} else {
+			factor = math.Max(xf, yf)
+		}
+	// Fixed width, auto height
+	case o.Width > 0:
+		factor = float64(inWidth) / float64(o.Width)
+		o.Height = int(math.Floor(float64(inHeight) / factor))
+	// Fixed height, auto width
+	case o.Height > 0:
+		factor = float64(inHeight) / float64(o.Height)
+		o.Width = int(math.Floor(float64(inWidth) / factor))
+	// Identity transform
+	default:
+		factor = 1
+		o.Width = inWidth
+		o.Height = inHeight
+	}
+
+	debug("transform from %dx%d to %dx%d", inWidth, inHeight, o.Width, o.Height)
+
+	shrink := int(math.Max(math.Floor(factor), 1))
+	residual := float64(shrink) / factor
+
+	// Do not enlarge the output if the input width *or* height are already less than the required dimensions
+	if o.Enlarge == false {
+		if inWidth < o.Width && inHeight < o.Height {
+			factor = 1
+			shrink = 1
+			residual = 0
+			o.Width = inWidth
+			o.Height = inHeight
+		}
+	}
+
+	debug("factor: %v, shrink: %v, residual: %v", factor, shrink, residual)
+
+	// Try to use libjpeg shrink-on-load
+	shrinkOnLoad := 1
+	if imageType == JPEG && shrink >= 2 {
+		switch {
+		case shrink >= 8:
+			factor = factor / 8
+			shrinkOnLoad = 8
+		case shrink >= 4:
+			factor = factor / 4
+			shrinkOnLoad = 4
+		case shrink >= 2:
+			factor = factor / 2
+			shrinkOnLoad = 2
+		}
+
+		if shrinkOnLoad > 1 {
+			// Recalculate integral shrink and double residual
+			factor = math.Max(factor, 1.0)
+			shrink = int(math.Floor(factor))
+			residual = float64(shrink) / factor
+			// Reload input using shrink-on-load
+			image, err = vipsShrinkJpeg(buf, shrinkOnLoad)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if shrink > 1 {
+		debug("shrink %d", shrink)
+		// Use vips_shrink with the integral reduction
+		image, err = vipsShrink(image, shrink)
 		if err != nil {
 			return nil, err
+		}
+
+		// Recalculate residual float based on dimensions of required vs shrunk images
+		shrunkWidth := int(image.Xsize)
+		shrunkHeight := int(image.Ysize)
+
+		residualx := float64(o.Width) / float64(shrunkWidth)
+		residualy := float64(o.Height) / float64(shrunkHeight)
+		if o.Crop {
+			residual = math.Max(residualx, residualy)
+		} else {
+			residual = math.Min(residualx, residualy)
+		}
+	}
+
+	// Use vips_affine with the remaining float part
+	if residual != 0 {
+		debug("residual %.2f", residual)
+		image, err = vipsAffine(image, residual, o.Interpolator)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Crop/embed
+	affinedWidth := int(image.Xsize)
+	affinedHeight := int(image.Ysize)
+
+	if affinedWidth != o.Width || affinedHeight != o.Height {
+		if o.Crop {
+			left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
+			o.Width = int(math.Min(float64(inWidth), float64(o.Width)))
+			o.Height = int(math.Min(float64(inHeight), float64(o.Height)))
+			image, err = vipsExtract(image, left, top, o.Width, o.Height)
+			if err != nil {
+				return nil, err
+			}
+		} else if o.Embed {
+			left := (o.Width - affinedWidth) / 2
+			top := (o.Height - affinedHeight) / 2
+			image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -79,10 +201,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	if IsTypeSupported(o.Type) == false {
-		return nil, errors.New("Unsupported image output type")
 	}
 
 	saveOptions := vipsSaveOptions{
