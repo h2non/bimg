@@ -157,10 +157,10 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 #endif
 	}
 
-	if (out != NULL) {
-		// Listen for "postclose" signal to delete input buffer
+	// Listen for "postclose" signal to delete input buffer
+	//if (out != NULL) {
 		//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
-	}
+	//}
 
 	return code;
 };

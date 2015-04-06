@@ -55,6 +55,8 @@ const (
 type Options struct {
 	Height       int
 	Width        int
+	AreaHeight   int
+	AreaWidth    int
 	Top          int
 	Left         int
 	Crop         bool

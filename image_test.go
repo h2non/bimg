@@ -1,37 +1,59 @@
 package bimg
 
 import (
-	"io/ioutil"
-	"os"
+	"path"
 	"testing"
 )
 
 func TestImageResize(t *testing.T) {
-	image := readImage()
-	_, err := image.Resize(300, 240)
+	buf, err := initImage("test.jpg").Resize(300, 240)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
+	Write("fixtures/test_resize_out.jpg", buf)
+}
+
+func TestImageExtract(t *testing.T) {
+	buf, err := initImage("test.jpg").Extract(100, 100, 300, 300)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_extract_out.jpg", buf)
 }
 
 func TestImageCrop(t *testing.T) {
-	image := readImage()
-	_, err := image.Crop(800, 600)
+	buf, err := initImage("test.jpg").Crop(800, 600)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
+	Write("fixtures/test_crop_out.jpg", buf)
+}
+
+func TestImageFlip(t *testing.T) {
+	buf, err := initImage("test.jpg").Flip()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_flip_out.jpg", buf)
 }
 
 func TestImageRotate(t *testing.T) {
-	image := readImage()
-	_, err := image.Rotate(D90)
+	buf, err := initImage("test_flip_out.jpg").Rotate(90)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
+	Write("fixtures/test_image_rotate_out.jpg", buf)
 }
 
-func readImage() *Image {
-	data, _ := os.Open("fixtures/test.jpg")
-	buf, _ := ioutil.ReadAll(data)
+func TestImageConvert(t *testing.T) {
+	buf, err := initImage("test_rotate_out.jpg").Convert(PNG)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_image_convert_out.png", buf)
+}
+
+func initImage(file string) *Image {
+	buf, _ := Read(path.Join("fixtures", file))
 	return NewImage(buf)
 }

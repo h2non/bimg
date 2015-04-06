@@ -1,15 +1,18 @@
 # bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GitHub release](https://img.shields.io/github/tag/h2non/bimg.svg)]() [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.png)](https://godoc.org/github.com/h2non/bimg)
 
-Go library for blazing fast image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. 
+Go small but featured library for blazing fast image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings.
 
-bimg is designed to be a small and efficient library with a limited by generic specific set of features. 
-Thanks to libvips it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings 
-or Go native image processing package, and in some cases it's even 8x faster processing JPEG images. 
-It supports JPEG, PNG, WEBP, TIFF and Magick image formats.
+bimg is designed to be a small and efficient library with a specific but useful and generic set of features. 
+It uses internally libvips, which is typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
+bimg can read JPEG, PNG, WEBP, TIFF and Magick formats and it can output to JPEG, PNG and WEBP.
+
+It support common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and image conversion into multiple formats. 
+
+To getting started see the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
 
-`Work in progress`
+**Note**: bimg is still a beta package. PR and issues are highly appreciated
 
 ## Prerequisites
 
@@ -38,10 +41,10 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Enlarge
 - Crop
 - Rotate
-- Flip/Flop
+- Flip 
 - Extract area
-- Extract image metadata (size, format, profile, orientation...)
-- Image conversion to multiple formats
+- EXIF metadata (size, alpha channel, profile, orientation...)
+- Format conversion 
 
 ## Performance
 

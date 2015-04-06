@@ -6,15 +6,20 @@ import (
 )
 
 func Read(path string) ([]byte, error) {
-	data, err := os.Open(path)
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
-	buf, err := ioutil.ReadAll(data)
+	buf, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
 	return buf, nil
+}
+
+func Write(path string, buf []byte) error {
+	return ioutil.WriteFile(path, buf, 0644)
 }

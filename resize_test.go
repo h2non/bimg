@@ -7,17 +7,8 @@ import (
 )
 
 func TestResize(t *testing.T) {
-	options := Options{Width: 800, Height: 600, Crop: false, Rotate: 270}
-	img, err := os.Open("fixtures/test.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer img.Close()
-
-	buf, err := ioutil.ReadAll(img)
-	if err != nil {
-		t.Fatal(err)
-	}
+	options := Options{Width: 800, Height: 600}
+	buf, _ := Read("fixtures/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -28,7 +19,45 @@ func TestResize(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
-	err = ioutil.WriteFile("fixtures/test_out.jpg", newImg, 0644)
+	err = Write("fixtures/test_out.jpg", newImg)
+	if err != nil {
+		t.Fatal("Cannot save the image")
+	}
+}
+
+func TestRotate(t *testing.T) {
+	options := Options{Width: 800, Height: 600, Rotate: 270}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	if DetermineImageType(newImg) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	err = Write("fixtures/test_rotate_out.jpg", newImg)
+	if err != nil {
+		t.Fatal("Cannot save the image")
+	}
+}
+
+func TestInvalidRotate(t *testing.T) {
+	options := Options{Width: 800, Height: 600, Rotate: 111}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	if DetermineImageType(newImg) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	err = Write("fixtures/test_invalid_rotate_out.jpg", newImg)
 	if err != nil {
 		t.Fatal("Cannot save the image")
 	}
@@ -63,7 +92,7 @@ func TestConvert(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	err = ioutil.WriteFile("fixtures/test_out.png", newImg, 0644)
+	err = Write("fixtures/test_out.png", newImg)
 	if err != nil {
 		t.Fatal("Cannot save the image")
 	}
@@ -98,7 +127,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	err = ioutil.WriteFile("fixtures/transparent_out.png", newImg, 0644)
+	err = Write("fixtures/transparent_out.png", newImg)
 	if err != nil {
 		t.Fatal("Cannot save the image")
 	}

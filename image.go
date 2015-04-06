@@ -4,7 +4,7 @@ type Image struct {
 	buffer []byte
 }
 
-func (i *Image) Resize(width int, height int) ([]byte, error) {
+func (i *Image) Resize(width, height int) ([]byte, error) {
 	options := Options{
 		Width:  width,
 		Height: height,
@@ -12,29 +12,21 @@ func (i *Image) Resize(width int, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
-func (i *Image) Extract(top int, left int, width int, height int) ([]byte, error) {
+func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 	options := Options{
-		Width:  width,
-		Height: height,
-		Top:    top,
-		Left:   left,
+		Top:        top,
+		Left:       left,
+		AreaWidth:  width,
+		AreaHeight: height,
 	}
 	return i.Process(options)
 }
 
-func (i *Image) Crop(width int, height int) ([]byte, error) {
+func (i *Image) Crop(width, height int) ([]byte, error) {
 	options := Options{
 		Width:  width,
 		Height: height,
 		Crop:   true,
-	}
-	return i.Process(options)
-}
-
-func (i *Image) Thumbnail(width int, height int) ([]byte, error) {
-	options := Options{
-		Width:  width,
-		Height: height,
 	}
 	return i.Process(options)
 }
@@ -46,11 +38,6 @@ func (i *Image) Rotate(a Angle) ([]byte, error) {
 
 func (i *Image) Flip() ([]byte, error) {
 	options := Options{Flip: VERTICAL}
-	return i.Process(options)
-}
-
-func (i *Image) Flop() ([]byte, error) {
-	options := Options{Flip: HORIZONTAL}
 	return i.Process(options)
 }
 
