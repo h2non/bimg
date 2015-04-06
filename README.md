@@ -2,13 +2,13 @@
 
 Small but featured Go library for blazing fast image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings.
 
-bimg is designed to be a small and efficient library with a specific but useful and generic set of features. 
+bimg is designed to be a small and efficient library with a specific but useful set of features. 
 It uses internally libvips, which is typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 bimg can read JPEG, PNG, WEBP, TIFF and Magick formats and it can output to JPEG, PNG and WEBP.
 
-It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and conversion into multiple formats.
+It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate, flip or convert.
 
-To getting start take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
+To get started take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
 
@@ -43,8 +43,8 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Rotate
 - Flip 
 - Extract area
-- EXIF metadata (size, alpha channel, profile, orientation...)
 - Format conversion 
+- EXIF metadata (size, alpha channel, profile, orientation...)
 
 ## Performance
 
@@ -123,7 +123,7 @@ if bimg.NewImage(newImage).Type() == "png" {
 }
 ```
 
-#### Process
+#### Options
 
 ```go
 options := bimg.Options{
