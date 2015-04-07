@@ -19,6 +19,12 @@ var (
 	initialized bool = false
 )
 
+type vipsSaveOptions struct {
+	Quality     int
+	Compression int
+	Type        ImageType
+}
+
 func init() {
 	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
 		panic("unsupported old vips version!")
@@ -107,6 +113,38 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 	}
 
 	return image, imageType, nil
+}
+
+func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
+	var ptr unsafe.Pointer
+	length := C.size_t(0)
+	err := C.int(0)
+
+	defer C.g_object_unref(C.gpointer(image))
+
+	switch {
+	case o.Type == PNG:
+		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
+		break
+	case o.Type == WEBP:
+		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		break
+	default:
+		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		break
+	}
+
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+
+	buf := C.GoBytes(ptr, C.int(length))
+
+	// Cleanup
+	C.g_free(C.gpointer(ptr))
+	C.vips_error_clear()
+
+	return buf, nil
 }
 
 func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.struct__VipsImage, error) {
@@ -205,44 +243,6 @@ func vipsImageType(buf []byte) ImageType {
 	}
 
 	return imageType
-}
-
-type vipsSaveOptions struct {
-	Quality     int
-	Compression int
-	Type        ImageType
-}
-
-func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
-	var ptr unsafe.Pointer
-	length := C.size_t(0)
-	err := C.int(0)
-
-	defer C.g_object_unref(C.gpointer(image))
-
-	switch {
-	case o.Type == PNG:
-		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
-		break
-	case o.Type == WEBP:
-		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
-		break
-	default:
-		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
-		break
-	}
-
-	if int(err) != 0 {
-		return nil, catchVipsError()
-	}
-
-	buf := C.GoBytes(ptr, C.int(length))
-
-	// Cleanup
-	C.g_free(C.gpointer(ptr))
-	C.vips_error_clear()
-
-	return buf, nil
 }
 
 func vipsExifOrientation(image *C.struct__VipsImage) int {
