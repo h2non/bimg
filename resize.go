@@ -160,10 +160,11 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 
 func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
 	var err error
+	var direction Direction = -1
 
 	rotation, flip := calculateRotationAndFlip(image, o.Rotate)
 	if flip {
-		o.Flip = HORIZONTAL
+		o.Flip = flip
 	}
 	if rotation > D0 && o.Rotate == 0 {
 		o.Rotate = rotation
@@ -172,8 +173,15 @@ func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, e
 	if o.Rotate > 0 {
 		image, err = vipsRotate(image, getAngle(o.Rotate))
 	}
-	if o.Flip > 0 {
-		image, err = vipsFlip(image, o.Flip)
+
+	if o.Flip {
+		direction = HORIZONTAL
+	} else if o.Flop {
+		direction = VERTICAL
+	}
+
+	if direction != -1 {
+		image, err = vipsFlip(image, direction)
 	}
 
 	return image, err

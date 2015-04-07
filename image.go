@@ -82,13 +82,13 @@ func (i *Image) Rotate(a Angle) ([]byte, error) {
 
 // Flip the image about the vertical Y axis
 func (i *Image) Flip() ([]byte, error) {
-	options := Options{Flip: VERTICAL}
+	options := Options{Flip: true}
 	return i.Process(options)
 }
 
 // Flop the image about the horizontal X axis
 func (i *Image) Flop() ([]byte, error) {
-	options := Options{Flip: VERTICAL}
+	options := Options{Flop: true}
 	return i.Process(options)
 }
 

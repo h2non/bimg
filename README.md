@@ -43,6 +43,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Crop
 - Rotate
 - Flip
+- Flop
 - Thumbnail
 - Extract area
 - Format conversion
@@ -56,7 +57,7 @@ Here you can see some performance test comparisons for multiple scenarios:
 - [libvips speed and memory usage](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
 - [sharp performance tests](https://github.com/lovell/sharp#the-task) 
 
-#### bimg performance tests
+#### Benchmarks
 
 Tested using Go 1.4 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```

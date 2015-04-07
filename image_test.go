@@ -112,6 +112,14 @@ func TestImageFlip(t *testing.T) {
 	Write("fixtures/test_flip_out.jpg", buf)
 }
 
+func TestImageFlop(t *testing.T) {
+	buf, err := initImage("test.jpg").Flop()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_flop_out.jpg", buf)
+}
+
 func TestImageRotate(t *testing.T) {
 	buf, err := initImage("test_flip_out.jpg").Rotate(90)
 	if err != nil {

@@ -68,9 +68,10 @@ type Options struct {
 	Crop         bool
 	Enlarge      bool
 	Embed        bool
+	Flip         bool
+	Flop         bool
 	Type         ImageType
 	Rotate       Angle
-	Flip         Direction
 	Gravity      Gravity
 	Interpolator Interpolator
 }
