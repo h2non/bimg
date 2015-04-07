@@ -134,7 +134,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 	}
 }
 
-func benchmarkResize(file string, o Options, b *testing.B) {
+func runBenchmarkResize(file string, o Options, b *testing.B) {
 	buf, _ := Read(path.Join("fixtures", file))
 
 	for n := 0; n < b.N; n++ {
@@ -147,7 +147,7 @@ func BenchmarkResizeLargeJpeg(b *testing.B) {
 		Width:  800,
 		Height: 600,
 	}
-	benchmarkResize("test.jpg", options, b)
+	runBenchmarkResize("test.jpg", options, b)
 }
 
 func BenchmarkResizePng(b *testing.B) {
@@ -155,7 +155,7 @@ func BenchmarkResizePng(b *testing.B) {
 		Width:  200,
 		Height: 200,
 	}
-	benchmarkResize("test.png", options, b)
+	runBenchmarkResize("test.png", options, b)
 }
 
 func BenchmarkResizeWebP(b *testing.B) {
@@ -163,5 +163,29 @@ func BenchmarkResizeWebP(b *testing.B) {
 		Width:  200,
 		Height: 200,
 	}
-	benchmarkResize("test.webp", options, b)
+	runBenchmarkResize("test.webp", options, b)
+}
+
+func BenchmarkConvertToJpeg(b *testing.B) {
+	options := Options{Type: JPEG}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkCrop(b *testing.B) {
+	options := Options{
+		Width:  800,
+		Height: 600,
+		Crop:   true,
+	}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkExtract(b *testing.B) {
+	options := Options{
+		Top:        100,
+		Left:       50,
+		AreaWidth:  600,
+		AreaHeight: 480,
+	}
+	runBenchmarkResize("test.jpg", options, b)
 }

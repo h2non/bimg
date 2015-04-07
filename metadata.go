@@ -21,6 +21,7 @@ type ImageMetadata struct {
 	Size        ImageSize
 }
 
+// Get the image size by width and height pixels
 func Size(buf []byte) (ImageSize, error) {
 	metadata, err := Metadata(buf)
 	if err != nil {
@@ -33,6 +34,7 @@ func Size(buf []byte) (ImageSize, error) {
 	}, nil
 }
 
+// Extract the image metadata (size, type, alpha channel, profile, EXIF orientation...)
 func Metadata(buf []byte) (ImageMetadata, error) {
 	defer C.vips_thread_shutdown()
 

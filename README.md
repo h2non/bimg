@@ -42,7 +42,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Enlarge
 - Crop
 - Rotate
-- Flip 
+- Flip
 - Thumbnail
 - Extract area
 - Format conversion
@@ -56,7 +56,19 @@ Here you can see some performance test comparisons for multiple scenarios:
 - [libvips speed and memory usage](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
 - [sharp performance tests](https://github.com/lovell/sharp#the-task) 
 
-bimg performance tests coming soon!
+#### bimg performance tests
+
+Tested using Go 1.4 and libvips-7.42.3 in OSX i7 2.7Ghz
+```
+PASS
+BenchmarkResizeLargeJpeg  30    46652408 ns/op
+BenchmarkResizePng        20    57387902 ns/op
+BenchmarkResizeWebP       500    2453220 ns/op
+BenchmarkConvertToJpeg    30    35556414 ns/op
+BenchmarkCrop             30    51768475 ns/op
+BenchmarkExtract          30    50866406 ns/op
+ok 9.424s
+```
 
 ## API
 
@@ -193,6 +205,12 @@ func Resize(buf []byte, o Options) ([]byte, error)
 func Shutdown()
 ```
 
+#### func  Write
+
+```go
+func Write(path string, buf []byte) error
+```
+
 #### type Angle
 
 ```go
@@ -263,25 +281,19 @@ func (i *Image) Convert(t ImageType) ([]byte, error)
 #### func (*Image) Crop
 
 ```go
-func (i *Image) Crop(width int, height int) ([]byte, error)
+func (i *Image) Crop(width, height int) ([]byte, error)
 ```
 
 #### func (*Image) Extract
 
 ```go
-func (i *Image) Extract(top int, left int, width int, height int) ([]byte, error)
+func (i *Image) Extract(top, left, width, height int) ([]byte, error)
 ```
 
 #### func (*Image) Flip
 
 ```go
 func (i *Image) Flip() ([]byte, error)
-```
-
-#### func (*Image) Flop
-
-```go
-func (i *Image) Flop() ([]byte, error)
 ```
 
 #### func (*Image) Metadata
@@ -299,7 +311,7 @@ func (i *Image) Process(o Options) ([]byte, error)
 #### func (*Image) Resize
 
 ```go
-func (i *Image) Resize(width int, height int) ([]byte, error)
+func (i *Image) Resize(width, height int) ([]byte, error)
 ```
 
 #### func (*Image) Rotate
@@ -314,6 +326,12 @@ func (i *Image) Rotate(a Angle) ([]byte, error)
 func (i *Image) Size() (ImageSize, error)
 ```
 
+#### func (*Image) Thumbnail
+
+```go
+func (i *Image) Thumbnail(pixels int) ([]byte, error)
+```
+
 #### func (*Image) Type
 
 ```go
@@ -325,10 +343,11 @@ func (i *Image) Type() string
 ```go
 type ImageMetadata struct {
   Orientation int
+  Channels    int
   Alpha       bool
   Profile     bool
-  Space       int
   Type        string
+  Space       string
   Size        ImageSize
 }
 ```
@@ -407,6 +426,8 @@ func (i Interpolator) String() string
 type Options struct {
   Height       int
   Width        int
+  AreaHeight   int
+  AreaWidth    int
   Top          int
   Left         int
   Crop         bool
@@ -422,6 +443,7 @@ type Options struct {
   Interpolator Interpolator
 }
 ```
+
 
 ## License
 

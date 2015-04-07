@@ -11,12 +11,6 @@ enum types {
 	MAGICK
 };
 
-void
-vips_malloc_cb(VipsObject *object, char *buf)
-{
-	g_free(buf);
-};
-
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
@@ -156,11 +150,6 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 #endif
 	}
-
-	// Listen for "postclose" signal to delete input buffer
-	//if (out != NULL) {
-		//g_signal_connect(out, "postclose", G_CALLBACK(vips_malloc_cb), buf);
-	//}
 
 	return code;
 };
