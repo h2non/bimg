@@ -162,7 +162,7 @@ func TestFluentInterface(t *testing.T) {
 	}
 
 	data, _ := image.Metadata()
-	if data.Alpha != true {
+	if data.Alpha != false {
 		t.Fatal("Invalid alpha channel")
 	}
 	if data.Size.Width != 300 {
