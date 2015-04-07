@@ -7,7 +7,7 @@ It uses internally libvips, which requires a low memory footprint and it's typic
 
 It can read JPEG, PNG, WEBP, TIFF and Magick formats and it can output to JPEG, PNG and WEBP. It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and conversion between multiple formats. 
 
-To getting start take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
+For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great node.js package for image processing build by [Lovell Fuller](https://github.com/lovell).
 
