@@ -8,7 +8,6 @@ import "C"
 
 import (
 	"errors"
-	//"fmt"
 	"runtime"
 	"strings"
 	"sync"
@@ -20,42 +19,49 @@ var (
 	initialized bool = false
 )
 
-type vipsImage C.struct__VipsImage
-
 func init() {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-
 	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
-		panic("unsupported old vips version")
+		panic("unsupported old vips version!")
 	}
 
 	Initialize()
-
-	C.vips_concurrency_set(0)                   // default
-	C.vips_cache_set_max_mem(100 * 1024 * 1024) // 100 MB
-	C.vips_cache_set_max(500)                   // 500 operations
 }
 
+// Explicit thread-safe start of libvips.
+// You should only call this function if you previously shutdown libvips
 func Initialize() {
+	m.Lock()
+	runtime.LockOSThread()
+	defer m.Unlock()
+	defer runtime.UnlockOSThread()
+
 	err := C.vips_init(C.CString("bimg"))
 	if err != 0 {
 		Shutdown()
 		panic("unable to start vips!")
 	}
 
-	m.Lock()
-	defer m.Unlock()
+	C.vips_concurrency_set(0)                   // default
+	C.vips_cache_set_max_mem(100 * 1024 * 1024) // 100 MB
+	C.vips_cache_set_max(500)                   // 500 operations
 	initialized = true
 }
 
+// Explicit thread-safe libvips shutdown. Call this to drop caches.
+// If libvips was already initialized, the function is no-op
 func Shutdown() {
+	m.Lock()
+	defer m.Unlock()
+
 	if initialized == true {
-		m.Lock()
-		defer m.Unlock()
 		C.vips_shutdown()
 		initialized = false
 	}
+}
+
+// Output to stdout collected data for debugging purposes
+func VipsDebug() {
+	C.im__print_all()
 }
 
 func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
@@ -197,26 +203,6 @@ func vipsImageType(buf []byte) ImageType {
 	return imageType
 }
 
-func vipsExifOrientation(image *C.struct__VipsImage) int {
-	return int(C.vips_exif_orientation(image))
-}
-
-func vipsHasAlpha(image *C.struct__VipsImage) bool {
-	return int(C.has_alpha_channel(image)) > 0
-}
-
-func vipsHasProfile(image *C.struct__VipsImage) bool {
-	return int(C.has_profile_embed(image)) > 0
-}
-
-func vipsWindowSize(name string) float64 {
-	return float64(C.interpolator_window_size(C.CString(name)))
-}
-
-func vipsSpace(image *C.struct__VipsImage) string {
-	return C.GoString(C.vips_enum_nick_bridge(image))
-}
-
 type vipsSaveOptions struct {
 	Quality     int
 	Compression int
@@ -255,9 +241,30 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
+func vipsExifOrientation(image *C.struct__VipsImage) int {
+	return int(C.vips_exif_orientation(image))
+}
+
+func vipsHasAlpha(image *C.struct__VipsImage) bool {
+	return int(C.has_alpha_channel(image)) > 0
+}
+
+func vipsHasProfile(image *C.struct__VipsImage) bool {
+	return int(C.has_profile_embed(image)) > 0
+}
+
+func vipsWindowSize(name string) float64 {
+	return float64(C.interpolator_window_size(C.CString(name)))
+}
+
+func vipsSpace(image *C.struct__VipsImage) string {
+	return C.GoString(C.vips_enum_nick_bridge(image))
+}
+
 func catchVipsError() error {
 	s := C.GoString(C.vips_error_buffer())
 	C.vips_error_clear()
 	C.vips_thread_shutdown()
+	// clean image memory buffer?
 	return errors.New(s)
 }

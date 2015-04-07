@@ -151,8 +151,10 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 	} else if (imageType == TIFF) {
 		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+#if (VIPS_MAJOR_VERSION >= 8)
 	} else if (imageType == MAGICK) {
 		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+#endif
 	}
 
 	// Listen for "postclose" signal to delete input buffer

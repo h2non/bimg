@@ -4,6 +4,7 @@ type Image struct {
 	buffer []byte
 }
 
+// Resize the image to fixed width and height
 func (i *Image) Resize(width, height int) ([]byte, error) {
 	options := Options{
 		Width:  width,
@@ -12,6 +13,7 @@ func (i *Image) Resize(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Extract area from the by X/Y axis
 func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 	options := Options{
 		Top:        top,
@@ -22,6 +24,17 @@ func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Enlarge the image from the by X/Y axis
+func (i *Image) Enlarge(width, height int) ([]byte, error) {
+	options := Options{
+		Width:   width,
+		Height:  height,
+		Enlarge: true,
+	}
+	return i.Process(options)
+}
+
+// Crop an image by width and height
 func (i *Image) Crop(width, height int) ([]byte, error) {
 	options := Options{
 		Width:  width,
@@ -31,6 +44,25 @@ func (i *Image) Crop(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Crop an image by width (auto height)
+func (i *Image) CropByWidth(width int) ([]byte, error) {
+	options := Options{
+		Width: width,
+		Crop:  true,
+	}
+	return i.Process(options)
+}
+
+// Crop an image by height (auto width)
+func (i *Image) CropByHeight(height int) ([]byte, error) {
+	options := Options{
+		Height: height,
+		Crop:   true,
+	}
+	return i.Process(options)
+}
+
+// Thumbnail the image by the a given width by aspect ratio 4:4
 func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	options := Options{
 		Width:   pixels,
@@ -41,21 +73,25 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Rotate the image by given angle degrees (0, 90, 180 or 270)
 func (i *Image) Rotate(a Angle) ([]byte, error) {
 	options := Options{Rotate: a}
 	return i.Process(options)
 }
 
+// Flip the image about the vertical Y axis
 func (i *Image) Flip() ([]byte, error) {
 	options := Options{Flip: VERTICAL}
 	return i.Process(options)
 }
 
+// Flop the image about the horizontal X axis
 func (i *Image) Convert(t ImageType) ([]byte, error) {
 	options := Options{Type: t}
 	return i.Process(options)
 }
 
+// Transform the image by custom options
 func (i *Image) Process(o Options) ([]byte, error) {
 	image, err := Resize(i.buffer, o)
 	if err != nil {
@@ -65,18 +101,22 @@ func (i *Image) Process(o Options) ([]byte, error) {
 	return image, nil
 }
 
-func (i *Image) Type() string {
-	return DetermineImageTypeName(i.buffer)
-}
-
+// Get image metadata (size, alpha channel, profile, EXIF rotation)
 func (i *Image) Metadata() (ImageMetadata, error) {
 	return Metadata(i.buffer)
 }
 
+// Get image type format (jpeg, png, webp, tiff)
+func (i *Image) Type() string {
+	return DetermineImageTypeName(i.buffer)
+}
+
+// Get image size
 func (i *Image) Size() (ImageSize, error) {
 	return Size(i.buffer)
 }
 
+// Creates a new image
 func NewImage(buf []byte) *Image {
 	return &Image{buf}
 }

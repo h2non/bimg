@@ -45,14 +45,14 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	inHeight := int(image.Ysize)
 
 	// image calculations
-	factor := imageCalculations(o, inWidth, inHeight)
+	factor := imageCalculations(&o, inWidth, inHeight)
 	shrink := int(math.Max(math.Floor(factor), 1))
 	residual := float64(shrink) / factor
 
 	// Do not enlarge the output if the input width *or* height are already less than the required dimensions
 	if o.Enlarge == false {
 		if inWidth < o.Width && inHeight < o.Height {
-			factor = 1
+			factor = 1.0
 			shrink = 1
 			residual = 0
 			o.Width = inWidth
@@ -169,7 +169,6 @@ func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, e
 	if o.Rotate > 0 {
 		image, err = vipsRotate(image, getAngle(o.Rotate))
 	}
-
 	if o.Flip > 0 {
 		image, err = vipsFlip(image, o.Flip)
 	}
@@ -223,7 +222,7 @@ func shrinkJpegImage(buf []byte, input *C.struct__VipsImage, factor float64, shr
 	return image, factor, err
 }
 
-func imageCalculations(o Options, inWidth, inHeight int) float64 {
+func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	factor := 1.0
 	xfactor := float64(inWidth) / float64(o.Width)
 	yfactor := float64(inHeight) / float64(o.Height)

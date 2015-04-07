@@ -6,7 +6,7 @@ bimg is designed to be a small and efficient library with a generic and useful s
 It uses internally libvips, which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-It can read JPEG, PNG, WEBP, TIFF and Magick formats and it can output to JPEG, PNG and WEBP. It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and conversion between multiple formats. 
+It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP. It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and conversion between multiple formats. 
 
 For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
