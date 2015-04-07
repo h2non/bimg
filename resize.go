@@ -82,7 +82,10 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Transform image if necessary
-	if o.Width != inWidth || o.Height != inHeight {
+	debug(">>>>> Resolution %dx%d -> %dx%d", o.Width, o.Height, inWidth, inHeight)
+
+	shouldExtract := o.Width != inWidth || o.Height != inHeight || o.AreaWidth > 0 || o.AreaHeight > 0
+	if shouldExtract {
 		// Use vips_shrink with the integral reduction
 		if shrink > 1 {
 			image, residual, err = shrinkImage(image, o, residual, shrink)

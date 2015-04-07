@@ -62,12 +62,12 @@ type Options struct {
 	AreaWidth    int
 	Top          int
 	Left         int
-	Crop         bool
-	Enlarge      bool
 	Extend       int
-	Embed        bool
 	Quality      int
 	Compression  int
+	Crop         bool
+	Enlarge      bool
+	Embed        bool
 	Type         ImageType
 	Rotate       Angle
 	Flip         Direction

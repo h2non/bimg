@@ -1,6 +1,7 @@
 package bimg
 
 import (
+	"fmt"
 	"path"
 	"testing"
 )
@@ -11,8 +12,9 @@ func TestImageResize(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 300, 240) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 300, 240)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_resize_out.jpg", buf)
@@ -24,21 +26,23 @@ func TestImageExtract(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 300, 300) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 300, 300)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_extract_out.jpg", buf)
 }
 
 func TestImageEnlarge(t *testing.T) {
-	buf, err := initImage("test.png").Enlarge(500, 380)
+	buf, err := initImage("test.png").Enlarge(500, 375)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 500, 380) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 500, 375)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_enlarge_out.jpg", buf)
@@ -50,8 +54,9 @@ func TestImageCrop(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 800, 600) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_crop_out.jpg", buf)
@@ -63,8 +68,9 @@ func TestImageCropByWidth(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 600, 375) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 600, 375)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_crop_width_out.jpg", buf)
@@ -76,8 +82,9 @@ func TestImageCropByHeight(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 800, 480) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 480, 300)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_crop_height_out.jpg", buf)
@@ -89,8 +96,9 @@ func TestImageThumbnail(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	if assertSize(buf, 100, 100) {
-		t.Error("Invalid image size")
+	err = assertSize(buf, 100, 100)
+	if err != nil {
+		t.Error(err)
 	}
 
 	Write("fixtures/test_thumbnail_out.jpg", buf)
@@ -141,13 +149,13 @@ func initImage(file string) *Image {
 	return NewImage(buf)
 }
 
-func assertSize(buf []byte, width, height int) bool {
+func assertSize(buf []byte, width, height int) error {
 	size, err := NewImage(buf).Size()
 	if err != nil {
-		return false
+		return err
 	}
-	if size.Width != 220 || size.Height != 300 {
-		return false
+	if size.Width != width || size.Height != height {
+		return fmt.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
-	return true
+	return nil
 }

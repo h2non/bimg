@@ -9,6 +9,7 @@ func (i *Image) Resize(width, height int) ([]byte, error) {
 	options := Options{
 		Width:  width,
 		Height: height,
+		Embed:  true,
 	}
 	return i.Process(options)
 }
