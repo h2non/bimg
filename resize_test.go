@@ -157,3 +157,11 @@ func BenchmarkResizePng(b *testing.B) {
 	}
 	benchmarkResize("test.png", options, b)
 }
+
+func BenchmarkResizeWebP(b *testing.B) {
+	options := Options{
+		Width:  200,
+		Height: 200,
+	}
+	benchmarkResize("test.webp", options, b)
+}
