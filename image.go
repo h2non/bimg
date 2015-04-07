@@ -31,6 +31,16 @@ func (i *Image) Crop(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+func (i *Image) Thumbnail(pixels int) ([]byte, error) {
+	options := Options{
+		Width:   pixels,
+		Height:  pixels,
+		Crop:    true,
+		Quality: 95,
+	}
+	return i.Process(options)
+}
+
 func (i *Image) Rotate(a Angle) ([]byte, error) {
 	options := Options{Rotate: a}
 	return i.Process(options)

@@ -37,6 +37,14 @@ func TestImageFlip(t *testing.T) {
 	Write("fixtures/test_flip_out.jpg", buf)
 }
 
+func TestImageThumbnail(t *testing.T) {
+	buf, err := initImage("test.jpg").Thumbnail(100)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_thumbnail_out.jpg", buf)
+}
+
 func TestImageRotate(t *testing.T) {
 	buf, err := initImage("test_flip_out.jpg").Rotate(90)
 	if err != nil {

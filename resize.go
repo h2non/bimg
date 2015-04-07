@@ -227,6 +227,7 @@ func imageCalculations(o Options, inWidth, inHeight int) float64 {
 	factor := 1.0
 	xfactor := float64(inWidth) / float64(o.Width)
 	yfactor := float64(inHeight) / float64(o.Height)
+	defer debug("Image calculations: %dx%d", o.Width, o.Height)
 
 	switch {
 	// Fixed width and height
@@ -250,8 +251,6 @@ func imageCalculations(o Options, inWidth, inHeight int) float64 {
 		o.Height = inHeight
 		break
 	}
-
-	debug("Resolution %dx%d", o.Width, o.Height)
 
 	return factor
 }

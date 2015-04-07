@@ -39,6 +39,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Crop
 - Rotate
 - Flip 
+- Thumbnail
 - Extract area
 - Format conversion
 - EXIF metadata (size, alpha channel, profile, orientation...)

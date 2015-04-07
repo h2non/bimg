@@ -3,6 +3,7 @@ package bimg
 import (
 	"io/ioutil"
 	"os"
+	"path"
 	"testing"
 )
 
@@ -131,4 +132,28 @@ func TestResizePngWithTransparency(t *testing.T) {
 	if err != nil {
 		t.Fatal("Cannot save the image")
 	}
+}
+
+func benchmarkResize(file string, o Options, b *testing.B) {
+	buf, _ := Read(path.Join("fixtures", file))
+
+	for n := 0; n < b.N; n++ {
+		Resize(buf, o)
+	}
+}
+
+func BenchmarkResizeLargeJpeg(b *testing.B) {
+	options := Options{
+		Width:  800,
+		Height: 600,
+	}
+	benchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkResizePng(b *testing.B) {
+	options := Options{
+		Width:  200,
+		Height: 200,
+	}
+	benchmarkResize("test.png", options, b)
 }

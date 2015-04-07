@@ -8,6 +8,7 @@ import "C"
 
 import (
 	"errors"
+	//"fmt"
 	"runtime"
 	"strings"
 	"sync"
@@ -65,7 +66,6 @@ func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, 
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	defer C.g_object_unref(C.gpointer(out))
 
 	return out, nil
 }
@@ -78,7 +78,6 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	defer C.g_object_unref(C.gpointer(out))
 
 	return out, nil
 }
@@ -158,8 +157,8 @@ func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*
 	istring := C.CString(i.String())
 	interpolator := C.vips_interpolate_new(istring)
 
-	defer C.g_object_unref(C.gpointer(input))
 	defer C.free(unsafe.Pointer(istring))
+	defer C.g_object_unref(C.gpointer(input))
 
 	// Perform affine transformation
 	err := C.vips_affine_interpolator(input, &image, C.double(residual), 0, 0, C.double(residual), interpolator)
@@ -229,9 +228,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	length := C.size_t(0)
 	err := C.int(0)
 
-	// cleanup
 	defer C.g_object_unref(C.gpointer(image))
-	defer C.g_free(C.gpointer(ptr))
 
 	switch {
 	case o.Type == PNG:
@@ -245,11 +242,14 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 		break
 	}
 
-	if err != 0 {
+	if int(err) != 0 {
 		return nil, catchVipsError()
 	}
 
 	buf := C.GoBytes(ptr, C.int(length))
+
+	// Cleanup
+	C.g_free(C.gpointer(ptr))
 	C.vips_error_clear()
 
 	return buf, nil
