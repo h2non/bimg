@@ -30,7 +30,7 @@ vips_flip_bridge(VipsImage *in, VipsImage **out, int direction)
 };
 
 int
-vips_shrink_0(VipsImage *in, VipsImage **out, double xshrink, double yshrink)
+vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink)
 {
 	return vips_shrink(in, out, xshrink, yshrink, NULL);
 };

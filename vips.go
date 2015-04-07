@@ -179,7 +179,7 @@ func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, e
 	var image *C.struct__VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_shrink_0(input, &image, C.double(float64(shrink)), C.double(float64(shrink)))
+	err := C.vips_shrink_bridge(input, &image, C.double(float64(shrink)), C.double(float64(shrink)))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
