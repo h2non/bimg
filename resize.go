@@ -334,5 +334,5 @@ func getAngle(angle Angle) Angle {
 	if divisor != 0 {
 		angle = angle - divisor
 	}
-	return angle
+	return Angle(math.Min(float64(angle), 270))
 }

@@ -70,8 +70,8 @@ type Options struct {
 	Embed        bool
 	Flip         bool
 	Flop         bool
-	Type         ImageType
 	Rotate       Angle
 	Gravity      Gravity
+	Type         ImageType
 	Interpolator Interpolator
 }
