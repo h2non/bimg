@@ -163,6 +163,33 @@ if err != nil {
 bimg.Write("new.jpg", newImage)
 ```
 
+#### Fluent interface
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+image := bimg.NewImage(buffer)
+
+// first crop image
+_, err := image.CropByWidth(300)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+// then flip it
+newImage, err := image.Flip()
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+// save the cropped and flipped image
+bimg.Write("new.jpg", newImage)
+```
+
+
 #### func  DetermineImageTypeName
 
 ```go

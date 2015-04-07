@@ -144,6 +144,37 @@ func TestImageMetadata(t *testing.T) {
 	}
 }
 
+func TestFluentInterface(t *testing.T) {
+	image := initImage("test.jpg")
+	_, err := image.CropByWidth(300)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	_, err = image.Flip()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	buf, err := image.Convert(PNG)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	data, _ := image.Metadata()
+	if data.Alpha != true {
+		t.Fatal("Invalid alpha channel")
+	}
+	if data.Size.Width != 300 {
+		t.Fatal("Invalid width size")
+	}
+	if data.Type != "png" {
+		t.Fatal("Invalid image type")
+	}
+
+	Write("fixtures/test_image_fluent_out.png", buf)
+}
+
 func initImage(file string) *Image {
 	buf, _ := Read(path.Join("fixtures", file))
 	return NewImage(buf)

@@ -87,6 +87,12 @@ func (i *Image) Flip() ([]byte, error) {
 }
 
 // Flop the image about the horizontal X axis
+func (i *Image) Flop() ([]byte, error) {
+	options := Options{Flip: VERTICAL}
+	return i.Process(options)
+}
+
+// Convert image to another format
 func (i *Image) Convert(t ImageType) ([]byte, error) {
 	options := Options{Type: t}
 	return i.Process(options)
