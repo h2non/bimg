@@ -20,7 +20,7 @@ bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), a great n
 ## Installation
 
 ```bash
-go get gopkg.in/h2non/bimg.v0
+go get -u gopkg.in/h2non/bimg.v0
 ```
 
 ### libvips
