@@ -62,7 +62,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	// Try to use libjpeg shrink-on-load
 	if imageType == JPEG && shrink >= 2 {
-		tmpImage, factor, err := shrinkJpegImage(buf, factor, shrink)
+		tmpImage, factor, err := shrinkJpegImage(buf, image, factor, shrink)
 		if err != nil {
 			return nil, err
 		}
@@ -197,7 +197,7 @@ func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink
 	return image, residual, nil
 }
 
-func shrinkJpegImage(buf []byte, factor float64, shrink int) (*C.struct__VipsImage, float64, error) {
+func shrinkJpegImage(buf []byte, input *C.struct__VipsImage, factor float64, shrink int) (*C.struct__VipsImage, float64, error) {
 	var image *C.struct__VipsImage
 	var err error
 	shrinkOnLoad := 1
@@ -217,7 +217,7 @@ func shrinkJpegImage(buf []byte, factor float64, shrink int) (*C.struct__VipsIma
 
 	// Reload input using shrink-on-load
 	if shrinkOnLoad > 1 {
-		image, err = vipsShrinkJpeg(buf, shrinkOnLoad)
+		image, err = vipsShrinkJpeg(buf, input, shrinkOnLoad)
 	}
 
 	return image, factor, err

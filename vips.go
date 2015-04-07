@@ -59,9 +59,9 @@ func Shutdown() {
 
 func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_rotate(image, &out, C.int(angle))
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -72,9 +72,9 @@ func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, 
 
 func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_flip_bridge(image, &out, C.int(direction))
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -106,9 +106,9 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 
 func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.struct__VipsImage, error) {
 	var buf *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_extract_area_bridge(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -116,11 +116,11 @@ func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.s
 	return buf, nil
 }
 
-func vipsShrinkJpeg(buf []byte, shrink int) (*C.struct__VipsImage, error) {
+func vipsShrinkJpeg(buf []byte, input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_jpegload_buffer_shrink(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), &image, C.int(shrink))
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -130,9 +130,9 @@ func vipsShrinkJpeg(buf []byte, shrink int) (*C.struct__VipsImage, error) {
 
 func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_shrink_0(input, &image, C.double(float64(shrink)), C.double(float64(shrink)))
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -142,9 +142,9 @@ func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, e
 
 func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
-	C.g_object_unref(C.gpointer(image))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -158,10 +158,11 @@ func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*
 	istring := C.CString(i.String())
 	interpolator := C.vips_interpolate_new(istring)
 
+	defer C.g_object_unref(C.gpointer(input))
+	defer C.free(unsafe.Pointer(istring))
+
 	// Perform affine transformation
 	err := C.vips_affine_interpolator(input, &image, C.double(residual), 0, 0, C.double(residual), interpolator)
-	C.g_object_unref(C.gpointer(image))
-	C.free(unsafe.Pointer(istring))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
