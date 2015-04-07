@@ -128,7 +128,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 	return vips_pngsave_buffer(in, buf, len, "strip", FALSE, "compression", compression,
 		"interlace", interlace, "filter", VIPS_FOREIGN_PNG_FILTER_NONE, NULL);
 #else
-	return vips_pngsave_buffer(image, buf, len, "strip", FALSE, "compression", compression,
+	return vips_pngsave_buffer(in, buf, len, "strip", FALSE, "compression", compression,
 		"interlace", interlace, NULL);
 #endif
 };
@@ -151,10 +151,8 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
 	} else if (imageType == TIFF) {
 		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-#if (VIPS_MAJOR_VERSION >= 8)
 	} else if (imageType == MAGICK) {
 		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
-#endif
 	}
 
 	// Listen for "postclose" signal to delete input buffer
