@@ -143,7 +143,7 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend)
 		break
-	case o.Top > 0 && o.Left > 0:
+	case o.Top > 0 || o.Left > 0:
 		if o.AreaWidth == 0 || o.AreaHeight == 0 {
 			err = errors.New(fmt.Sprintf("Invalid area to extract %dx%d", o.AreaWidth, o.AreaHeight))
 		} else {
