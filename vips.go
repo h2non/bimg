@@ -113,6 +113,10 @@ func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.s
 	var buf *C.struct__VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
+	if width > MAX_SIZE || height > MAX_SIZE {
+		return nil, errors.New("Maximum image size exceeded")
+	}
+
 	err := C.vips_extract_area_bridge(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
 	if err != 0 {
 		return nil, catchVipsError()

@@ -6,7 +6,10 @@ package bimg
 */
 import "C"
 
-const QUALITY = 80
+const (
+	QUALITY  = 80
+	MAX_SIZE = 16383
+)
 
 type Gravity int
 
