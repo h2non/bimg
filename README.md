@@ -127,7 +127,7 @@ if bimg.NewImage(newImage).Type() == "png" {
 
 #### Custom options
 
-See [Options](https://godoc.org/github.com/h2non/bimg#Options) struct to see all available fields
+See [Options](https://godoc.org/github.com/h2non/bimg#Options) struct to discover all the available fields
 
 ```go
 options := bimg.Options{
