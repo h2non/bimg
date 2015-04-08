@@ -104,6 +104,31 @@ func TestImageThumbnail(t *testing.T) {
 	Write("fixtures/test_thumbnail_out.jpg", buf)
 }
 
+func TestImageWatermark(t *testing.T) {
+	image := initImage("test.jpg")
+	_, err := image.Crop(800, 600, NORTH)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	insert, _ := Read("fixtures/watermark.png")
+	buf, err := image.Watermark(insert, 10, 10)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		//t.Error(err)
+	}
+
+	if DetermineImageType(buf) != PNG {
+		//t.Fatal("Image is not jpeg")
+	}
+
+	Write("fixtures/test_watermark_out.jpg", buf)
+}
+
 func TestImageFlip(t *testing.T) {
 	buf, err := initImage("test.jpg").Flip()
 	if err != nil {

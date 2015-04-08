@@ -55,6 +55,12 @@ const (
 	VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
 )
 
+type Insert struct {
+	Top    int
+	Left   int
+	Buffer []byte
+}
+
 type Options struct {
 	Height       int
 	Width        int
@@ -70,7 +76,9 @@ type Options struct {
 	Embed        bool
 	Flip         bool
 	Flop         bool
+	NoAutoRotate bool
 	Rotate       Angle
+	Insert       Insert
 	Gravity      Gravity
 	Type         ImageType
 	Interpolator Interpolator

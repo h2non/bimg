@@ -8,7 +8,6 @@ import "C"
 
 import (
 	"errors"
-	"fmt"
 	"math"
 )
 
@@ -107,7 +106,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
-	// Rotate / flip image if necessary based on EXIF metadata
+	// Rotate / flip image if necessary
 	image, err = rotateImage(image, o)
 	if err != nil {
 		return nil, err
@@ -117,6 +116,12 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		Quality:     o.Quality,
 		Type:        o.Type,
 		Compression: o.Compression,
+	}
+
+	// Insert an image if necessary
+	image, err = insertImage(image, imageType, o.Insert, saveOptions)
+	if err != nil {
+		return nil, err
 	}
 
 	// Finally save as buffer
@@ -146,7 +151,7 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 		break
 	case o.Top > 0 || o.Left > 0:
 		if o.AreaWidth == 0 || o.AreaHeight == 0 {
-			err = errors.New(fmt.Sprintf("Invalid area to extract %dx%d", o.AreaWidth, o.AreaHeight))
+			err = errors.New("Area to extract cannot be 0")
 		} else {
 			image, err = vipsExtract(image, o.Left, o.Top, o.AreaWidth, o.AreaHeight)
 		}
@@ -160,12 +165,14 @@ func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, e
 	var err error
 	var direction Direction = -1
 
-	rotation, flip := calculateRotationAndFlip(image, o.Rotate)
-	if flip {
-		o.Flip = flip
-	}
-	if rotation > D0 && o.Rotate == 0 {
-		o.Rotate = rotation
+	if o.NoAutoRotate == false {
+		rotation, flip := calculateRotationAndFlip(image, o.Rotate)
+		if flip {
+			o.Flip = flip
+		}
+		if rotation > D0 && o.Rotate == 0 {
+			o.Rotate = rotation
+		}
 	}
 
 	if o.Rotate > 0 {
@@ -183,6 +190,36 @@ func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, e
 	}
 
 	return image, err
+}
+
+// WIP
+func insertImage(image *C.struct__VipsImage, t ImageType, o Insert, save vipsSaveOptions) (*C.struct__VipsImage, error) {
+	if len(o.Buffer) == 0 {
+		return image, nil
+	}
+
+	insert, imageType, err := vipsRead(o.Buffer)
+	if err != nil {
+		return nil, err
+	}
+
+	if imageType != t {
+		save.Type = t
+		debug("Image type insert: %s", save.Type)
+		buf, err := vipsSave(insert, save)
+		if err != nil {
+			return nil, err
+		}
+		insert, imageType, err = vipsRead(buf)
+		debug("New type image: %s", imageType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	debug("Insert images: %#v", insert)
+
+	return vipsInsert(image, insert, o.Left, o.Top)
 }
 
 func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {
@@ -235,7 +272,6 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	factor := 1.0
 	xfactor := float64(inWidth) / float64(o.Width)
 	yfactor := float64(inHeight) / float64(o.Height)
-	defer debug("Image calculations: %dx%d", o.Width, o.Height)
 
 	switch {
 	// Fixed width and height

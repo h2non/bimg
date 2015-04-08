@@ -25,6 +25,12 @@ type vipsSaveOptions struct {
 	Type        ImageType
 }
 
+type VipsMemoryInfo struct {
+	Memory          int64
+	MemoryHighwater int64
+	Allocations     int64
+}
+
 func init() {
 	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
 		panic("unsupported old vips version!")
@@ -34,7 +40,7 @@ func init() {
 }
 
 // Explicit thread-safe start of libvips.
-// You should only call this function if you previously shutdown libvips
+// Only call this function if you've previously shutdown libvips
 func Initialize() {
 	m.Lock()
 	runtime.LockOSThread()
@@ -70,6 +76,15 @@ func VipsDebug() {
 	C.im__print_all()
 }
 
+// Get the allocated memory by vips in bytes
+func VipsMemory() VipsMemoryInfo {
+	return VipsMemoryInfo{
+		Memory:          int64(C.vips_tracked_get_mem()),
+		MemoryHighwater: int64(C.vips_tracked_get_mem_highwater()),
+		Allocations:     int64(C.vips_tracked_get_allocs()),
+	}
+}
+
 func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
 	defer C.g_object_unref(C.gpointer(image))
@@ -94,20 +109,33 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 	return out, nil
 }
 
+func vipsInsert(image *C.struct__VipsImage, sub *C.struct__VipsImage, left, top int) (*C.struct__VipsImage, error) {
+	var out *C.struct__VipsImage
+	var cache *C.struct__VipsImage
+
+	defer C.g_object_unref(C.gpointer(image))
+	defer C.g_object_unref(C.gpointer(sub))
+
+	err = C.vips_insert_bridge(image, sub, &out, C.int(left), C.int(top))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
 func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 	var image *C.struct__VipsImage
 	imageType := vipsImageType(buf)
 
 	if imageType == UNKNOWN {
-		return nil, UNKNOWN, errors.New("Input buffer contains unsupported image format")
+		return nil, UNKNOWN, errors.New("Unsupported image format")
 	}
 
-	// feed it
 	length := C.size_t(len(buf))
 	imageBuf := unsafe.Pointer(&buf[0])
-	imageTypeC := C.int(imageType)
 
-	err := C.vips_init_image(imageBuf, length, imageTypeC, &image)
+	err := C.vips_init_image(imageBuf, length, C.int(imageType), &image)
 	if err != 0 {
 		return nil, UNKNOWN, catchVipsError()
 	}
@@ -201,7 +229,6 @@ func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int)
 
 func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
-
 	istring := C.CString(i.String())
 	interpolator := C.vips_interpolate_new(istring)
 
@@ -220,6 +247,10 @@ func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*
 
 func vipsImageType(buf []byte) ImageType {
 	imageType := UNKNOWN
+
+	if len(buf) == 0 {
+		return imageType
+	}
 
 	length := C.size_t(len(buf))
 	imageBuf := unsafe.Pointer(&buf[0])
@@ -270,6 +301,5 @@ func catchVipsError() error {
 	s := C.GoString(C.vips_error_buffer())
 	C.vips_error_clear()
 	C.vips_thread_shutdown()
-	// clean image memory buffer?
 	return errors.New(s)
 }

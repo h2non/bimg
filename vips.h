@@ -92,6 +92,18 @@ vips_enum_nick_bridge(VipsImage *image) {
 };
 
 int
+vips_insert_bridge(VipsImage *in, VipsImage *sub, VipsImage **out, int left, int top)
+{
+	return vips_insert(in, sub, out, left, top, NULL);
+};
+
+int
+vips_bandjoin2_bridge(VipsImage *in, VipsImage *sub, VipsImage **out)
+{
+	return vips_bandjoin2(in, sub, out, NULL);
+};
+
+int
 vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
 {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);

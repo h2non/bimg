@@ -75,6 +75,23 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Insert an image. Alias to Watermark()
+func (i *Image) Insert(image []byte, left, top int) ([]byte, error) {
+	return i.Watermark(image, left, top)
+}
+
+// Insert an image to the existent one as watermark
+func (i *Image) Watermark(image []byte, left, top int) ([]byte, error) {
+	options := Options{
+		Insert: Insert{
+			Buffer: image,
+			Top:    top,
+			Left:   left,
+		},
+	}
+	return i.Process(options)
+}
+
 // Rotate the image by given angle degrees (0, 90, 180 or 270)
 func (i *Image) Rotate(a Angle) ([]byte, error) {
 	options := Options{Rotate: a}

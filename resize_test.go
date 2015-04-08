@@ -175,12 +175,11 @@ func BenchmarkCrop(b *testing.B) {
 	options := Options{
 		Width:  800,
 		Height: 600,
-		Crop:   true,
 	}
 	runBenchmarkResize("test.jpg", options, b)
 }
 
-func BenchmarkExtract(b *testing.B) {
+func BenchmarkExtractJpeg(b *testing.B) {
 	options := Options{
 		Top:        100,
 		Left:       50,
