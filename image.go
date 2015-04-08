@@ -35,12 +35,13 @@ func (i *Image) Enlarge(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Crop an image by width and height
-func (i *Image) Crop(width, height int) ([]byte, error) {
+// Crop the image to the exact size specified
+func (i *Image) Crop(width, height int, gravity Gravity) ([]byte, error) {
 	options := Options{
-		Width:  width,
-		Height: height,
-		Crop:   true,
+		Width:   width,
+		Height:  height,
+		Gravity: gravity,
+		Crop:    true,
 	}
 	return i.Process(options)
 }

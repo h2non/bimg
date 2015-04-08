@@ -49,7 +49,7 @@ func TestImageEnlarge(t *testing.T) {
 }
 
 func TestImageCrop(t *testing.T) {
-	buf, err := initImage("test.jpg").Crop(800, 600)
+	buf, err := initImage("test.jpg").Crop(800, 600, NORTH)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
