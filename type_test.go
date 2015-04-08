@@ -48,3 +48,35 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		}
 	}
 }
+
+func TestIsTypeSupported(t *testing.T) {
+	types := []struct {
+		name ImageType
+	}{
+		{JPEG}, {PNG}, {WEBP},
+	}
+
+	for _, n := range types {
+		if IsTypeSupported(n.name) == false {
+			t.Fatal("Image type is not valid")
+		}
+	}
+}
+
+func TestIsTypeNameSupported(t *testing.T) {
+	types := []struct {
+		name     string
+		expected bool
+	}{
+		{"jpg", true},
+		{"png", true},
+		{"webp", true},
+		{"gif", false},
+	}
+
+	for _, n := range types {
+		if IsTypeNameSupported(n.name) != n.expected {
+			t.Fatal("Image type is not valid")
+		}
+	}
+}
