@@ -124,6 +124,11 @@ func (i *Image) Size() (ImageSize, error) {
 	return Size(i.buffer)
 }
 
+// Get image buffer
+func (i *Image) Image() []byte {
+	return i.buffer
+}
+
 // Creates a new image
 func NewImage(buf []byte) *Image {
 	return &Image{buf}

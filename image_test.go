@@ -164,7 +164,7 @@ func TestFluentInterface(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	buf, err := image.Convert(PNG)
+	_, err = image.Convert(PNG)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
@@ -180,7 +180,7 @@ func TestFluentInterface(t *testing.T) {
 		t.Fatal("Invalid image type")
 	}
 
-	Write("fixtures/test_image_fluent_out.png", buf)
+	Write("fixtures/test_image_fluent_out.png", image.Image())
 }
 
 func initImage(file string) *Image {
