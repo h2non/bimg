@@ -191,30 +191,34 @@ if err != nil {
 bimg.Write("new.jpg", newImage)
 ```
 
-
 #### func  DetermineImageTypeName
 
 ```go
 func DetermineImageTypeName(buf []byte) string
 ```
+Determines the image type format by name (jpeg, png, webp or tiff)
 
 #### func  Initialize
 
 ```go
 func Initialize()
 ```
+Explicit thread-safe start of libvips. You should only call this function if you
+previously shutdown libvips
 
 #### func  IsTypeNameSupported
 
 ```go
 func IsTypeNameSupported(t string) bool
 ```
+Check if a given image type name is supported
 
 #### func  IsTypeSupported
 
 ```go
 func IsTypeSupported(t ImageType) bool
 ```
+Check if a given image type is supported
 
 #### func  Read
 
@@ -233,6 +237,15 @@ func Resize(buf []byte, o Options) ([]byte, error)
 ```go
 func Shutdown()
 ```
+Explicit thread-safe libvips shutdown. Call this to drop caches. If libvips was
+already initialized, the function is no-op
+
+#### func  VipsDebug
+
+```go
+func VipsDebug()
+```
+Output to stdout collected data for debugging purposes
 
 #### func  Write
 
@@ -300,72 +313,112 @@ type Image struct {
 ```go
 func NewImage(buf []byte) *Image
 ```
+Creates a new image
 
 #### func (*Image) Convert
 
 ```go
 func (i *Image) Convert(t ImageType) ([]byte, error)
 ```
+Convert image to another format
 
 #### func (*Image) Crop
 
 ```go
-func (i *Image) Crop(width, height int) ([]byte, error)
+func (i *Image) Crop(width, height int, gravity Gravity) ([]byte, error)
 ```
+Crop the image to the exact size specified
+
+#### func (*Image) CropByHeight
+
+```go
+func (i *Image) CropByHeight(height int) ([]byte, error)
+```
+Crop an image by height (auto width)
+
+#### func (*Image) CropByWidth
+
+```go
+func (i *Image) CropByWidth(width int) ([]byte, error)
+```
+Crop an image by width (auto height)
+
+#### func (*Image) Enlarge
+
+```go
+func (i *Image) Enlarge(width, height int) ([]byte, error)
+```
+Enlarge the image from the by X/Y axis
 
 #### func (*Image) Extract
 
 ```go
 func (i *Image) Extract(top, left, width, height int) ([]byte, error)
 ```
+Extract area from the by X/Y axis
 
 #### func (*Image) Flip
 
 ```go
 func (i *Image) Flip() ([]byte, error)
 ```
+Flip the image about the vertical Y axis
+
+#### func (*Image) Flop
+
+```go
+func (i *Image) Flop() ([]byte, error)
+```
+Flop the image about the horizontal X axis
 
 #### func (*Image) Metadata
 
 ```go
 func (i *Image) Metadata() (ImageMetadata, error)
 ```
+Get image metadata (size, alpha channel, profile, EXIF rotation)
 
 #### func (*Image) Process
 
 ```go
 func (i *Image) Process(o Options) ([]byte, error)
 ```
+Transform the image by custom options
 
 #### func (*Image) Resize
 
 ```go
 func (i *Image) Resize(width, height int) ([]byte, error)
 ```
+Resize the image to fixed width and height
 
 #### func (*Image) Rotate
 
 ```go
 func (i *Image) Rotate(a Angle) ([]byte, error)
 ```
+Rotate the image by given angle degrees (0, 90, 180 or 270)
 
 #### func (*Image) Size
 
 ```go
 func (i *Image) Size() (ImageSize, error)
 ```
+Get image size
 
 #### func (*Image) Thumbnail
 
 ```go
 func (i *Image) Thumbnail(pixels int) ([]byte, error)
 ```
+Thumbnail the image by the a given width by aspect ratio 4:4
 
 #### func (*Image) Type
 
 ```go
 func (i *Image) Type() string
 ```
+Get image type format (jpeg, png, webp, tiff)
 
 #### type ImageMetadata
 
@@ -387,6 +440,8 @@ type ImageMetadata struct {
 ```go
 func Metadata(buf []byte) (ImageMetadata, error)
 ```
+Extract the image metadata (size, type, alpha channel, profile, EXIF
+orientation...)
 
 #### type ImageSize
 
@@ -403,6 +458,7 @@ type ImageSize struct {
 ```go
 func Size(buf []byte) (ImageSize, error)
 ```
+Get the image size by width and height pixels
 
 #### type ImageType
 
@@ -427,6 +483,7 @@ const (
 ```go
 func DetermineImageType(buf []byte) ImageType
 ```
+Determines the image type format (jpeg, png, webp or tiff)
 
 #### type Interpolator
 
@@ -459,20 +516,20 @@ type Options struct {
   AreaWidth    int
   Top          int
   Left         int
-  Crop         bool
-  Enlarge      bool
   Extend       int
-  Embed        bool
   Quality      int
   Compression  int
-  Type         ImageType
+  Crop         bool
+  Enlarge      bool
+  Embed        bool
+  Flip         bool
+  Flop         bool
   Rotate       Angle
-  Flip         Direction
   Gravity      Gravity
+  Type         ImageType
   Interpolator Interpolator
 }
 ```
-
 
 ## License
 
