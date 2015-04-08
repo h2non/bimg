@@ -207,6 +207,7 @@ func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*
 
 	defer C.free(unsafe.Pointer(istring))
 	defer C.g_object_unref(C.gpointer(input))
+	defer C.g_object_unref(C.gpointer(interpolator))
 
 	// Perform affine transformation
 	err := C.vips_affine_interpolator(input, &image, C.double(residual), 0, 0, C.double(residual), interpolator)
