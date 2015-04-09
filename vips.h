@@ -92,15 +92,15 @@ vips_enum_nick_bridge(VipsImage *image) {
 };
 
 int
-vips_insert_bridge(VipsImage *in, VipsImage *sub, VipsImage **out, int left, int top)
+vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac)
 {
-	return vips_insert(in, sub, out, left, top, NULL);
+	return vips_zoom(in, out, xfac, yfac, NULL);
 };
 
 int
-vips_bandjoin2_bridge(VipsImage *in, VipsImage *sub, VipsImage **out)
+vips_insert_bridge(VipsImage *in, VipsImage *sub, VipsImage **out, int left, int top)
 {
-	return vips_bandjoin2(in, sub, out, NULL);
+	return vips_insert(in, sub, out, left, top, NULL);
 };
 
 int

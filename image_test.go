@@ -119,14 +119,28 @@ func TestImageWatermark(t *testing.T) {
 
 	err = assertSize(buf, 800, 600)
 	if err != nil {
-		//t.Error(err)
+		t.Error(err)
 	}
 
-	if DetermineImageType(buf) != PNG {
-		//t.Fatal("Image is not jpeg")
+	if DetermineImageType(buf) != JPEG {
+		t.Fatal("Image is not jpeg")
 	}
 
 	Write("fixtures/test_watermark_out.jpg", buf)
+}
+
+func TestImageZoom(t *testing.T) {
+	buf, err := initImage("test.jpg").Zoom(1)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	err = assertSize(buf, 3360, 2100)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_zoom_out.jpg", buf)
 }
 
 func TestImageFlip(t *testing.T) {

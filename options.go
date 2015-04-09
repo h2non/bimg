@@ -71,6 +71,7 @@ type Options struct {
 	Extend       int
 	Quality      int
 	Compression  int
+	Zoom         int
 	Crop         bool
 	Enlarge      bool
 	Embed        bool

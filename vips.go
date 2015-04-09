@@ -76,7 +76,7 @@ func VipsDebug() {
 	C.im__print_all()
 }
 
-// Get the allocated memory by vips in bytes
+// Get memory info stats from vips
 func VipsMemory() VipsMemoryInfo {
 	return VipsMemoryInfo{
 		Memory:          int64(C.vips_tracked_get_mem()),
@@ -109,14 +109,25 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 	return out, nil
 }
 
+func vipsZoom(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error) {
+	var out *C.struct__VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_zoom_bridge(image, &out, C.int(zoom), C.int(zoom))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
 func vipsInsert(image *C.struct__VipsImage, sub *C.struct__VipsImage, left, top int) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
-	var cache *C.struct__VipsImage
 
 	defer C.g_object_unref(C.gpointer(image))
 	defer C.g_object_unref(C.gpointer(sub))
 
-	err = C.vips_insert_bridge(image, sub, &out, C.int(left), C.int(top))
+	err := C.vips_insert_bridge(image, sub, &out, C.int(left), C.int(top))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

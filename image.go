@@ -92,6 +92,12 @@ func (i *Image) Watermark(image []byte, left, top int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Zoom the image by the given factor
+func (i *Image) Zoom(level int) ([]byte, error) {
+	options := Options{Zoom: level}
+	return i.Process(options)
+}
+
 // Rotate the image by given angle degrees (0, 90, 180 or 270)
 func (i *Image) Rotate(a Angle) ([]byte, error) {
 	options := Options{Rotate: a}

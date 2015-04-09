@@ -106,6 +106,12 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
+	// Zoom image if necessary
+	image, err = zoomImage(image, o.Zoom)
+	if err != nil {
+		return nil, err
+	}
+
 	// Rotate / flip image if necessary
 	image, err = rotateImage(image, o)
 	if err != nil {
@@ -205,21 +211,29 @@ func insertImage(image *C.struct__VipsImage, t ImageType, o Insert, save vipsSav
 
 	if imageType != t {
 		save.Type = t
-		debug("Image type insert: %s", save.Type)
 		buf, err := vipsSave(insert, save)
 		if err != nil {
 			return nil, err
 		}
+
 		insert, imageType, err = vipsRead(buf)
-		debug("New type image: %s", imageType)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	debug("Insert images: %#v", insert)
+	debug("Insert image: %#v", insert)
 
 	return vipsInsert(image, insert, o.Left, o.Top)
+}
+
+func zoomImage(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error) {
+	if zoom == 0 {
+		return image, nil
+	}
+	zoom += 1
+
+	return vipsZoom(image, zoom)
 }
 
 func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {
