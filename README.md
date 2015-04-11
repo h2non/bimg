@@ -176,7 +176,7 @@ if err != nil {
 
 options := bimg.Watermark{
   Watermark{
-    Text:       "Chuck Norris - Copyright (c) 2315",
+    Text:       "Chuck Norris (c) 2315",
     Opacity:    0.25,
     Width:      200,
     DPI:        100,

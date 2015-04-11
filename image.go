@@ -75,7 +75,7 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Insert an image to the existent one as watermark
+// Add text as watermark on the given image
 func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	options := Options{Watermark: w}
 	return i.Process(options)

@@ -17,11 +17,11 @@ typedef struct {
 } watermarkTextOptions;
 
 typedef struct {
-	int Width;
-	int DPI;
-	int Margin;
-	int NoReplicate;
-	float Opacity;
+	int    Width;
+	int    DPI;
+	int    Margin;
+	int    NoReplicate;
+	float  Opacity;
 	double Background[3];
 } watermarkOptions;
 

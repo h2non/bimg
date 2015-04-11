@@ -209,12 +209,28 @@ func BenchmarkConvertToJpeg(b *testing.B) {
 	runBenchmarkResize("test.png", options, b)
 }
 
-func BenchmarkCrop(b *testing.B) {
+func BenchmarkCropJpeg(b *testing.B) {
 	options := Options{
 		Width:  800,
 		Height: 600,
 	}
 	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkCropPng(b *testing.B) {
+	options := Options{
+		Width:  800,
+		Height: 600,
+	}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkCropWebP(b *testing.B) {
+	options := Options{
+		Width:  800,
+		Height: 600,
+	}
+	runBenchmarkResize("test.webp", options, b)
 }
 
 func BenchmarkExtractJpeg(b *testing.B) {
@@ -225,4 +241,84 @@ func BenchmarkExtractJpeg(b *testing.B) {
 		AreaHeight: 480,
 	}
 	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkExtractPng(b *testing.B) {
+	options := Options{
+		Top:        100,
+		Left:       50,
+		AreaWidth:  600,
+		AreaHeight: 480,
+	}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkExtractWebp(b *testing.B) {
+	options := Options{
+		Top:        100,
+		Left:       50,
+		AreaWidth:  600,
+		AreaHeight: 480,
+	}
+	runBenchmarkResize("test.webp", options, b)
+}
+
+func BenchmarkZoomJpeg(b *testing.B) {
+	options := Options{Zoom: 1}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkZoomPng(b *testing.B) {
+	options := Options{Zoom: 1}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkZoomWebp(b *testing.B) {
+	options := Options{Zoom: 1}
+	runBenchmarkResize("test.webp", options, b)
+}
+
+func BenchmarkWatermarkJpeg(b *testing.B) {
+	options := Options{
+		Watermark: Watermark{
+			Text:       "Chuck Norris (c) 2315",
+			Opacity:    0.25,
+			Width:      200,
+			DPI:        100,
+			Margin:     150,
+			Font:       "sans bold 12",
+			Background: Color{255, 255, 255},
+		},
+	}
+	runBenchmarkResize("test.webp", options, b)
+}
+
+func BenchmarkWatermarPng(b *testing.B) {
+	options := Options{
+		Watermark: Watermark{
+			Text:       "Chuck Norris (c) 2315",
+			Opacity:    0.25,
+			Width:      200,
+			DPI:        100,
+			Margin:     150,
+			Font:       "sans bold 12",
+			Background: Color{255, 255, 255},
+		},
+	}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkWatermarWebp(b *testing.B) {
+	options := Options{
+		Watermark: Watermark{
+			Text:       "Chuck Norris (c) 2315",
+			Opacity:    0.25,
+			Width:      200,
+			DPI:        100,
+			Margin:     150,
+			Font:       "sans bold 12",
+			Background: Color{255, 255, 255},
+		},
+	}
+	runBenchmarkResize("test.webp", options, b)
 }
