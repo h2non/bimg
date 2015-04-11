@@ -199,12 +199,12 @@ func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, e
 }
 
 func watermakImage(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImage, error) {
-	if len(w.Text) == 0 {
+	if w.Text == "" {
 		return image, nil
 	}
 
 	// Defaults
-	if len(w.Font) == 0 {
+	if w.Font == "" {
 		w.Font = "sans 10"
 	}
 	if w.Width == 0 {
