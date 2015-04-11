@@ -243,7 +243,7 @@ Determines the image type format by name (jpeg, png, webp or tiff)
 ```go
 func Initialize()
 ```
-Explicit thread-safe start of libvips. You should only call this function if you
+Explicit thread-safe start of libvips. Only call this function if you've
 previously shutdown libvips
 
 #### func  IsTypeNameSupported
@@ -259,6 +259,13 @@ Check if a given image type name is supported
 func IsTypeSupported(t ImageType) bool
 ```
 Check if a given image type is supported
+
+#### func  PrintMemoryStats
+
+```go
+func PrintMemoryStats()
+```
+Print Go memory and garbage collector stats. Useful for debugging
 
 #### func  Read
 
@@ -285,7 +292,7 @@ already initialized, the function is no-op
 ```go
 func VipsDebug()
 ```
-Output to stdout collected data for debugging purposes
+Output to stdout vips collected data. Useful for debugging
 
 #### func  Write
 
@@ -308,6 +315,16 @@ const (
   D270 Angle = C.VIPS_ANGLE_D270
 )
 ```
+
+#### type Color
+
+```go
+type Color struct {
+  R, G, B uint8
+}
+```
+
+Color represents a traditional RGB color scheme
 
 #### type Direction
 
@@ -411,6 +428,13 @@ func (i *Image) Flop() ([]byte, error)
 ```
 Flop the image about the horizontal X axis
 
+#### func (*Image) Image
+
+```go
+func (i *Image) Image() []byte
+```
+Get image buffer
+
 #### func (*Image) Metadata
 
 ```go
@@ -459,6 +483,20 @@ Thumbnail the image by the a given width by aspect ratio 4:4
 func (i *Image) Type() string
 ```
 Get image type format (jpeg, png, webp, tiff)
+
+#### func (*Image) Watermark
+
+```go
+func (i *Image) Watermark(w Watermark) ([]byte, error)
+```
+Add text as watermark on the given image
+
+#### func (*Image) Zoom
+
+```go
+func (i *Image) Zoom(level int) ([]byte, error)
+```
+Zoom the image by the given factor
 
 #### type ImageMetadata
 
@@ -531,6 +569,7 @@ Determines the image type format (jpeg, png, webp or tiff)
 type Interpolator int
 ```
 
+
 ```go
 const (
   BICUBIC Interpolator = iota
@@ -558,15 +597,52 @@ type Options struct {
   Extend       int
   Quality      int
   Compression  int
+  Zoom         int
   Crop         bool
   Enlarge      bool
   Embed        bool
   Flip         bool
   Flop         bool
+  NoAutoRotate bool
   Rotate       Angle
   Gravity      Gravity
+  Watermark    Watermark
   Type         ImageType
   Interpolator Interpolator
+}
+```
+
+
+#### type VipsMemoryInfo
+
+```go
+type VipsMemoryInfo struct {
+  Memory          int64
+  MemoryHighwater int64
+  Allocations     int64
+}
+```
+
+
+#### func  VipsMemory
+
+```go
+func VipsMemory() VipsMemoryInfo
+```
+Get memory info stats from vips (cache size, memory allocs...)
+
+#### type Watermark
+
+```go
+type Watermark struct {
+  Width       int
+  DPI         int
+  Margin      int
+  Opacity     float32
+  NoReplicate bool
+  Text        string
+  Font        string
+  Background  Color
 }
 ```
 
