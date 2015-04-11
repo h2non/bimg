@@ -134,6 +134,37 @@ func TestImageWatermark(t *testing.T) {
 	Write("fixtures/test_watermark_out.jpg", buf)
 }
 
+func TestImageWatermarkNoReplicate(t *testing.T) {
+	image := initImage("test.jpg")
+	_, err := image.Crop(800, 600, NORTH)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	buf, err := image.Watermark(Watermark{
+		Text:        "Copy me if you can",
+		Opacity:     0.5,
+		Width:       200,
+		DPI:         100,
+		NoReplicate: true,
+		Background:  Color{255, 255, 255},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if DetermineImageType(buf) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	Write("fixtures/test_watermark_replicate_out.jpg", buf)
+}
+
 func TestImageZoom(t *testing.T) {
 	buf, err := initImage("test.jpg").Zoom(1)
 	if err != nil {
