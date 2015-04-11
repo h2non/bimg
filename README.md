@@ -63,13 +63,22 @@ Here you can see some performance test comparisons for multiple scenarios:
 
 Tested using Go 1.4 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```
-PASS
-BenchmarkResizeLargeJpeg  30    46652408 ns/op
-BenchmarkResizePng        20    57387902 ns/op
-BenchmarkResizeWebP       500    2453220 ns/op
-BenchmarkConvertToJpeg    30    35556414 ns/op
-BenchmarkCrop             30    51768475 ns/op
-BenchmarkExtract          30    50866406 ns/op
+BenchmarkResizeLargeJpeg  50    43400480 ns/op
+BenchmarkResizePng        20    50736409 ns/op
+BenchmarkResizeWebP       500    2455732 ns/op
+BenchmarkConvertToJpeg    50    37313675 ns/op
+BenchmarkCropJpeg         30    42894495 ns/op
+BenchmarkCropPng          30    53256160 ns/op
+BenchmarkCropWebP         5000    242998 ns/op
+BenchmarkExtractJpeg      50    26182413 ns/op
+BenchmarkExtractPng       2000    800507 ns/op
+BenchmarkExtractWebp      3000    553045 ns/op
+BenchmarkZoomJpeg         10   166818184 ns/op
+BenchmarkZoomPng          20    67196268 ns/op
+BenchmarkZoomWebp         5000    364657 ns/op
+BenchmarkWatermarkJpeg    100   10085519 ns/op
+BenchmarkWatermarPng      200    7591993 ns/op
+BenchmarkWatermarWebp     100   10150068 ns/op
 ok 9.424s
 ```
 
