@@ -88,7 +88,6 @@ type Options struct {
 	Flip         bool
 	Flop         bool
 	NoAutoRotate bool
-	Colorspace   bool
 	Rotate       Angle
 	Gravity      Gravity
 	Watermark    Watermark

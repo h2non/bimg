@@ -156,34 +156,6 @@ func vipsZoom(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error
 	return out, nil
 }
 
-func vipsColorSpace(image *C.struct__VipsImage) (*C.struct__VipsImage, error) {
-	var out *C.struct__VipsImage
-	var temp *C.struct__VipsImage
-	var max *C.double
-	var x *C.int
-	var y *C.int
-
-	defer C.g_object_unref(C.gpointer(image))
-
-	err := C.vips_colorspace_bridge(image, &out)
-	if err != 0 {
-		return nil, catchVipsError()
-	}
-
-	err = C.vips_hist_find_ndim_bridge(out, &temp)
-	if err != 0 {
-		return nil, catchVipsError()
-	}
-
-	err = C.vips_max_bridge(temp, max, &x, &y)
-	if err != 0 {
-		return nil, catchVipsError()
-	}
-	debug("MAX VALUE %dx%d", x, y)
-
-	return temp, nil
-}
-
 func vipsWatermark(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
 

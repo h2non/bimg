@@ -112,25 +112,6 @@ vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac)
 };
 
 int
-vips_colorspace_bridge(VipsImage *in, VipsImage **out)
-{
-	return vips_colourspace(in, out, VIPS_INTERPRETATION_LAB, NULL);
-};
-
-int
-vips_hist_find_ndim_bridge(VipsImage *in, VipsImage **out)
-{
-	return vips_hist_find_ndim(in, out, "bins", 5, NULL);
-};
-
-int
-vips_max_bridge(VipsImage *in, double *out, int **x, int **y)
-{
-	double ones[3] = { 1, 1, 1 };
-	return vips_max(in, ones, "x", x, "y", y, NULL);
-};
-
-int
 vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
 {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
