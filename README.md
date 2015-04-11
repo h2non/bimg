@@ -6,7 +6,7 @@ bimg is designed to be a small and efficient library with a generic and useful s
 It uses internally libvips, which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP. It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate, zoom, watermark... and conversion between multiple formats. 
+It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion betweem them. It supports common [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark... 
 
 For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
@@ -64,22 +64,24 @@ Here you can see some performance test comparisons for multiple scenarios:
 Tested using Go 1.4 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```
 BenchmarkResizeLargeJpeg  50    43400480 ns/op
-BenchmarkResizePng        20    50736409 ns/op
-BenchmarkResizeWebP       500    2455732 ns/op
-BenchmarkConvertToJpeg    50    37313675 ns/op
-BenchmarkCropJpeg         30    42894495 ns/op
-BenchmarkCropPng          30    53256160 ns/op
-BenchmarkCropWebP         5000    242998 ns/op
-BenchmarkExtractJpeg      50    26182413 ns/op
-BenchmarkExtractPng       2000    800507 ns/op
-BenchmarkExtractWebp      3000    553045 ns/op
-BenchmarkZoomJpeg         10   166818184 ns/op
-BenchmarkZoomPng          20    67196268 ns/op
-BenchmarkZoomWebp         5000    364657 ns/op
-BenchmarkWatermarkJpeg    100   10085519 ns/op
-BenchmarkWatermarPng      200    7591993 ns/op
-BenchmarkWatermarWebp     100   10150068 ns/op
-ok 9.424s
+BenchmarkResizePng        20    57592174 ns/op
+BenchmarkResizeWebP       500    2872295 ns/op
+BenchmarkConvertToJpeg    30    41835497 ns/op
+BenchmarkConvertToPng     10   153382204 ns/op
+BenchmarkConvertToWebp    10000   264542 ns/op
+BenchmarkCropJpeg         30    52267699 ns/op
+BenchmarkCropPng          30    56477454 ns/op
+BenchmarkCropWebP         5000    274302 ns/op
+BenchmarkExtractJpeg      50    27827670 ns/op
+BenchmarkExtractPng       2000    769761 ns/op
+BenchmarkExtractWebp      3000    513954 ns/op
+BenchmarkZoomJpeg         10   159272494 ns/op
+BenchmarkZoomPng          20    65771476 ns/op
+BenchmarkZoomWebp         5000    368327 ns/op
+BenchmarkWatermarkJpeg    100   10026033 ns/op
+BenchmarkWatermarPng      200    7350821 ns/op
+BenchmarkWatermarWebp     200    9014197 ns/op
+ok 30.698s
 ```
 
 ## API
@@ -195,7 +197,7 @@ options := bimg.Watermark{
   }
 }
 
-newImage, err := bimg.NewImage(buffer).Watermark()
+newImage, err := bimg.NewImage(buffer).Watermark(options)
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }

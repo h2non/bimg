@@ -190,6 +190,16 @@ func BenchmarkConvertToJpeg(b *testing.B) {
 	runBenchmarkResize("test.png", options, b)
 }
 
+func BenchmarkConvertToPng(b *testing.B) {
+	options := Options{Type: PNG}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkConvertToWebp(b *testing.B) {
+	options := Options{Type: WEBP}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
 func BenchmarkCropJpeg(b *testing.B) {
 	options := Options{
 		Width:  800,

@@ -12,8 +12,8 @@ enum types {
 };
 
 typedef struct {
-	char *Text;
-	char *Font;
+	const char *Text;
+	const char *Font;
 } watermarkTextOptions;
 
 typedef struct {
