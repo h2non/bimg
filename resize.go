@@ -118,16 +118,16 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Add watermark if necessary
+	image, err = watermakImage(image, o.Watermark)
+	if err != nil {
+		return nil, err
+	}
+
 	saveOptions := vipsSaveOptions{
 		Quality:     o.Quality,
 		Type:        o.Type,
 		Compression: o.Compression,
-	}
-
-	// watermark
-	image, err = watermakImage(image, o.Watermark)
-	if err != nil {
-		return nil, err
 	}
 
 	// Finally save as buffer
