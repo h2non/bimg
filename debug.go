@@ -15,7 +15,7 @@ func PrintMemoryStats() {
 	log := Debug("memory")
 	mem := memoryStats()
 
-	log("\u001b[33m---- Memory Dump Stats ----\u001b[39m")
+	log("\u001b[33m---- Memory Stats ----\u001b[39m")
 	log("Allocated: %s", humanize.Bytes(mem.Alloc))
 	log("Total Allocated: %s", humanize.Bytes(mem.TotalAlloc))
 	log("Memory Allocations: %d", mem.Mallocs)
@@ -32,7 +32,7 @@ func PrintMemoryStats() {
 	log("Stack Cache In Use: %s", humanize.Bytes(mem.MCacheInuse))
 	log("Next GC cycle: %s", humanizeNano(mem.NextGC))
 	log("Last GC cycle: %s", humanize.Time(time.Unix(0, int64(mem.LastGC))))
-	log("\u001b[33m---- End Memory Dump ----\u001b[39m")
+	log("\u001b[33m---- Memory Stats ----\u001b[39m")
 }
 
 func memoryStats() runtime.MemStats {
