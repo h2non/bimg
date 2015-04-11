@@ -3,6 +3,7 @@ package bimg
 /*
 #cgo pkg-config: vips
 #include "vips.h"
+#include "stdlib.h"
 */
 import "C"
 
@@ -19,16 +20,30 @@ var (
 	initialized bool = false
 )
 
+type VipsMemoryInfo struct {
+	Memory          int64
+	MemoryHighwater int64
+	Allocations     int64
+}
+
 type vipsSaveOptions struct {
 	Quality     int
 	Compression int
 	Type        ImageType
 }
 
-type VipsMemoryInfo struct {
-	Memory          int64
-	MemoryHighwater int64
-	Allocations     int64
+type vipsWatermarkOptions struct {
+	Width       C.int
+	DPI         C.int
+	Margin      C.int
+	NoReplicate C.int
+	Opacity     C.float
+	Background  [3]C.double
+}
+
+type vipsWatermarkTextOptions struct {
+	Text *C.char
+	Font *C.char
 }
 
 func init() {
@@ -71,18 +86,38 @@ func Shutdown() {
 	}
 }
 
-// Output to stdout collected data for debugging purposes
+// Output to stdout vips collected data. Useful for debugging
 func VipsDebug() {
 	C.im__print_all()
 }
 
-// Get memory info stats from vips
+// Get memory info stats from vips (cache size, memory allocs...)
 func VipsMemory() VipsMemoryInfo {
 	return VipsMemoryInfo{
 		Memory:          int64(C.vips_tracked_get_mem()),
 		MemoryHighwater: int64(C.vips_tracked_get_mem_highwater()),
 		Allocations:     int64(C.vips_tracked_get_allocs()),
 	}
+}
+
+func vipsExifOrientation(image *C.struct__VipsImage) int {
+	return int(C.vips_exif_orientation(image))
+}
+
+func vipsHasAlpha(image *C.struct__VipsImage) bool {
+	return int(C.has_alpha_channel(image)) > 0
+}
+
+func vipsHasProfile(image *C.struct__VipsImage) bool {
+	return int(C.has_profile_embed(image)) > 0
+}
+
+func vipsWindowSize(name string) float64 {
+	return float64(C.interpolator_window_size(C.CString(name)))
+}
+
+func vipsSpace(image *C.struct__VipsImage) string {
+	return C.GoString(C.vips_enum_nick_bridge(image))
 }
 
 func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
@@ -121,13 +156,54 @@ func vipsZoom(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error
 	return out, nil
 }
 
-func vipsInsert(image *C.struct__VipsImage, sub *C.struct__VipsImage, left, top int) (*C.struct__VipsImage, error) {
+func vipsColorSpace(image *C.struct__VipsImage) (*C.struct__VipsImage, error) {
 	var out *C.struct__VipsImage
+	var temp *C.struct__VipsImage
+	var max *C.double
+	var x *C.int
+	var y *C.int
 
 	defer C.g_object_unref(C.gpointer(image))
-	defer C.g_object_unref(C.gpointer(sub))
 
-	err := C.vips_insert_bridge(image, sub, &out, C.int(left), C.int(top))
+	err := C.vips_colorspace_bridge(image, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	err = C.vips_hist_find_ndim_bridge(out, &temp)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	err = C.vips_max_bridge(temp, max, &x, &y)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	debug("MAX VALUE %dx%d", x, y)
+
+	return temp, nil
+}
+
+func vipsWatermark(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImage, error) {
+	var out *C.struct__VipsImage
+
+	// Defaults
+	noReplicate := 0
+	if w.NoReplicate {
+		noReplicate = 1
+	}
+
+	text := C.CString(w.Text)
+	font := C.CString(w.Font)
+	background := [3]C.double{C.double(w.Background.R), C.double(w.Background.G), C.double(w.Background.B)}
+
+	textOpts := vipsWatermarkTextOptions{text, font}
+	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
+
+	defer C.free(unsafe.Pointer(text))
+	defer C.free(unsafe.Pointer(font))
+
+	err := C.vips_watermark(image, &out, (*C.watermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.watermarkOptions)(unsafe.Pointer(&opts)))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -247,7 +323,6 @@ func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*
 	defer C.g_object_unref(C.gpointer(input))
 	defer C.g_object_unref(C.gpointer(interpolator))
 
-	// Perform affine transformation
 	err := C.vips_affine_interpolator(input, &image, C.double(residual), 0, 0, C.double(residual), interpolator)
 	if err != 0 {
 		return nil, catchVipsError()
@@ -286,26 +361,6 @@ func vipsImageType(buf []byte) ImageType {
 	}
 
 	return imageType
-}
-
-func vipsExifOrientation(image *C.struct__VipsImage) int {
-	return int(C.vips_exif_orientation(image))
-}
-
-func vipsHasAlpha(image *C.struct__VipsImage) bool {
-	return int(C.has_alpha_channel(image)) > 0
-}
-
-func vipsHasProfile(image *C.struct__VipsImage) bool {
-	return int(C.has_profile_embed(image)) > 0
-}
-
-func vipsWindowSize(name string) float64 {
-	return float64(C.interpolator_window_size(C.CString(name)))
-}
-
-func vipsSpace(image *C.struct__VipsImage) string {
-	return C.GoString(C.vips_enum_nick_bridge(image))
 }
 
 func catchVipsError() error {

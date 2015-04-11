@@ -1,12 +1,12 @@
 # bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GitHub release](https://img.shields.io/github/tag/h2non/bimg.svg)](https://github.com/h2non/bimg/releases) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.png)](https://godoc.org/github.com/h2non/bimg) [![Coverage Status](https://coveralls.io/repos/h2non/bimg/badge.svg?branch=master)](https://coveralls.io/r/h2non/bimg?branch=master)
 
-Small [Go](http://golang.org) library for blazing fast and efficient image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. It provides a clean, simple and fluent [API](#examples) in pure Go.
+Small [Go](http://golang.org) library for blazing fast and efficient image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. It provides a clean, simple and fluent [API](https://godoc.org/github.com/h2non/bimg) in pure Go.
 
 bimg is designed to be a small and efficient library with a generic and useful set of features. 
 It uses internally libvips, which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP. It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate... and conversion between multiple formats. 
+It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP. It supports common [image transformation](#supported-image-operations) operations such as crop, resize, rotate, zoom, watermark... and conversion between multiple formats. 
 
 For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
@@ -41,13 +41,14 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Resize
 - Enlarge
 - Crop
-- Rotate (and auto-rotate based on EXIF orientation)
-- Flip (and auto-flip based on EXIF metadata)
+- Rotate (with auto-rotate based on EXIF orientation)
+- Flip (with auto-flip based on EXIF metadata)
 - Flop
 - Zoom
 - Thumbnail
 - Extract area
-- Format conversion
+- Watermark (fully customizable text-based)
+- Format conversion (with additional quality/compression settings)
 - EXIF metadata (size, alpha channel, profile, orientation...)
 
 ## Performance
@@ -158,6 +159,34 @@ if err != nil {
 }
 
 newImage, err := bimg.NewImage(buffer).Process(options)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+bimg.Write("new.jpg", newImage)
+```
+
+#### Watermark
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+options := bimg.Watermark{
+  Watermark{
+    Text:       "Chuck Norris - Copyright (c) 2315",
+    Opacity:    0.25,
+    Width:      200,
+    DPI:        100,
+    Margin:     150,
+    Font:       "sans bold 12",
+    Background: bimg.Color{255, 255, 255},
+  }
+}
+
+newImage, err := bimg.NewImage(buffer).Watermark()
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }
@@ -491,7 +520,6 @@ Determines the image type format (jpeg, png, webp or tiff)
 type Interpolator int
 ```
 
-
 ```go
 const (
   BICUBIC Interpolator = iota
@@ -530,6 +558,10 @@ type Options struct {
   Interpolator Interpolator
 }
 ```
+
+## Special Thanks
+
+- [John Cupitt](https://github.com/jcupitt)
 
 ## License
 

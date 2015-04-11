@@ -75,20 +75,9 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Insert an image. Alias to Watermark()
-func (i *Image) Insert(image []byte, left, top int) ([]byte, error) {
-	return i.Watermark(image, left, top)
-}
-
 // Insert an image to the existent one as watermark
-func (i *Image) Watermark(image []byte, left, top int) ([]byte, error) {
-	options := Options{
-		Insert: Insert{
-			Buffer: image,
-			Top:    top,
-			Left:   left,
-		},
-	}
+func (i *Image) Watermark(w Watermark) ([]byte, error) {
+	options := Options{Watermark: w}
 	return i.Process(options)
 }
 

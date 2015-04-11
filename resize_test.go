@@ -45,6 +45,44 @@ func TestRotate(t *testing.T) {
 	}
 }
 
+func testColorspace(t *testing.T) {
+	options := Options{Colorspace: true}
+	buf, _ := Read("fixtures/sky.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	if DetermineImageType(newImg) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	err = Write("fixtures/test_color_out.jpg", newImg)
+	if err != nil {
+		t.Fatal("Cannot save the image")
+	}
+}
+
+func TestCorruptedImage(t *testing.T) {
+	options := Options{Width: 800, Height: 600}
+	buf, _ := Read("fixtures/corrupt.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	if DetermineImageType(newImg) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	err = Write("fixtures/test_corrupt_out.jpg", newImg)
+	if err != nil {
+		t.Fatal("Cannot save the image")
+	}
+}
+
 func TestInvalidRotate(t *testing.T) {
 	options := Options{Width: 800, Height: 600, Rotate: 111}
 	buf, _ := Read("fixtures/test.jpg")

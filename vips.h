@@ -11,6 +11,20 @@ enum types {
 	MAGICK
 };
 
+typedef struct {
+	char *Text;
+	char *Font;
+} watermarkTextOptions;
+
+typedef struct {
+	int Width;
+	int DPI;
+	int Margin;
+	int NoReplicate;
+	float Opacity;
+	double Background[3];
+} watermarkOptions;
+
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
@@ -98,21 +112,28 @@ vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac)
 };
 
 int
-vips_insert_bridge(VipsImage *in, VipsImage *sub, VipsImage **out, int left, int top)
+vips_colorspace_bridge(VipsImage *in, VipsImage **out)
 {
-	return vips_insert(in, sub, out, left, top, NULL);
+	return vips_colourspace(in, out, VIPS_INTERPRETATION_LAB, NULL);
+};
+
+int
+vips_hist_find_ndim_bridge(VipsImage *in, VipsImage **out)
+{
+	return vips_hist_find_ndim(in, out, "bins", 5, NULL);
+};
+
+int
+vips_max_bridge(VipsImage *in, double *out, int **x, int **y)
+{
+	double ones[3] = { 1, 1, 1 };
+	return vips_max(in, ones, "x", x, "y", y, NULL);
 };
 
 int
 vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
 {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
-};
-
-int
-vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space)
-{
-	return vips_colourspace(in, out, space, NULL);
 };
 
 int
@@ -164,4 +185,68 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 	}
 
 	return code;
+};
+
+int
+vips_watermark(VipsImage *in, VipsImage **out, watermarkTextOptions *to, watermarkOptions *o)
+{
+  double ones[3] = { 1, 1, 1 };
+
+  VipsImage *base = vips_image_new();
+  VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 12);
+  t[0] = in;
+
+  // Make the mask.
+  if (
+  	vips_text(&t[1], to->Text,
+      "width", o->Width,
+      "dpi", o->DPI,
+      "font", to->Font,
+      NULL) ||
+    vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
+    vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
+    vips_embed(t[3], &t[4], 100, 100,
+      t[3]->Xsize + o->Margin, t[3]->Ysize + o->Margin, NULL)
+  	) {
+    g_object_unref(base);
+    return (1);
+  }
+
+  // Replicate if necessary
+  if (o->NoReplicate != 1 && (
+  	vips_replicate(t[4], &t[5],
+      1 + t[0]->Xsize / t[4]->Xsize,
+      1 + t[0]->Ysize / t[4]->Ysize, NULL) ||
+		vips_crop(t[5], &t[6], 0, 0,
+  		t[0]->Xsize, t[0]->Ysize, NULL)
+  	)) {
+  	g_object_unref(base);
+  	return (1);
+  }
+
+  // Make the constant image to paint the text with.
+  if (
+  	vips_black(&t[7], 1, 1, NULL) ||
+    vips_linear( t[7], &t[8], ones, o->Background, 3, NULL) ||
+    vips_cast(t[8], &t[9], VIPS_FORMAT_UCHAR, NULL) ||
+    vips_copy(t[9], &t[10],
+      "interpretation", t[0]->Type,
+      NULL) ||
+    vips_embed(t[10], &t[11], 0, 0,
+      t[0]->Xsize, t[0]->Ysize,
+      "extend", VIPS_EXTEND_COPY,
+      NULL)
+    ) {
+    g_object_unref(base);
+    return (1);
+  }
+
+  // Blend the mask and text and write to output.
+  if (vips_ifthenelse(t[6], t[11], t[0], out, "blend", TRUE, NULL)) {
+    g_object_unref(base);
+    return (1);
+  }
+
+  g_object_unref(base);
+  return (0);
 };

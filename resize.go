@@ -124,8 +124,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		Compression: o.Compression,
 	}
 
-	// Insert an image if necessary
-	image, err = insertImage(image, imageType, o.Insert, saveOptions)
+	// watermark
+	image, err = watermakImage(image, o.Watermark)
 	if err != nil {
 		return nil, err
 	}
@@ -198,42 +198,44 @@ func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, e
 	return image, err
 }
 
-// WIP
-func insertImage(image *C.struct__VipsImage, t ImageType, o Insert, save vipsSaveOptions) (*C.struct__VipsImage, error) {
-	if len(o.Buffer) == 0 {
+func watermakImage(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImage, error) {
+	if len(w.Text) == 0 {
 		return image, nil
 	}
 
-	insert, imageType, err := vipsRead(o.Buffer)
+	// Defaults
+	if len(w.Font) == 0 {
+		w.Font = "sans 10"
+	}
+	if w.Width == 0 {
+		w.Width = int(math.Floor(float64(image.Xsize / 8)))
+	}
+	if w.DPI == 0 {
+		w.DPI = 150
+	}
+	if w.Margin == 0 {
+		w.Margin = w.Width
+	}
+	if w.Opacity == 0 {
+		w.Opacity = 0.25
+	} else if w.Opacity > 1 {
+		w.Opacity = 1
+	}
+
+	image, err := vipsWatermark(image, w)
 	if err != nil {
 		return nil, err
 	}
 
-	if imageType != t {
-		save.Type = t
-		buf, err := vipsSave(insert, save)
-		if err != nil {
-			return nil, err
-		}
-
-		insert, imageType, err = vipsRead(buf)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	debug("Insert image: %#v", insert)
-
-	return vipsInsert(image, insert, o.Left, o.Top)
+	return image, nil
 }
 
 func zoomImage(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error) {
 	if zoom == 0 {
 		return image, nil
 	}
-	zoom += 1
 
-	return vipsZoom(image, zoom)
+	return vipsZoom(image, zoom+1)
 }
 
 func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {

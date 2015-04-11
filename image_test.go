@@ -111,8 +111,13 @@ func TestImageWatermark(t *testing.T) {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	insert, _ := Read("fixtures/watermark.png")
-	buf, err := image.Watermark(insert, 10, 10)
+	buf, err := image.Watermark(Watermark{
+		Text:       "Copy me if you can",
+		Opacity:    0.5,
+		Width:      200,
+		DPI:        100,
+		Background: Color{255, 255, 255},
+	})
 	if err != nil {
 		t.Error(err)
 	}

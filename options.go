@@ -55,10 +55,20 @@ const (
 	VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
 )
 
-type Insert struct {
-	Top    int
-	Left   int
-	Buffer []byte
+// Color represents a traditional RGB color scheme
+type Color struct {
+	R, G, B uint8
+}
+
+type Watermark struct {
+	Width       int
+	DPI         int
+	Margin      int
+	Opacity     float32
+	NoReplicate bool
+	Text        string
+	Font        string
+	Background  Color
 }
 
 type Options struct {
@@ -78,9 +88,10 @@ type Options struct {
 	Flip         bool
 	Flop         bool
 	NoAutoRotate bool
+	Colorspace   bool
 	Rotate       Angle
-	Insert       Insert
 	Gravity      Gravity
+	Watermark    Watermark
 	Type         ImageType
 	Interpolator Interpolator
 }
