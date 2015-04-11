@@ -20,10 +20,7 @@ func TestResize(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
-	err = Write("fixtures/test_out.jpg", newImg)
-	if err != nil {
-		t.Fatal("Cannot save the image")
-	}
+	Write("fixtures/test_out.jpg", newImg)
 }
 
 func TestRotate(t *testing.T) {
@@ -39,10 +36,7 @@ func TestRotate(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
-	err = Write("fixtures/test_rotate_out.jpg", newImg)
-	if err != nil {
-		t.Fatal("Cannot save the image")
-	}
+	Write("fixtures/test_rotate_out.jpg", newImg)
 }
 
 func TestCorruptedImage(t *testing.T) {
@@ -58,10 +52,7 @@ func TestCorruptedImage(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
-	err = Write("fixtures/test_corrupt_out.jpg", newImg)
-	if err != nil {
-		t.Fatal("Cannot save the image")
-	}
+	Write("fixtures/test_corrupt_out.jpg", newImg)
 }
 
 func TestInvalidRotate(t *testing.T) {
@@ -77,10 +68,7 @@ func TestInvalidRotate(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
-	err = Write("fixtures/test_invalid_rotate_out.jpg", newImg)
-	if err != nil {
-		t.Fatal("Cannot save the image")
-	}
+	Write("fixtures/test_invalid_rotate_out.jpg", newImg)
 }
 
 func TestConvert(t *testing.T) {
@@ -112,10 +100,7 @@ func TestConvert(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	err = Write("fixtures/test_out.png", newImg)
-	if err != nil {
-		t.Fatal("Cannot save the image")
-	}
+	Write("fixtures/test_out.png", newImg)
 }
 
 func TestResizePngWithTransparency(t *testing.T) {
@@ -147,10 +132,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	err = Write("fixtures/transparent_out.png", newImg)
-	if err != nil {
-		t.Fatal("Cannot save the image")
-	}
+	Write("fixtures/transparent_out.png", newImg)
 }
 
 func runBenchmarkResize(file string, o Options, b *testing.B) {

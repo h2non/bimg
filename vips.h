@@ -243,3 +243,4 @@ vips_watermark(VipsImage *in, VipsImage **out, watermarkTextOptions *to, waterma
 	g_object_unref(base);
 	return 0;
 };
+
