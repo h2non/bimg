@@ -8,9 +8,7 @@ and it's typically 4x faster than using the quickest ImageMagick and GraphicsMag
 
 It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them. It supports common [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark... 
 
-For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
-
-If you're looking for a HTTP-based image processing solution, see [imaginary](https://github.com/h2non/imaginary)
+For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation. If you're looking for a HTTP-based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
