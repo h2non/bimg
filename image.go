@@ -81,9 +81,10 @@ func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Zoom the image by the given factor
-func (i *Image) Zoom(level int) ([]byte, error) {
-	options := Options{Zoom: level}
+// Zoom the image by the given factor.
+// You should probably call Extract() before
+func (i *Image) Zoom(factor int) ([]byte, error) {
+	options := Options{Zoom: factor}
 	return i.Process(options)
 }
 

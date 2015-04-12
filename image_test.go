@@ -23,7 +23,7 @@ func TestImageResize(t *testing.T) {
 func TestImageExtract(t *testing.T) {
 	buf, err := initImage("test.jpg").Extract(100, 100, 300, 300)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 300, 300)
@@ -51,7 +51,7 @@ func TestImageEnlarge(t *testing.T) {
 func TestImageCrop(t *testing.T) {
 	buf, err := initImage("test.jpg").Crop(800, 600, NORTH)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 800, 600)
@@ -65,7 +65,7 @@ func TestImageCrop(t *testing.T) {
 func TestImageCropByWidth(t *testing.T) {
 	buf, err := initImage("test.jpg").CropByWidth(600)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 600, 375)
@@ -79,7 +79,7 @@ func TestImageCropByWidth(t *testing.T) {
 func TestImageCropByHeight(t *testing.T) {
 	buf, err := initImage("test.jpg").CropByHeight(300)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 480, 300)
@@ -93,7 +93,7 @@ func TestImageCropByHeight(t *testing.T) {
 func TestImageThumbnail(t *testing.T) {
 	buf, err := initImage("test.jpg").Thumbnail(100)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 100, 100)
@@ -138,7 +138,7 @@ func TestImageWatermarkNoReplicate(t *testing.T) {
 	image := initImage("test.jpg")
 	_, err := image.Crop(800, 600, NORTH)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	buf, err := image.Watermark(Watermark{
@@ -166,12 +166,19 @@ func TestImageWatermarkNoReplicate(t *testing.T) {
 }
 
 func TestImageZoom(t *testing.T) {
-	buf, err := initImage("test.jpg").Zoom(1)
+	image := initImage("test.jpg")
+
+	_, err := image.Extract(100, 100, 400, 300)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot extract the image: %s", err)
 	}
 
-	err = assertSize(buf, 3360, 2100)
+	buf, err := image.Zoom(1)
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 800, 600)
 	if err != nil {
 		t.Error(err)
 	}

@@ -6,12 +6,11 @@ bimg is designed to be a small and efficient library with a generic and useful s
 It uses internally libvips, which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion betweem them. It supports common [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark... 
+It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them. It supports common [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark... 
 
 For getting started, take a look to the [examples](#examples) and [programmatic API](https://godoc.org/github.com/h2non/bimg) documentation.
 
-bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), 
-its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
+bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
 **Note**: bimg is still beta. Do not use in production yet
 
@@ -653,3 +652,5 @@ type Watermark struct {
 ## License
 
 MIT - Tomas Aparicio
+
+[![views](https://sourcegraph.com/api/repos/github.com/h2non/bimg/.counters/views.svg)](https://sourcegraph.com/github.com/h2non/bimg)
