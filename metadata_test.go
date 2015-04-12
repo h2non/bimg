@@ -47,7 +47,7 @@ func TestMetadata(t *testing.T) {
 	for _, file := range files {
 		metadata, err := Metadata(readFile(file.name))
 		if err != nil {
-			t.Fatalf("Cannot read the image: %#v", err)
+			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
 		}
 
 		if metadata.Type != file.format {

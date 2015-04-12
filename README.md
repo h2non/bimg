@@ -2,8 +2,8 @@
 
 Small [Go](http://golang.org) library for blazing fast and efficient image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. It provides a clean, simple and fluent [API](https://godoc.org/github.com/h2non/bimg) in pure Go.
 
-bimg is designed to be a small and efficient library with a generic and useful set of features. 
-It uses internally libvips, which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
+bimg was designed to be a small and efficient library with a generic and useful features.  
+It uses internally libvips, a powerful library written in C for binary image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
 It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them. It supports common [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark... 
@@ -228,6 +228,13 @@ if err != nil {
 
 // save the cropped and flipped image
 bimg.Write("new.jpg", newImage)
+```
+
+#### Debugging
+
+Run the process passing the `DEBUG` environment variable
+```
+DEBUG=* ./app 
 ```
 
 #### func  DetermineImageTypeName

@@ -68,12 +68,12 @@ vips_rotate(VipsImage *in, VipsImage **buf, int angle)
 int
 vips_exif_orientation(VipsImage *image) {
 	int orientation = 0;
-	const char **exif;
+	const char *exif;
 	if (
 		vips_image_get_typeof(image, "exif-ifd0-Orientation") != 0 &&
-		!vips_image_get_string(image, "exif-ifd0-Orientation", exif)
+		!vips_image_get_string(image, "exif-ifd0-Orientation", &exif)
 	) {
-		orientation = atoi(exif[0]);
+		orientation = atoi(&exif[0]);
 	}
 	return orientation;
 };
