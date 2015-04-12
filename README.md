@@ -12,7 +12,7 @@ For getting started, take a look to the [examples](#examples) and [programmatic 
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
-**Note**: bimg is still beta. Do not use in production yet
+If you're looking for a HTTP-based image processing solution, see [imaginary](https://github.com/h2non/imaginary)
 
 ## Prerequisites
 
