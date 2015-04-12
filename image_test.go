@@ -168,7 +168,7 @@ func TestImageWatermarkNoReplicate(t *testing.T) {
 func TestImageZoom(t *testing.T) {
 	image := initImage("test.jpg")
 
-	_, err := image.Extract(100, 100, 0, 0)
+	_, err := image.Extract(100, 100, 400, 300)
 	if err != nil {
 		t.Errorf("Cannot extract the image: %s", err)
 	}
@@ -180,7 +180,7 @@ func TestImageZoom(t *testing.T) {
 
 	err = assertSize(buf, 800, 600)
 	if err != nil {
-		//t.Error(err)
+		t.Error(err)
 	}
 
 	Write("fixtures/test_zoom_out.jpg", buf)

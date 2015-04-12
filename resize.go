@@ -208,7 +208,7 @@ func watermakImage(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImag
 		w.Font = "sans 10"
 	}
 	if w.Width == 0 {
-		w.Width = int(math.Floor(float64(image.Xsize / 8)))
+		w.Width = int(math.Floor(float64(image.Xsize / 6)))
 	}
 	if w.DPI == 0 {
 		w.DPI = 150
