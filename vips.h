@@ -14,7 +14,7 @@ enum types {
 typedef struct {
 	const char *Text;
 	const char *Font;
-} watermarkTextOptions;
+} WatermarkTextOptions;
 
 typedef struct {
 	int    Width;
@@ -23,7 +23,7 @@ typedef struct {
 	int    NoReplicate;
 	float  Opacity;
 	double Background[3];
-} watermarkOptions;
+} WatermarkOptions;
 
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
@@ -187,7 +187,7 @@ vips_watermark_replicate(VipsImage *orig, VipsImage *in, VipsImage **out)
 };
 
 int
-vips_watermark(VipsImage *in, VipsImage **out, watermarkTextOptions *to, watermarkOptions *o)
+vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, WatermarkOptions *o)
 {
 	double ones[3] = { 1, 1, 1 };
 
@@ -244,3 +244,8 @@ vips_watermark(VipsImage *in, VipsImage **out, watermarkTextOptions *to, waterma
 	return 0;
 };
 
+void
+vips_enable_cache_set_trace()
+{
+	vips_cache_set_trace(TRUE);
+};

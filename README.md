@@ -60,7 +60,7 @@ Here you can see some performance test comparisons for multiple scenarios:
 
 #### Benchmarks
 
-Tested using Go 1.4 and libvips-7.42.3 in OSX i7 2.7Ghz
+Tested using Go 1.4.2 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```
 BenchmarkResizeLargeJpeg  50    43400480 ns/op
 BenchmarkResizePng        20    57592174 ns/op
@@ -235,6 +235,11 @@ bimg.Write("new.jpg", newImage)
 Run the process passing the `DEBUG` environment variable
 ```
 DEBUG=* ./app 
+```
+
+Enable libvips traces (note that a lot of data will be written in stdout):
+```
+VIPS_TRACE=1 ./app 
 ```
 
 #### func  DetermineImageTypeName

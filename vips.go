@@ -9,6 +9,7 @@ import "C"
 
 import (
 	"errors"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -68,9 +69,19 @@ func Initialize() {
 		panic("unable to start vips!")
 	}
 
-	C.vips_concurrency_set(0)                   // default
-	C.vips_cache_set_max_mem(100 * 1024 * 1024) // 100 MB
-	C.vips_cache_set_max(500)                   // 500 operations
+	C.vips_cache_set_max_mem(100 * 1024 * 1024)
+	C.vips_cache_set_max(500)
+
+	// Explicit concurrency limit to avoid thread-unsafe issues.
+	// See: https://github.com/jcupitt/libvips/issues/261#issuecomment-92850414
+	if os.Getenv("VIPS_CONCURRENCY") == "" {
+		C.vips_concurrency_set(1)
+	}
+
+	if os.Getenv("VIPS_TRACE") != "" {
+		C.vips_enable_cache_set_trace()
+	}
+
 	initialized = true
 }
 
@@ -113,7 +124,9 @@ func vipsHasProfile(image *C.struct__VipsImage) bool {
 }
 
 func vipsWindowSize(name string) float64 {
-	return float64(C.interpolator_window_size(C.CString(name)))
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
+	return float64(C.interpolator_window_size(cname))
 }
 
 func vipsSpace(image *C.struct__VipsImage) string {
@@ -175,7 +188,7 @@ func vipsWatermark(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImag
 	defer C.free(unsafe.Pointer(text))
 	defer C.free(unsafe.Pointer(font))
 
-	err := C.vips_watermark(image, &out, (*C.watermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.watermarkOptions)(unsafe.Pointer(&opts)))
+	err := C.vips_watermark(image, &out, (*C.WatermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.WatermarkOptions)(unsafe.Pointer(&opts)))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
