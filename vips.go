@@ -18,7 +18,7 @@ import (
 
 var (
 	m           sync.Mutex
-	initialized bool = false
+	initialized bool
 )
 
 type VipsMemoryInfo struct {
@@ -48,16 +48,16 @@ type vipsWatermarkTextOptions struct {
 }
 
 func init() {
-	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
-		panic("unsupported old vips version!")
-	}
-
 	Initialize()
 }
 
 // Explicit thread-safe start of libvips.
 // Only call this function if you've previously shutdown libvips
 func Initialize() {
+	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
+		panic("unsupported libvips version!")
+	}
+
 	m.Lock()
 	runtime.LockOSThread()
 	defer m.Unlock()
@@ -65,7 +65,6 @@ func Initialize() {
 
 	err := C.vips_init(C.CString("bimg"))
 	if err != 0 {
-		Shutdown()
 		panic("unable to start vips!")
 	}
 
@@ -85,13 +84,13 @@ func Initialize() {
 	initialized = true
 }
 
-// Explicit thread-safe libvips shutdown. Call this to drop caches.
+// Thread-safe function to shutdown libvips. You could call this to drop caches as well.
 // If libvips was already initialized, the function is no-op
 func Shutdown() {
 	m.Lock()
 	defer m.Unlock()
 
-	if initialized == true {
+	if initialized {
 		C.vips_shutdown()
 		initialized = false
 	}
