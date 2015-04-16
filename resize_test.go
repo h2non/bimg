@@ -9,7 +9,7 @@ import (
 
 func TestResize(t *testing.T) {
 	options := Options{Width: 800, Height: 600}
-	buf, _ := Read("fixtures/large.jpg")
+	buf, _ := Read("fixtures/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
