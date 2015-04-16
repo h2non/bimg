@@ -229,6 +229,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	default:
+		debug("Save JPEG options: Q: %s", o.Quality)
 		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	}
@@ -239,7 +240,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 
 	buf := C.GoBytes(ptr, C.int(length))
 
-	// Cleanup
+	// Clean up
 	C.g_free(C.gpointer(ptr))
 	C.vips_error_clear()
 

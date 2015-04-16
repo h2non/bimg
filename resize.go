@@ -48,6 +48,13 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	shrink := int(math.Max(math.Floor(factor), 1))
 	residual := float64(shrink) / factor
 
+	// Calculate integral box shrink
+	windowSize := vipsWindowSize(o.Interpolator.String())
+	if factor >= 2 && windowSize > 3 {
+		// Shrink less, affine more with interpolators that use at least 4x4 pixel window, e.g. bicubic
+		shrink = int(math.Max(float64(math.Floor(factor*3.0/windowSize)), 1))
+	}
+
 	// Do not enlarge the output if the input width *or* height are already less than the required dimensions
 	if o.Enlarge == false {
 		if inWidth < o.Width && inHeight < o.Height {
@@ -65,24 +72,16 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-		if tmpImage != nil {
-			image = tmpImage
-			factor = math.Max(factor, 1.0)
-			shrink = int(math.Floor(factor))
-			residual = float64(shrink) / factor
-		}
-	}
-
-	// Calculate integral box shrink
-	windowSize := vipsWindowSize(o.Interpolator.String())
-	if factor >= 2 && windowSize > 3 {
-		// Shrink less, affine more with interpolators that use at least 4x4 pixel window, e.g. bicubic
-		shrink = int(math.Max(float64(math.Floor(factor*3.0/windowSize)), 1))
+		image = tmpImage
+		factor = math.Max(factor, 1.0)
+		shrink = int(math.Floor(factor))
+		residual = float64(shrink) / factor
 	}
 
 	// Transform image if necessary
 	shouldTransform := o.Width != inWidth || o.Height != inHeight || o.AreaWidth > 0 || o.AreaHeight > 0
 	if shouldTransform {
+
 		// Use vips_shrink with the integral reduction
 		if shrink > 1 {
 			image, residual, err = shrinkImage(image, o, residual, shrink)
@@ -90,7 +89,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 				return nil, err
 			}
 		}
-		// Use vips_affine with the remaining float part
+
+		// Affine with the remaining float part
 		if residual != 0 {
 			image, err = vipsAffine(image, residual, o.Interpolator)
 			if err != nil {
