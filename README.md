@@ -242,7 +242,7 @@ Enable libvips traces (note that a lot of data will be written in stdout):
 VIPS_TRACE=1 ./app 
 ```
 
-#### func  DetermineImageTypeName
+#### func DetermineImageTypeName
 
 ```go
 func DetermineImageTypeName(buf []byte) string
@@ -271,13 +271,6 @@ func IsTypeSupported(t ImageType) bool
 ```
 Check if a given image type is supported
 
-#### func  PrintMemoryStats
-
-```go
-func PrintMemoryStats()
-```
-Print Go memory and garbage collector stats. Useful for debugging
-
 #### func  Read
 
 ```go
@@ -295,8 +288,8 @@ func Resize(buf []byte, o Options) ([]byte, error)
 ```go
 func Shutdown()
 ```
-Explicit thread-safe libvips shutdown. Call this to drop caches. If libvips was
-already initialized, the function is no-op
+Thread-safe function to shutdown libvips. You could call this to drop caches as
+well. If libvips was already initialized, the function is no-op
 
 #### func  VipsDebug
 
@@ -505,9 +498,9 @@ Add text as watermark on the given image
 #### func (*Image) Zoom
 
 ```go
-func (i *Image) Zoom(level int) ([]byte, error)
+func (i *Image) Zoom(factor int) ([]byte, error)
 ```
-Zoom the image by the given factor
+Zoom the image by the given factor. You should probably call Extract() before
 
 #### type ImageMetadata
 
@@ -633,7 +626,6 @@ type VipsMemoryInfo struct {
   Allocations     int64
 }
 ```
-
 
 #### func  VipsMemory
 
