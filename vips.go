@@ -3,7 +3,6 @@ package bimg
 /*
 #cgo pkg-config: vips
 #include "vips.h"
-#include "stdlib.h"
 */
 import "C"
 
@@ -97,7 +96,7 @@ func Shutdown() {
 }
 
 // Output to stdout vips collected data. Useful for debugging
-func VipsDebug() {
+func VipsDebugInfo() {
 	C.im__print_all()
 }
 

@@ -17,7 +17,6 @@ func TestSize(t *testing.T) {
 		{"test.png", 400, 300},
 		{"test.webp", 550, 368},
 	}
-
 	for _, file := range files {
 		size, err := Size(readFile(file.name))
 		if err != nil {

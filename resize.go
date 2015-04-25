@@ -78,6 +78,18 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		residual = float64(shrink) / factor
 	}
 
+	// Zoom image if necessary
+	image, err = zoomImage(image, o.Zoom)
+	if err != nil {
+		return nil, err
+	}
+
+	// Rotate / flip image if necessary
+	image, err = rotateAndFlipImage(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	// Transform image if necessary
 	shouldTransform := o.Width != inWidth || o.Height != inHeight || o.AreaWidth > 0 || o.AreaHeight > 0
 	if shouldTransform {
@@ -104,18 +116,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-	}
-
-	// Zoom image if necessary
-	image, err = zoomImage(image, o.Zoom)
-	if err != nil {
-		return nil, err
-	}
-
-	// Rotate / flip image if necessary
-	image, err = rotateImage(image, o)
-	if err != nil {
-		return nil, err
 	}
 
 	// Add watermark if necessary
@@ -167,7 +167,7 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 	return image, err
 }
 
-func rotateImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
+func rotateAndFlipImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
 	var err error
 	var direction Direction = -1
 
@@ -341,41 +341,35 @@ func calculateRotationAndFlip(image *C.struct__VipsImage, angle Angle) (Angle, b
 	rotate := D0
 	flip := false
 
-	if angle == -1 {
-		switch vipsExifOrientation(image) {
-		case 6:
-			rotate = D90
-			break
-		case 3:
-			rotate = D180
-			break
-		case 8:
-			rotate = D270
-			break
-		case 2:
-			flip = true
-			break // flip 1
-		case 7:
-			flip = true
-			rotate = D90
-			break // flip 6
-		case 4:
-			flip = true
-			rotate = D180
-			break // flip 3
-		case 5:
-			flip = true
-			rotate = D270
-			break // flip 8
-		}
-	} else {
-		if angle == 90 {
-			rotate = D90
-		} else if angle == 180 {
-			rotate = D180
-		} else if angle == 270 {
-			rotate = D270
-		}
+	if angle > 0 {
+		return rotate, flip
+	}
+
+	switch vipsExifOrientation(image) {
+	case 6:
+		rotate = D90
+		break
+	case 3:
+		rotate = D180
+		break
+	case 8:
+		rotate = D270
+		break
+	case 2:
+		flip = true
+		break // flip 1
+	case 7:
+		flip = true
+		rotate = D90
+		break // flip 6
+	case 4:
+		flip = true
+		rotate = D180
+		break // flip 3
+	case 5:
+		flip = true
+		rotate = D270
+		break // flip 8
 	}
 
 	return rotate, flip

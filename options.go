@@ -42,10 +42,10 @@ func (i Interpolator) String() string {
 type Angle int
 
 const (
-	D0   Angle = C.VIPS_ANGLE_D0
-	D90  Angle = C.VIPS_ANGLE_D90
-	D180 Angle = C.VIPS_ANGLE_D180
-	D270 Angle = C.VIPS_ANGLE_D270
+	D0   Angle = 0
+	D90  Angle = 90
+	D180 Angle = 180
+	D270 Angle = 270
 )
 
 type Direction int
