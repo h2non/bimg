@@ -45,15 +45,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	// image calculations
 	factor := imageCalculations(&o, inWidth, inHeight)
-	shrink := int(math.Max(math.Floor(factor), 1))
-	residual := float64(shrink) / factor
-
-	// Calculate integral box shrink
-	windowSize := vipsWindowSize(o.Interpolator.String())
-	if factor >= 2 && windowSize > 3 {
-		// Shrink less, affine more with interpolators that use at least 4x4 pixel window, e.g. bicubic
-		shrink = int(math.Max(float64(math.Floor(factor*3.0/windowSize)), 1))
-	}
+	shrink := calculateShrink(factor, o.Interpolator)
+	residual := calculateResidual(factor, shrink)
 
 	// Do not enlarge the output if the input width *or* height are already less than the required dimensions
 	if o.Enlarge == false {
@@ -72,6 +65,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		image = tmpImage
 		factor = math.Max(factor, 1.0)
 		shrink = int(math.Floor(factor))
@@ -110,12 +104,14 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 			}
 		}
 
-		debug("Transform image: factor=%v, shrink=%v, residual=%v", factor, shrink, residual)
 		// Extract area from image
 		image, err = extractImage(image, o)
 		if err != nil {
 			return nil, err
 		}
+
+		debug("Transform: factor=%v, shrink=%v, residual=%v, interpolator=%v",
+			factor, shrink, residual, o.Interpolator.String())
 	}
 
 	// Add watermark if necessary
@@ -156,11 +152,16 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend)
 		break
 	case o.Top > 0 || o.Left > 0:
-		if o.AreaWidth == 0 || o.AreaHeight == 0 {
-			err = errors.New("Area to extract cannot be 0")
-		} else {
-			image, err = vipsExtract(image, o.Left, o.Top, o.AreaWidth, o.AreaHeight)
+		if o.AreaWidth == 0 {
+			o.AreaHeight = o.Width
 		}
+		if o.AreaHeight == 0 {
+			o.AreaHeight = o.Height
+		}
+		if o.AreaWidth == 0 || o.AreaHeight == 0 {
+			return nil, errors.New("Extract area width/height is required")
+		}
+		image, err = vipsExtract(image, o.Left, o.Top, o.AreaWidth, o.AreaHeight)
 		break
 	}
 
@@ -373,6 +374,25 @@ func calculateRotationAndFlip(image *C.struct__VipsImage, angle Angle) (Angle, b
 	}
 
 	return rotate, flip
+}
+
+func calculateShrink(factor float64, i Interpolator) int {
+	var shrink float64
+
+	// Calculate integral box shrink
+	windowSize := vipsWindowSize(i.String())
+	if factor >= 2 && windowSize > 3 {
+		// Shrink less, affine more with interpolators that use at least 4x4 pixel window, e.g. bicubic
+		shrink = float64(math.Floor(factor * 3.0 / windowSize))
+	} else {
+		shrink = math.Floor(factor)
+	}
+
+	return int(math.Max(shrink, 1))
+}
+
+func calculateResidual(factor float64, shrink int) float64 {
+	return float64(shrink) / factor
 }
 
 func getAngle(angle Angle) Angle {
