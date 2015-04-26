@@ -25,6 +25,12 @@ typedef struct {
 	double Background[3];
 } WatermarkOptions;
 
+void
+vips_enable_cache_set_trace()
+{
+	vips_cache_set_trace(TRUE);
+};
+
 int
 vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
 {
@@ -144,7 +150,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 int
 vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
 {
-	return vips_webpsave_buffer(in, buf, len, "strip", strip, "Q", quality, "optimize_coding", TRUE, "interlace", interlace, NULL);
+	return vips_webpsave_buffer(in, buf, len, "strip", strip, "Q", quality, NULL);
 };
 
 int
@@ -242,10 +248,4 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 
 	g_object_unref(base);
 	return 0;
-};
-
-void
-vips_enable_cache_set_trace()
-{
-	vips_cache_set_trace(TRUE);
 };

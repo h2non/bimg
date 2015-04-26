@@ -72,35 +72,45 @@ func TestInvalidRotate(t *testing.T) {
 }
 
 func TestConvert(t *testing.T) {
-	width, height := 640, 480
+	width, height := 300, 240
+	formats := [3]ImageType{PNG, WEBP, JPEG}
 
-	options := Options{Width: width, Height: height, Crop: true, Type: PNG}
-	img, err := os.Open("fixtures/test.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer img.Close()
-
-	buf, err := ioutil.ReadAll(img)
-	if err != nil {
-		t.Fatal(err)
+	files := []string{
+		"test.jpg",
+		"test.png",
+		"test.webp",
 	}
 
-	newImg, err := Resize(buf, options)
-	if err != nil {
-		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
-	}
+	for _, file := range files {
+		img, err := os.Open("fixtures/" + file)
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	if DetermineImageType(newImg) != PNG {
-		t.Fatal("Image is not png")
-	}
+		buf, err := ioutil.ReadAll(img)
+		if err != nil {
+			t.Fatal(err)
+		}
+		img.Close()
 
-	size, _ := Size(newImg)
-	if size.Height != height || size.Width != width {
-		t.Fatal("Invalid image size")
-	}
+		for _, format := range formats {
+			options := Options{Width: width, Height: height, Crop: true, Type: format}
 
-	Write("fixtures/test_out.png", newImg)
+			newImg, err := Resize(buf, options)
+			if err != nil {
+				t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+			}
+
+			if DetermineImageType(newImg) != format {
+				t.Fatal("Image is not png")
+			}
+
+			size, _ := Size(newImg)
+			if size.Height != height || size.Width != width {
+				t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+			}
+		}
+	}
 }
 
 func TestResizePngWithTransparency(t *testing.T) {
