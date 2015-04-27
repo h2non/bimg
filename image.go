@@ -14,6 +14,17 @@ func (i *Image) Resize(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Resize the image to fixed width and height with additional crop transformation
+func (i *Image) ResizeAndCrop(width, height int) ([]byte, error) {
+	options := Options{
+		Width:  width,
+		Height: height,
+		Embed:  true,
+		Crop:   true,
+	}
+	return i.Process(options)
+}
+
 // Extract area from the by X/Y axis
 func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 	options := Options{
@@ -25,12 +36,23 @@ func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Enlarge the image from the by X/Y axis
+// Enlarge the image by width and height. Aspect ratio is maintained
 func (i *Image) Enlarge(width, height int) ([]byte, error) {
 	options := Options{
 		Width:   width,
 		Height:  height,
 		Enlarge: true,
+	}
+	return i.Process(options)
+}
+
+// Enlarge the image by width and height with additional crop transformation
+func (i *Image) EnlargeAndCrop(width, height int) ([]byte, error) {
+	options := Options{
+		Width:   width,
+		Height:  height,
+		Enlarge: true,
+		Crop:    true,
 	}
 	return i.Process(options)
 }

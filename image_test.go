@@ -20,13 +20,27 @@ func TestImageResize(t *testing.T) {
 	Write("fixtures/test_resize_out.jpg", buf)
 }
 
+func TestImageResizeAndCrop(t *testing.T) {
+	buf, err := initImage("test.jpg").ResizeAndCrop(300, 200)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	err = assertSize(buf, 300, 200)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_resize_crop_out.jpg", buf)
+}
+
 func TestImageExtract(t *testing.T) {
-	buf, err := initImage("test.jpg").Extract(100, 100, 300, 300)
+	buf, err := initImage("test.jpg").Extract(100, 100, 300, 200)
 	if err != nil {
 		t.Errorf("Cannot process the image: %s", err)
 	}
 
-	err = assertSize(buf, 300, 300)
+	err = assertSize(buf, 300, 200)
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,6 +60,20 @@ func TestImageEnlarge(t *testing.T) {
 	}
 
 	Write("fixtures/test_enlarge_out.jpg", buf)
+}
+
+func TestImageEnlargeAndCrop(t *testing.T) {
+	buf, err := initImage("test.png").EnlargeAndCrop(800, 480)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	err = assertSize(buf, 800, 480)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_enlarge_crop_out.jpg", buf)
 }
 
 func TestImageCrop(t *testing.T) {
