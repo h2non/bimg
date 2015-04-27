@@ -243,7 +243,7 @@ Enable libvips traces (note that a lot of data will be written in stdout):
 VIPS_TRACE=1 ./app 
 ```
 
-#### func DetermineImageTypeName
+#### func  DetermineImageTypeName
 
 ```go
 func DetermineImageTypeName(buf []byte) string
@@ -292,10 +292,10 @@ func Shutdown()
 Thread-safe function to shutdown libvips. You could call this to drop caches as
 well. If libvips was already initialized, the function is no-op
 
-#### func  VipsDebug
+#### func  VipsDebugInfo
 
 ```go
-func VipsDebug()
+func VipsDebugInfo()
 ```
 Output to stdout vips collected data. Useful for debugging
 
@@ -314,10 +314,10 @@ type Angle int
 
 ```go
 const (
-  D0   Angle = C.VIPS_ANGLE_D0
-  D90  Angle = C.VIPS_ANGLE_D90
-  D180 Angle = C.VIPS_ANGLE_D180
-  D270 Angle = C.VIPS_ANGLE_D270
+  D0   Angle = 0
+  D90  Angle = 90
+  D180 Angle = 180
+  D270 Angle = 270
 )
 ```
 
@@ -410,7 +410,14 @@ Crop an image by width (auto height)
 ```go
 func (i *Image) Enlarge(width, height int) ([]byte, error)
 ```
-Enlarge the image from the by X/Y axis
+Enlarge the image by width and height. Aspect ratio is maintained
+
+#### func (*Image) EnlargeAndCrop
+
+```go
+func (i *Image) EnlargeAndCrop(width, height int) ([]byte, error)
+```
+Enlarge the image by width and height with additional crop transformation
 
 #### func (*Image) Extract
 
@@ -460,6 +467,13 @@ Transform the image by custom options
 func (i *Image) Resize(width, height int) ([]byte, error)
 ```
 Resize the image to fixed width and height
+
+#### func (*Image) ResizeAndCrop
+
+```go
+func (i *Image) ResizeAndCrop(width, height int) ([]byte, error)
+```
+Resize the image to fixed width and height with additional crop transformation
 
 #### func (*Image) Rotate
 
@@ -627,6 +641,7 @@ type VipsMemoryInfo struct {
   Allocations     int64
 }
 ```
+
 
 #### func  VipsMemory
 
