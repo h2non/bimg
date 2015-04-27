@@ -185,19 +185,17 @@ if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }
 
-options := bimg.Watermark{
-  Watermark{
-    Text:       "Chuck Norris (c) 2315",
-    Opacity:    0.25,
-    Width:      200,
-    DPI:        100,
-    Margin:     150,
-    Font:       "sans bold 12",
-    Background: bimg.Color{255, 255, 255},
-  }
+watermark := bimg.Watermark{
+  Text:       "Chuck Norris (c) 2315",
+  Opacity:    0.25,
+  Width:      200,
+  DPI:        100,
+  Margin:     150,
+  Font:       "sans bold 12",
+  Background: bimg.Color{255, 255, 255},
 }
 
-newImage, err := bimg.NewImage(buffer).Watermark(options)
+newImage, err := bimg.NewImage(buffer).Watermark(watermark)
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }
