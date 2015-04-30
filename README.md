@@ -13,8 +13,6 @@ If you're looking for a HTTP-based image processing solution, see [imaginary](ht
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
-**Note**: bimg is still beta. Do not use in compromised environments yet
-
 ## Prerequisites
 
 - [libvips](https://github.com/jcupitt/libvips) v7.40.0+ (7.42.0+ recommended)
