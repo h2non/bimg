@@ -1,6 +1,6 @@
 # bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GitHub release](https://img.shields.io/github/tag/h2non/bimg.svg)](https://github.com/h2non/bimg/releases) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg) [![Coverage Status](https://coveralls.io/repos/h2non/bimg/badge.svg?branch=master)](https://coveralls.io/r/h2non/bimg?branch=master)
 
-Small [Go](http://golang.org) library for fast and efficient image processing based on [libvips](https://github.com/jcupitt/libvips) using C bindings. It provides a simple, elegant and fluent [programmatic API](#examples).
+Small [Go](http://golang.org) library for fast high-level image processing and transformation using [libvips](https://github.com/jcupitt/libvips) via C bindings. It provides a simple, elegant and fluent [programmatic API](#examples).
 
 bimg was designed to be a small and efficient library with a generic and useful features.  
 It uses internally libvips, a powerful library written in C for binary image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
@@ -10,7 +10,6 @@ It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, i
 
 For getting started, take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
 If you're looking for a HTTP-based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
-
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
 ## Prerequisites
