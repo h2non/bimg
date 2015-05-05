@@ -72,6 +72,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		residual = float64(shrink) / factor
 	}
 
+	debug("Test %s, %s, %s", shrink, residual, factor)
+
 	// Zoom image if necessary
 	image, err = zoomImage(image, o.Zoom)
 	if err != nil {

@@ -153,6 +153,11 @@ func runBenchmarkResize(file string, o Options, b *testing.B) {
 	}
 }
 
+func BenchmarkRotateJpeg(b *testing.B) {
+	options := Options{Rotate: 180}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
 func BenchmarkResizeLargeJpeg(b *testing.B) {
 	options := Options{
 		Width:  800,

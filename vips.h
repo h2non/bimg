@@ -56,7 +56,7 @@ vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrin
 };
 
 int
-vips_rotate(VipsImage *in, VipsImage **buf, int angle)
+vips_rotate(VipsImage *in, VipsImage **out, int angle)
 {
 	int rotate = VIPS_ANGLE_D0;
 
@@ -68,7 +68,7 @@ vips_rotate(VipsImage *in, VipsImage **buf, int angle)
 		rotate = VIPS_ANGLE_D270;
 	}
 
-	return vips_rot(in, buf, rotate, NULL);
+	return vips_rot(in, out, rotate, NULL);
 };
 
 int
@@ -158,16 +158,16 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 	int code = 1;
 
 	if (imageType == JPEG) {
-		code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+		code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == PNG) {
-		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == WEBP) {
-		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == TIFF) {
-		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #if (VIPS_MAJOR_VERSION >= 8)
 	} else if (imageType == MAGICK) {
-		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_SEQUENTIAL, NULL);
+		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
 	}
 

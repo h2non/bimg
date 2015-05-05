@@ -15,6 +15,11 @@ import (
 	"unsafe"
 )
 
+const (
+	maxCacheMem  = 100 * 1024 * 1024
+	maxCacheSize = 500
+)
+
 var (
 	m           sync.Mutex
 	initialized bool
@@ -67,8 +72,9 @@ func Initialize() {
 		panic("unable to start vips!")
 	}
 
-	C.vips_cache_set_max_mem(100 * 1024 * 1024)
-	C.vips_cache_set_max(500)
+	// Set libvips cache params
+	C.vips_cache_set_max_mem(maxCacheMem)
+	C.vips_cache_set_max(maxCacheSize)
 
 	// Explicit concurrency limit to avoid thread-unsafe issues.
 	// See: https://github.com/jcupitt/libvips/issues/261#issuecomment-92850414
