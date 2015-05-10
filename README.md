@@ -2,14 +2,14 @@
 
 Small [Go](http://golang.org) library for fast high-level image processing and transformation using [libvips](https://github.com/jcupitt/libvips) via C bindings. It provides a simple, elegant and fluent [programmatic API](#examples).
 
-bimg was designed to be a small and efficient library with a generic and useful features.  
+bimg was designed to be a small and efficient library providing a generic and common high-level [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark...
+It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them.
+
 It uses internally libvips, a powerful library written in C for binary image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go  native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them. It supports common [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark... 
-
 For getting started, take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
-If you're looking for a HTTP-based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
+If you're looking for a HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
 ## Prerequisites
