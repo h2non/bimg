@@ -278,7 +278,7 @@ func BenchmarkWatermarkJpeg(b *testing.B) {
 			Background: Color{255, 255, 255},
 		},
 	}
-	runBenchmarkResize("test.webp", options, b)
+	runBenchmarkResize("test.jpg", options, b)
 }
 
 func BenchmarkWatermarPng(b *testing.B) {
