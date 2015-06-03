@@ -76,12 +76,12 @@ func Initialize() {
 	C.vips_cache_set_max_mem(maxCacheMem)
 	C.vips_cache_set_max(maxCacheSize)
 
-	// Explicit concurrency limit to avoid thread-unsafe issues.
+	// Define a custom libvips thread concurrency limit (this may generate thread-unsafe issues)
 	// See: https://github.com/jcupitt/libvips/issues/261#issuecomment-92850414
 	if os.Getenv("VIPS_CONCURRENCY") == "" {
 		C.vips_concurrency_set(1)
 	}
-
+	// Enable libvips cache tracing 
 	if os.Getenv("VIPS_TRACE") != "" {
 		C.vips_enable_cache_set_trace()
 	}
@@ -234,7 +234,6 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	default:
-		debug("Save JPEG options: Q: %s", o.Quality)
 		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	}
@@ -306,10 +305,10 @@ func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int)
 
 func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
-	istring := C.CString(i.String())
-	interpolator := C.vips_interpolate_new(istring)
+	cstring := C.CString(i.String())
+	interpolator := C.vips_interpolate_new(cstring)
 
-	defer C.free(unsafe.Pointer(istring))
+	defer C.free(unsafe.Pointer(cstring))
 	defer C.g_object_unref(C.gpointer(input))
 	defer C.g_object_unref(C.gpointer(interpolator))
 
