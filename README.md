@@ -44,7 +44,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Zoom
 - Thumbnail
 - Extract area
-- Watermark (fully customizable text-based)
+- Watermark (text-based)
 - Format conversion (with additional quality/compression settings)
 - EXIF metadata (size, alpha channel, profile, orientation...)
 
