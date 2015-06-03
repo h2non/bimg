@@ -226,11 +226,11 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 
 	defer C.g_object_unref(C.gpointer(image))
 
-	switch {
-	case o.Type == PNG:
+	switch o.Type {
+	case PNG:
 		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
 		break
-	case o.Type == WEBP:
+	case WEBP:
 		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
 		break
 	default:
