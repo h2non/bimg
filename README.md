@@ -31,7 +31,14 @@ Run the following script as `sudo` (supports OSX, Debian/Ubuntu, Redhat, Fedora,
 curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
 ```
 
+If you wanne take the advantage of [OpenSlide](http://openslide.org/), simply add `--with-openslide` to enable it:
+```bash
+curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -s --with-openslide
+```
+
 The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) requires `curl` and `pkg-config`
+
+For platform specific installations, see  [Mac OS](https://github.com/lovell/sharp/blob/master/README.md#mac-os-tips) tips or [Windows](https://github.com/lovell/sharp/blob/master/README.md#windows) tips
 
 ## Supported image operations
 
