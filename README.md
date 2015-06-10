@@ -39,7 +39,6 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Enlarge
 - Crop
 - Rotate (with auto-rotate based on EXIF orientation)
-- Progressive
 - Flip (with auto-flip based on EXIF metadata)
 - Flop
 - Zoom
