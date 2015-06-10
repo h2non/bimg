@@ -30,7 +30,7 @@ func TestVipsRead(t *testing.T) {
 
 func TestVipsSave(t *testing.T) {
 	image, _, _ := vipsRead(readImage("test.jpg"))
-	options := vipsSaveOptions{Quality: 95, Type: JPEG}
+	options := vipsSaveOptions{Quality: 95, Type: JPEG, Interlace: 1}
 
 	buf, err := vipsSave(image, options)
 	if err != nil {

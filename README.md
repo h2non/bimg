@@ -39,6 +39,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 - Enlarge
 - Crop
 - Rotate (with auto-rotate based on EXIF orientation)
+- Progressive
 - Flip (with auto-flip based on EXIF metadata)
 - Flop
 - Zoom
@@ -159,6 +160,7 @@ options := bimg.Options{
   Crop:         true,
   Quality:      95,
   Rotate:       180,
+  Interlace:    1,
 }
 
 buffer, err := bimg.Read("image.jpg")
@@ -618,6 +620,7 @@ type Options struct {
   Flip         bool
   Flop         bool
   NoAutoRotate bool
+  Interlace    int
   Rotate       Angle
   Gravity      Gravity
   Watermark    Watermark

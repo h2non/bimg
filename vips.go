@@ -35,6 +35,7 @@ type vipsSaveOptions struct {
 	Quality     int
 	Compression int
 	Type        ImageType
+	Interlace   int
 }
 
 type vipsWatermarkOptions struct {
@@ -235,7 +236,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 		break
 	default:
 		debug("Save JPEG options: Q: %s", o.Quality)
-		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), C.int(o.Interlace))
 		break
 	}
 
