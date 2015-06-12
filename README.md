@@ -167,7 +167,7 @@ options := bimg.Options{
   Crop:         true,
   Quality:      95,
   Rotate:       180,
-  Interlace:    1,
+  Interlace:    true,
 }
 
 buffer, err := bimg.Read("image.jpg")
@@ -246,6 +246,8 @@ Enable libvips traces (note that a lot of data will be written in stdout):
 ```
 VIPS_TRACE=1 ./app 
 ```
+
+### Programmatic API 
 
 #### func  DetermineImageTypeName
 
@@ -627,7 +629,7 @@ type Options struct {
   Flip         bool
   Flop         bool
   NoAutoRotate bool
-  Interlace    int
+  Interlace    bool
   Rotate       Angle
   Gravity      Gravity
   Watermark    Watermark
@@ -669,6 +671,7 @@ type Watermark struct {
   Background  Color
 }
 ```
+
 
 ## Special Thanks
 
