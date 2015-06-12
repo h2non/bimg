@@ -23,13 +23,16 @@ func DetermineImageTypeName(buf []byte) string {
 
 // Check if a given image type is supported
 func IsTypeSupported(t ImageType) bool {
-	return t == JPEG || t == PNG || t == WEBP
+	return t == JPEG || t == PNG || t == WEBP || t == MAGICK
 }
 
 // Check if a given image type name is supported
 func IsTypeNameSupported(t string) bool {
-	return t == "jpeg" || t == "jpg" ||
-		t == "png" || t == "webp"
+	return t == "jpeg" ||
+		t == "jpg" ||
+		t == "png" ||
+		t == "webp" ||
+		t == "magick"
 }
 
 func getImageTypeName(code ImageType) string {

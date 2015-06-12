@@ -166,6 +166,7 @@ options := bimg.Options{
   Crop:         true,
   Quality:      95,
   Rotate:       180,
+  Interlace:    1,
 }
 
 buffer, err := bimg.Read("image.jpg")
@@ -625,6 +626,7 @@ type Options struct {
   Flip         bool
   Flop         bool
   NoAutoRotate bool
+  Interlace    int
   Rotate       Angle
   Gravity      Gravity
   Watermark    Watermark

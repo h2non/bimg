@@ -35,6 +35,7 @@ type vipsSaveOptions struct {
 	Quality     int
 	Compression int
 	Type        ImageType
+	Interlace   bool
 }
 
 type vipsWatermarkOptions struct {
@@ -81,7 +82,7 @@ func Initialize() {
 	if os.Getenv("VIPS_CONCURRENCY") == "" {
 		C.vips_concurrency_set(1)
 	}
-	// Enable libvips cache tracing 
+	// Enable libvips cache tracing
 	if os.Getenv("VIPS_TRACE") != "" {
 		C.vips_enable_cache_set_trace()
 	}
@@ -223,18 +224,19 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	var ptr unsafe.Pointer
 	length := C.size_t(0)
 	err := C.int(0)
+	interlace := C.int(boolToInt(o.Interlace))
 
 	defer C.g_object_unref(C.gpointer(image))
 
 	switch o.Type {
 	case PNG:
-		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), 0)
+		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), interlace)
 		break
 	case WEBP:
-		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality))
 		break
 	default:
-		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), 0)
+		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), interlace)
 		break
 	}
 
@@ -357,4 +359,11 @@ func catchVipsError() error {
 	C.vips_error_clear()
 	C.vips_thread_shutdown()
 	return errors.New(s)
+}
+
+func boolToInt(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
 }
