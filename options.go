@@ -55,6 +55,8 @@ const (
 	VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
 )
 
+const WATERMARK_FONT = "sans 10"
+
 // Color represents a traditional RGB color scheme
 type Color struct {
 	R, G, B uint8

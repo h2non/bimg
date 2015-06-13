@@ -72,23 +72,22 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		residual = float64(shrink) / factor
 	}
 
-	debug("Test %s, %s, %s", shrink, residual, factor)
-
-	// Zoom image if necessary
+	// Zoom image, if necessary
 	image, err = zoomImage(image, o.Zoom)
 	if err != nil {
 		return nil, err
 	}
 
-	// Rotate / flip image if necessary
+	// Rotate / flip image, if necessary
 	image, err = rotateAndFlipImage(image, o)
 	if err != nil {
 		return nil, err
 	}
 
-	// Transform image if necessary
-	shouldTransform := o.Width != inWidth || o.Height != inHeight || o.AreaWidth > 0 || o.AreaHeight > 0
-	if shouldTransform {
+	// Transform image, if necessary
+	transformImage := o.Width != inWidth || o.Height != inHeight || o.AreaWidth > 0 || o.AreaHeight > 0
+
+	if transformImage {
 
 		// Use vips_shrink with the integral reduction
 		if shrink > 1 {
@@ -98,9 +97,12 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 			}
 		}
 
+		debug("Transform: factor=%v, shrink=%v, residual=%v, interpolator=%v",
+			factor, shrink, residual, o.Interpolator.String())
+
 		// Affine with the remaining float part
 		if residual != 0 {
-			image, err = vipsAffine(image, residual, o.Interpolator)
+			image, err = affineImage(image, o, residual)
 			if err != nil {
 				return nil, err
 			}
@@ -111,12 +113,9 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		debug("Transform: factor=%v, shrink=%v, residual=%v, interpolator=%v",
-			factor, shrink, residual, o.Interpolator.String())
 	}
 
-	// Add watermark if necessary
+	// Add watermark, if necessary
 	image, err = watermakImage(image, o.Watermark)
 	if err != nil {
 		return nil, err
@@ -148,6 +147,7 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 		width := int(math.Min(float64(inWidth), float64(o.Width)))
 		height := int(math.Min(float64(inHeight), float64(o.Height)))
 		left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
+		left, top = int(math.Max(float64(left), 0)), int(math.Max(float64(top), 0))
 		image, err = vipsExtract(image, left, top, width, height)
 		break
 	case o.Embed:
@@ -162,7 +162,7 @@ func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, 
 			o.AreaHeight = o.Height
 		}
 		if o.AreaWidth == 0 || o.AreaHeight == 0 {
-			return nil, errors.New("Extract area width/height is required")
+			return nil, errors.New("Extract area width/height params are required")
 		}
 		image, err = vipsExtract(image, o.Left, o.Top, o.AreaWidth, o.AreaHeight)
 		break
@@ -209,7 +209,7 @@ func watermakImage(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImag
 
 	// Defaults
 	if w.Font == "" {
-		w.Font = "sans 10"
+		w.Font = WATERMARK_FONT
 	}
 	if w.Width == 0 {
 		w.Width = int(math.Floor(float64(image.Xsize / 6)))
@@ -240,6 +240,23 @@ func zoomImage(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, erro
 	}
 
 	return vipsZoom(image, zoom+1)
+}
+
+func affineImage(image *C.struct__VipsImage, o Options, residual float64) (*C.struct__VipsImage, error) {
+	newImage, err := vipsAffine(image, residual, o.Interpolator)
+	if err != nil {
+		C.g_object_unref(C.gpointer(image))
+		return nil, err
+	}
+
+	if o.Enlarge || (o.Width > int(newImage.Xsize) && o.Height > int(newImage.Ysize)) {
+		C.g_object_unref(C.gpointer(image))
+		image = newImage
+	} else {
+		C.g_object_unref(C.gpointer(newImage))
+	}
+
+	return image, nil
 }
 
 func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {
@@ -309,8 +326,8 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	case o.Height > 0:
 		factor = yfactor
 		o.Width = int(math.Floor(float64(inWidth) / factor))
+	// Identity transform
 	default:
-		// Identity transform
 		o.Width = inWidth
 		o.Height = inHeight
 		break
