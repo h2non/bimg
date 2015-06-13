@@ -226,17 +226,22 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	err := C.int(0)
 	interlace := C.int(boolToInt(o.Interlace))
 
+	// Force RGB color space
+	var outImage *C.struct__VipsImage
+	C.vips_colourspace_bridge(image, &outImage)
+
 	defer C.g_object_unref(C.gpointer(image))
+	defer C.g_object_unref(C.gpointer(outImage))
 
 	switch o.Type {
 	case PNG:
-		err = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), interlace)
+		err = C.vips_pngsave_bridge(outImage, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), interlace)
 		break
 	case WEBP:
-		err = C.vips_webpsave_bridge(image, &ptr, &length, 1, C.int(o.Quality))
+		err = C.vips_webpsave_bridge(outImage, &ptr, &length, 1, C.int(o.Quality))
 		break
 	default:
-		err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, C.int(o.Quality), interlace)
+		err = C.vips_jpegsave_bridge(outImage, &ptr, &length, 1, C.int(o.Quality), interlace)
 		break
 	}
 

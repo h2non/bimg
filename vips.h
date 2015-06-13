@@ -129,6 +129,12 @@ vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int 
 	return vips_extract_area(in, out, left, top, width, height, NULL);
 };
 
+int
+vips_colourspace_bridge(VipsImage *in, VipsImage **out)
+{
+    return vips_colourspace(in, out, VIPS_INTERPRETATION_sRGB, NULL);
+};
+
 gboolean
 with_interlace(int interlace) {
 	return interlace > 0 ? TRUE : FALSE;
