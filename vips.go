@@ -36,6 +36,7 @@ type vipsSaveOptions struct {
 	Compression int
 	Type        ImageType
 	Interlace   bool
+	NoProfile   bool
 }
 
 type vipsWatermarkOptions struct {
@@ -221,10 +222,14 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 }
 
 func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
-	var ptr unsafe.Pointer
 	length := C.size_t(0)
 	err := C.int(0)
 	interlace := C.int(boolToInt(o.Interlace))
+
+	// Remove ICC profile metadata
+	if o.NoProfile {
+		C.remove_profile(image)
+	}
 
 	// Force RGB color space
 	var outImage *C.struct__VipsImage
@@ -233,6 +238,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	defer C.g_object_unref(C.gpointer(image))
 	defer C.g_object_unref(C.gpointer(outImage))
 
+	var ptr unsafe.Pointer
 	switch o.Type {
 	case PNG:
 		err = C.vips_pngsave_bridge(outImage, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), interlace)

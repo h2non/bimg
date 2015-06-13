@@ -86,7 +86,12 @@ vips_exif_orientation(VipsImage *image) {
 
 int
 has_profile_embed(VipsImage *image) {
-	return (vips_image_get_typeof(image, VIPS_META_ICC_NAME) > 0) ? 1 : 0;
+	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
+};
+
+void
+remove_profile(VipsImage *image) {
+	vips_image_remove(image, VIPS_META_ICC_NAME);
 };
 
 int

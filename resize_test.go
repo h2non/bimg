@@ -71,6 +71,21 @@ func TestInvalidRotate(t *testing.T) {
 	Write("fixtures/test_invalid_rotate_out.jpg", newImg)
 }
 
+func TestNoColorProfile(t *testing.T) {
+	options := Options{Width: 800, Height: 600, NoColorProfile: true}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	metadata, err := Metadata(newImg)
+	if metadata.Profile == true {
+		t.Fatal("Invalid profile data")
+	}
+}
+
 func TestConvert(t *testing.T) {
 	width, height := 300, 240
 	formats := [3]ImageType{PNG, WEBP, JPEG}

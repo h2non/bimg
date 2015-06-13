@@ -126,6 +126,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		Type:        o.Type,
 		Compression: o.Compression,
 		Interlace:   o.Interlace,
+		NoProfile:   o.NoProfile,
 	}
 
 	// Finally save as buffer

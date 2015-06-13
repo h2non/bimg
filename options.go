@@ -90,6 +90,7 @@ type Options struct {
 	Flip         bool
 	Flop         bool
 	NoAutoRotate bool
+	NoProfile    bool
 	Interlace    bool
 	Rotate       Angle
 	Gravity      Gravity
