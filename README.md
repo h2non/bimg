@@ -249,6 +249,7 @@ VIPS_TRACE=1 ./app
 
 ### Programmatic API 
 
+
 #### func  DetermineImageTypeName
 
 ```go
@@ -629,6 +630,7 @@ type Options struct {
   Flip         bool
   Flop         bool
   NoAutoRotate bool
+  NoProfile    bool
   Interlace    bool
   Rotate       Angle
   Gravity      Gravity
@@ -671,7 +673,6 @@ type Watermark struct {
   Background  Color
 }
 ```
-
 
 ## Special Thanks
 
