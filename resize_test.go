@@ -72,7 +72,7 @@ func TestInvalidRotate(t *testing.T) {
 }
 
 func TestNoColorProfile(t *testing.T) {
-	options := Options{Width: 800, Height: 600, NoColorProfile: true}
+	options := Options{Width: 800, Height: 600, NoProfile: true}
 	buf, _ := Read("fixtures/test.jpg")
 
 	newImg, err := Resize(buf, options)
