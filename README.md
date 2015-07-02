@@ -8,9 +8,8 @@ It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, i
 bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-For getting started, take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
+To get started you could take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
 If you're looking for a HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
-
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
 
 ## Prerequisites
