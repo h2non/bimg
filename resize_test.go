@@ -20,6 +20,11 @@ func TestResize(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
 	Write("fixtures/test_out.jpg", newImg)
 }
 
@@ -36,23 +41,12 @@ func TestRotate(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
+	size, _ := Size(newImg)
+	if size.Height != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
 	Write("fixtures/test_rotate_out.jpg", newImg)
-}
-
-func TestCorruptedImage(t *testing.T) {
-	options := Options{Width: 800, Height: 600}
-	buf, _ := Read("fixtures/corrupt.jpg")
-
-	newImg, err := Resize(buf, options)
-	if err != nil {
-		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
-	}
-
-	if DetermineImageType(newImg) != JPEG {
-		t.Fatal("Image is not jpeg")
-	}
-
-	Write("fixtures/test_corrupt_out.jpg", newImg)
 }
 
 func TestInvalidRotate(t *testing.T) {
@@ -68,7 +62,33 @@ func TestInvalidRotate(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
+	size, _ := Size(newImg)
+	if size.Height != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
 	Write("fixtures/test_invalid_rotate_out.jpg", newImg)
+}
+
+func TestCorruptedImage(t *testing.T) {
+	options := Options{Width: 800, Height: 600}
+	buf, _ := Read("fixtures/corrupt.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	if DetermineImageType(newImg) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_corrupt_out.jpg", newImg)
 }
 
 func TestNoColorProfile(t *testing.T) {
@@ -83,6 +103,11 @@ func TestNoColorProfile(t *testing.T) {
 	metadata, err := Metadata(newImg)
 	if metadata.Profile == true {
 		t.Fatal("Invalid profile data")
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 }
 
