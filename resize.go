@@ -23,6 +23,9 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Define default options
+	applyDefaults(&o, imageType)
+
 	if IsTypeSupported(o.Type) == false {
 		return nil, errors.New("Unsupported image output type")
 	}
@@ -32,8 +35,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
-	// Define default options
-	applyDefaults(&o, imageType)
 	// Infer the required operation based on the in/out image sizes for a coherent transformation
 	normalizeOperation(&o, inWidth, inHeight)
 
