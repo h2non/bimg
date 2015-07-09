@@ -45,7 +45,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	// Do not enlarge the output if the input width or height
 	// are already less than the required dimensions
 	if o.Enlarge == false {
-		if inWidth < o.Width || inHeight < o.Height {
+		if inWidth < o.Width && inHeight < o.Height {
 			factor = 1.0
 			shrink = 1
 			residual = 0
