@@ -55,6 +55,20 @@ const (
 	VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
 )
 
+type Interpretation int
+
+const (
+	ERROR Interpretation = C.VIPS_INTERPRETATION_ERROR
+	MULTIBAND Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
+	B_W Interpretation = C.VIPS_INTERPRETATION_B_W
+	CMYK Interpretation = C.VIPS_INTERPRETATION_CMYK
+	RGB Interpretation = C.VIPS_INTERPRETATION_RGB
+	sRGB Interpretation = C.VIPS_INTERPRETATION_sRGB
+	RGB16 Interpretation = C.VIPS_INTERPRETATION_RGB16
+	GREY16 Interpretation = C.VIPS_INTERPRETATION_GREY16
+	scRGB Interpretation = C.VIPS_INTERPRETATION_scRGB
+)
+
 const WATERMARK_FONT = "sans 10"
 
 // Color represents a traditional RGB color scheme
@@ -97,4 +111,5 @@ type Options struct {
 	Watermark    Watermark
 	Type         ImageType
 	Interpolator Interpolator
+	Interpretation Interpretation
 }

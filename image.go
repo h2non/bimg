@@ -134,6 +134,12 @@ func (i *Image) Convert(t ImageType) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Colour space conversion
+func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
+	options := Options{Interpretation: c}
+	return i.Process(options)
+}
+
 // Transform the image by custom options
 func (i *Image) Process(o Options) ([]byte, error) {
 	image, err := Resize(i.buffer, o)

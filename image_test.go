@@ -262,6 +262,14 @@ func TestImageMetadata(t *testing.T) {
 	}
 }
 
+func TestImageColourspaceBW(t *testing.T) {
+	buf, err := initImage("test.jpg").Colourspace(B_W)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_image_colourspace_b_w.jpg", buf)
+}
+
 func TestFluentInterface(t *testing.T) {
 	image := initImage("test.jpg")
 	_, err := image.CropByWidth(300)

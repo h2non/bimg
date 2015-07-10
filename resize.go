@@ -122,6 +122,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		Compression: o.Compression,
 		Interlace:   o.Interlace,
 		NoProfile:   o.NoProfile,
+		Interpretation: o.Interpretation,
 	}
 
 	// Finally save as buffer
@@ -142,6 +143,9 @@ func applyDefaults(o *Options, imageType ImageType) {
 	}
 	if o.Type == 0 {
 		o.Type = imageType
+	}
+	if o.Interpretation == 0 {
+		o.Interpretation = sRGB
 	}
 }
 
