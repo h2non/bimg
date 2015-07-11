@@ -40,7 +40,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 
 For platform specific installations, see  [Mac OS](https://github.com/lovell/sharp/blob/master/README.md#mac-os-tips) tips or [Windows](https://github.com/lovell/sharp/blob/master/README.md#windows) tips
 
-## Features
+## Supported image operations
 
 - Resize
 - Enlarge
