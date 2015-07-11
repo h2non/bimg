@@ -238,7 +238,7 @@ bimg.Write("new.jpg", newImage)
 
 Run the process passing the `DEBUG` environment variable
 ```
-DEBUG=* ./app 
+DEBUG=bimg ./app 
 ```
 
 Enable libvips traces (note that a lot of data will be written in stdout):
@@ -248,6 +248,12 @@ VIPS_TRACE=1 ./app
 
 ### Programmatic API 
 
+#### func  ColourspaceIsSupported
+
+```go
+func ColourspaceIsSupported(buf []byte) (bool, error)
+```
+Check in the image colourspace is supported by libvips
 
 #### func  DetermineImageTypeName
 
@@ -295,7 +301,7 @@ func Resize(buf []byte, o Options) ([]byte, error)
 ```go
 func Shutdown()
 ```
-Thread-safe function to shutdown libvips. You could call this to drop caches as
+Thread-safe function to shutdown libvips. You can call this to drop caches as
 well. If libvips was already initialized, the function is no-op
 
 #### func  VipsDebugInfo
@@ -383,6 +389,20 @@ func NewImage(buf []byte) *Image
 ```
 Creates a new image
 
+#### func (*Image) Colourspace
+
+```go
+func (i *Image) Colourspace(c Interpretation) ([]byte, error)
+```
+Colour space conversion
+
+#### func (*Image) ColourspaceIsSupported
+
+```go
+func (i *Image) ColourspaceIsSupported() (bool, error)
+```
+Check if the current image has a valid colourspace
+
 #### func (*Image) Convert
 
 ```go
@@ -452,6 +472,14 @@ Flop the image about the horizontal X axis
 func (i *Image) Image() []byte
 ```
 Get image buffer
+
+#### func (*Image) Interpretation
+
+```go
+func (i *Image) Interpretation() (Interpretation, error)
+```
+Get the image interpretation type See:
+http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
 
 #### func (*Image) Metadata
 
@@ -533,6 +561,7 @@ type ImageMetadata struct {
   Profile     bool
   Type        string
   Space       string
+  Colourspace string
   Size        ImageSize
 }
 ```
@@ -609,33 +638,65 @@ const (
 func (i Interpolator) String() string
 ```
 
+#### type Interpretation
+
+```go
+type Interpretation int
+```
+
+Image interpretation type See:
+http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
+
+```go
+const (
+  INTERPRETATION_ERROR     Interpretation = C.VIPS_INTERPRETATION_ERROR
+  INTERPRETATION_MULTIBAND Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
+  INTERPRETATION_B_W       Interpretation = C.VIPS_INTERPRETATION_B_W
+  INTERPRETATION_CMYK      Interpretation = C.VIPS_INTERPRETATION_CMYK
+  INTERPRETATION_RGB       Interpretation = C.VIPS_INTERPRETATION_RGB
+  INTERPRETATION_sRGB      Interpretation = C.VIPS_INTERPRETATION_sRGB
+  INTERPRETATION_RGB16     Interpretation = C.VIPS_INTERPRETATION_RGB16
+  INTERPRETATION_GREY16    Interpretation = C.VIPS_INTERPRETATION_GREY16
+  INTERPRETATION_scRGB     Interpretation = C.VIPS_INTERPRETATION_scRGB
+)
+```
+
+#### func  ImageInterpretation
+
+```go
+func ImageInterpretation(buf []byte) (Interpretation, error)
+```
+Get the image interpretation type See:
+http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
+
 #### type Options
 
 ```go
 type Options struct {
-  Height       int
-  Width        int
-  AreaHeight   int
-  AreaWidth    int
-  Top          int
-  Left         int
-  Extend       int
-  Quality      int
-  Compression  int
-  Zoom         int
-  Crop         bool
-  Enlarge      bool
-  Embed        bool
-  Flip         bool
-  Flop         bool
-  NoAutoRotate bool
-  NoProfile    bool
-  Interlace    bool
-  Rotate       Angle
-  Gravity      Gravity
-  Watermark    Watermark
-  Type         ImageType
-  Interpolator Interpolator
+  Height         int
+  Width          int
+  AreaHeight     int
+  AreaWidth      int
+  Top            int
+  Left           int
+  Extend         int
+  Quality        int
+  Compression    int
+  Zoom           int
+  Crop           bool
+  Enlarge        bool
+  Embed          bool
+  Flip           bool
+  Flop           bool
+  NoAutoRotate   bool
+  NoProfile      bool
+  Interlace      bool
+  Rotate         Angle
+  Gravity        Gravity
+  Watermark      Watermark
+  Type           ImageType
+  Interpolator   Interpolator
+  Interpretation Interpretation
 }
 ```
 

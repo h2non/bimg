@@ -135,6 +135,17 @@ vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int 
 };
 
 int
+vips_colourspace_issupported_bridge(VipsImage *in)
+{
+	return vips_colourspace_issupported(in) ? 1 : 0;
+};
+
+VipsInterpretation
+vips_image_guess_interpretation_bridge(VipsImage *in) {
+	return vips_image_guess_interpretation(in);
+};
+
+int
 vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space)
 {
     return vips_colourspace(in, out, space, NULL);

@@ -32,11 +32,11 @@ type VipsMemoryInfo struct {
 }
 
 type vipsSaveOptions struct {
-	Quality     int
-	Compression int
-	Type        ImageType
-	Interlace   bool
-	NoProfile   bool
+	Quality        int
+	Compression    int
+	Type           ImageType
+	Interlace      bool
+	NoProfile      bool
 	Interpretation Interpretation
 }
 
@@ -224,41 +224,85 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 	return image, imageType, nil
 }
 
-func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
-	length := C.size_t(0)
-	err := C.int(0)
-	interlace := C.int(boolToInt(o.Interlace))
-	if o.Interpretation == 0 {
-		o.Interpretation = sRGB
+func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
+	image, _, err := vipsRead(buf)
+	defer C.g_object_unref(C.gpointer(image))
+	if err != nil {
+		return false, err
 	}
-	interpretation := C.VipsInterpretation(o.Interpretation)
+	return vipsColourspaceIsSupported(image), nil
+}
 
+func vipsColourspaceIsSupported(image *C.struct__VipsImage) bool {
+	return int(C.vips_colourspace_issupported_bridge(image)) == 1
+}
+
+func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
+	image, _, err := vipsRead(buf)
+	defer C.g_object_unref(C.gpointer(image))
+	if err != nil {
+		return Interpretation(-1), err
+	}
+	return vipsInterpretation(image), nil
+}
+
+func vipsInterpretation(image *C.struct__VipsImage) Interpretation {
+	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
+}
+
+func vipsPreSave(image *C.struct__VipsImage, o *vipsSaveOptions) (*C.struct__VipsImage, error) {
 	// Remove ICC profile metadata
 	if o.NoProfile {
 		C.remove_profile(image)
 	}
 
-	// Force RGB color space
-	var outImage *C.struct__VipsImage
-	C.vips_colourspace_bridge(image, &outImage, interpretation)
+	// Use a default interpretation and cast it to C type
+	if o.Interpretation == 0 {
+		o.Interpretation = INTERPRETATION_sRGB
+	}
+	interpretation := C.VipsInterpretation(o.Interpretation)
 
+	// Apply the proper colour space
+	var outImage *C.struct__VipsImage
+	if vipsColourspaceIsSupported(image) {
+		err := int(C.vips_colourspace_bridge(image, &outImage, interpretation))
+		C.g_object_unref(C.gpointer(image))
+		if err != 0 {
+			return nil, catchVipsError()
+		}
+		image = outImage
+	}
+
+	return image, nil
+}
+
+func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	defer C.g_object_unref(C.gpointer(image))
-	defer C.g_object_unref(C.gpointer(outImage))
+
+	image, err := vipsPreSave(image, &o)
+	if err != nil {
+		return nil, err
+	}
+
+	length := C.size_t(0)
+	saveErr := C.int(0)
+	interlace := C.int(boolToInt(o.Interlace))
+	quality := C.int(o.Quality)
 
 	var ptr unsafe.Pointer
 	switch o.Type {
-	case PNG:
-		err = C.vips_pngsave_bridge(outImage, &ptr, &length, 1, C.int(o.Compression), C.int(o.Quality), interlace)
-		break
 	case WEBP:
-		err = C.vips_webpsave_bridge(outImage, &ptr, &length, 1, C.int(o.Quality))
+		saveErr = C.vips_webpsave_bridge(image, &ptr, &length, 1, quality)
+		break
+	case PNG:
+		saveErr = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
 		break
 	default:
-		err = C.vips_jpegsave_bridge(outImage, &ptr, &length, 1, C.int(o.Quality), interlace)
+		saveErr = C.vips_jpegsave_bridge(image, &ptr, &length, 1, quality, interlace)
 		break
 	}
 
-	if int(err) != 0 {
+	if int(saveErr) != 0 {
 		return nil, catchVipsError()
 	}
 

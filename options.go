@@ -55,18 +55,20 @@ const (
 	VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
 )
 
+// Image interpretation type
+// See: http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
 type Interpretation int
 
 const (
-	ERROR Interpretation = C.VIPS_INTERPRETATION_ERROR
-	MULTIBAND Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
-	B_W Interpretation = C.VIPS_INTERPRETATION_B_W
-	CMYK Interpretation = C.VIPS_INTERPRETATION_CMYK
-	RGB Interpretation = C.VIPS_INTERPRETATION_RGB
-	sRGB Interpretation = C.VIPS_INTERPRETATION_sRGB
-	RGB16 Interpretation = C.VIPS_INTERPRETATION_RGB16
-	GREY16 Interpretation = C.VIPS_INTERPRETATION_GREY16
-	scRGB Interpretation = C.VIPS_INTERPRETATION_scRGB
+	INTERPRETATION_ERROR     Interpretation = C.VIPS_INTERPRETATION_ERROR
+	INTERPRETATION_MULTIBAND Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
+	INTERPRETATION_B_W       Interpretation = C.VIPS_INTERPRETATION_B_W
+	INTERPRETATION_CMYK      Interpretation = C.VIPS_INTERPRETATION_CMYK
+	INTERPRETATION_RGB       Interpretation = C.VIPS_INTERPRETATION_RGB
+	INTERPRETATION_sRGB      Interpretation = C.VIPS_INTERPRETATION_sRGB
+	INTERPRETATION_RGB16     Interpretation = C.VIPS_INTERPRETATION_RGB16
+	INTERPRETATION_GREY16    Interpretation = C.VIPS_INTERPRETATION_GREY16
+	INTERPRETATION_scRGB     Interpretation = C.VIPS_INTERPRETATION_scRGB
 )
 
 const WATERMARK_FONT = "sans 10"
@@ -88,28 +90,28 @@ type Watermark struct {
 }
 
 type Options struct {
-	Height       int
-	Width        int
-	AreaHeight   int
-	AreaWidth    int
-	Top          int
-	Left         int
-	Extend       int
-	Quality      int
-	Compression  int
-	Zoom         int
-	Crop         bool
-	Enlarge      bool
-	Embed        bool
-	Flip         bool
-	Flop         bool
-	NoAutoRotate bool
-	NoProfile    bool
-	Interlace    bool
-	Rotate       Angle
-	Gravity      Gravity
-	Watermark    Watermark
-	Type         ImageType
-	Interpolator Interpolator
+	Height         int
+	Width          int
+	AreaHeight     int
+	AreaWidth      int
+	Top            int
+	Left           int
+	Extend         int
+	Quality        int
+	Compression    int
+	Zoom           int
+	Crop           bool
+	Enlarge        bool
+	Embed          bool
+	Flip           bool
+	Flop           bool
+	NoAutoRotate   bool
+	NoProfile      bool
+	Interlace      bool
+	Rotate         Angle
+	Gravity        Gravity
+	Watermark      Watermark
+	Type           ImageType
+	Interpolator   Interpolator
 	Interpretation Interpretation
 }

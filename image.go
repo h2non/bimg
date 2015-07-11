@@ -155,6 +155,17 @@ func (i *Image) Metadata() (ImageMetadata, error) {
 	return Metadata(i.buffer)
 }
 
+// Get the image interpretation type
+// See: http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
+func (i *Image) Interpretation() (Interpretation, error) {
+	return ImageInterpretation(i.buffer)
+}
+
+// Check if the current image has a valid colourspace
+func (i *Image) ColourspaceIsSupported() (bool, error) {
+	return ColourspaceIsSupported(i.buffer)
+}
+
 // Get image type format (jpeg, png, webp, tiff)
 func (i *Image) Type() string {
 	return DetermineImageTypeName(i.buffer)

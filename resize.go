@@ -117,15 +117,15 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	saveOptions := vipsSaveOptions{
-		Quality:     o.Quality,
-		Type:        o.Type,
-		Compression: o.Compression,
-		Interlace:   o.Interlace,
-		NoProfile:   o.NoProfile,
+		Quality:        o.Quality,
+		Type:           o.Type,
+		Compression:    o.Compression,
+		Interlace:      o.Interlace,
+		NoProfile:      o.NoProfile,
 		Interpretation: o.Interpretation,
 	}
 
-	// Finally save as buffer
+	// Finally get the resultant buffer
 	buf, err = vipsSave(image, saveOptions)
 	if err != nil {
 		return nil, err
@@ -145,7 +145,7 @@ func applyDefaults(o *Options, imageType ImageType) {
 		o.Type = imageType
 	}
 	if o.Interpretation == 0 {
-		o.Interpretation = sRGB
+		o.Interpretation = INTERPRETATION_sRGB
 	}
 }
 

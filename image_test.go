@@ -262,12 +262,36 @@ func TestImageMetadata(t *testing.T) {
 	}
 }
 
-func TestImageColourspaceBW(t *testing.T) {
-	buf, err := initImage("test.jpg").Colourspace(B_W)
+func TestInterpretation(t *testing.T) {
+	interpretation, err := initImage("test.jpg").Interpretation()
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
-	Write("fixtures/test_image_colourspace_b_w.jpg", buf)
+	if interpretation != INTERPRETATION_sRGB {
+		t.Errorf("Invalid interpretation: %d", interpretation)
+	}
+}
+
+func TestImageColourspaceBW(t *testing.T) {
+	buf, err := initImage("test.jpg").Colourspace(INTERPRETATION_B_W)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	interpretation, err := ImageInterpretation(buf)
+	if interpretation != INTERPRETATION_B_W {
+		t.Errorf("Invalid colourspace")
+	}
+}
+
+func TestImageColourspaceIsSupported(t *testing.T) {
+	supported, err := initImage("test.jpg").ColourspaceIsSupported()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	if supported != true {
+		t.Errorf("Non-supported colourspace")
+	}
 }
 
 func TestFluentInterface(t *testing.T) {
