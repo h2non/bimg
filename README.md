@@ -40,7 +40,7 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 
 For platform specific installations, see  [Mac OS](https://github.com/lovell/sharp/blob/master/README.md#mac-os-tips) tips or [Windows](https://github.com/lovell/sharp/blob/master/README.md#windows) tips
 
-## Supported image operations
+## Features
 
 - Resize
 - Enlarge
@@ -52,6 +52,7 @@ For platform specific installations, see  [Mac OS](https://github.com/lovell/sha
 - Thumbnail
 - Extract area
 - Watermark (text-based)
+- Custom output color space (RGB, grayscale...)
 - Format conversion (with additional quality/compression settings)
 - EXIF metadata (size, alpha channel, profile, orientation...)
 
@@ -65,7 +66,7 @@ Here you can see some performance test comparisons for multiple scenarios:
 
 #### Benchmarks
 
-Tested using Go 1.4.2 and libvips-7.42.3 in OSX i7 2.7Ghz
+Tested using Go 1.4.1 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```
 BenchmarkResizeLargeJpeg  50    43400480 ns/op
 BenchmarkResizePng        20    57592174 ns/op
@@ -688,6 +689,7 @@ type Options struct {
   Embed          bool
   Flip           bool
   Flop           bool
+  Force          bool
   NoAutoRotate   bool
   NoProfile      bool
   Interlace      bool

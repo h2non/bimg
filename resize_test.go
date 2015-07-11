@@ -28,6 +28,46 @@ func TestResize(t *testing.T) {
 	Write("fixtures/test_out.jpg", newImg)
 }
 
+func TestResizeCustomSizes(t *testing.T) {
+	tests := []struct {
+		file    string
+		format  ImageType
+		options Options
+	}{
+		{"test.jpg", JPEG, Options{Width: 800, Height: 600}},
+		{"test.jpg", JPEG, Options{Width: 1000, Height: 1000}},
+		{"test.jpg", JPEG, Options{Width: 100, Height: 50}},
+		{"test.jpg", JPEG, Options{Width: 2000, Height: 2000}},
+		{"test.jpg", JPEG, Options{Width: 500, Height: 1000}},
+		{"test.jpg", JPEG, Options{Width: 500}},
+		{"test.jpg", JPEG, Options{Height: 500}},
+		{"test.jpg", JPEG, Options{Crop: true, Width: 500, Height: 1000}},
+		{"test.jpg", JPEG, Options{Crop: true, Enlarge: true, Width: 2000, Height: 1400}},
+		{"test.jpg", JPEG, Options{Enlarge: true, Force: true, Width: 2000, Height: 2000}},
+		{"test.jpg", JPEG, Options{Force: true, Width: 2000, Height: 2000}},
+	}
+
+	for _, test := range tests {
+		buf, _ := Read("fixtures/" + test.file)
+		image, err := Resize(buf, test.options)
+		if err != nil {
+			t.Errorf("Resize(imgData, %#v) error: %#v", test.options, err)
+		}
+
+		if DetermineImageType(image) != test.format {
+			t.Fatal("Image format is invalid. Expected: %s", test.format)
+		}
+
+		size, _ := Size(image)
+		if test.options.Height > 0 && size.Height != test.options.Height {
+			t.Fatalf("Invalid height: %d", size.Height)
+		}
+		if test.options.Width > 0 && size.Width != test.options.Width {
+			t.Fatalf("Invalid width: %d", size.Width)
+		}
+	}
+}
+
 func TestRotate(t *testing.T) {
 	options := Options{Width: 800, Height: 600, Rotate: 270}
 	buf, _ := Read("fixtures/test.jpg")

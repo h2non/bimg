@@ -45,7 +45,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	// Do not enlarge the output if the input width or height
 	// are already less than the required dimensions
-	if o.Enlarge == false {
+	if !o.Enlarge && !o.Force {
 		if inWidth < o.Width && inHeight < o.Height {
 			factor = 1.0
 			shrink = 1
@@ -81,30 +81,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Transform image, if necessary
-	transformImage := o.Width != inWidth || o.Height != inHeight || o.AreaWidth > 0 || o.AreaHeight > 0
-
-	if transformImage {
-		// Use vips_shrink with the integral reduction
-		if shrink > 1 {
-			image, residual, err = shrinkImage(image, o, residual, shrink)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		debug("Transform: factor=%v, shrink=%v, residual=%v, interpolator=%v",
-			factor, shrink, residual, o.Interpolator.String())
-
-		// Affine with the remaining float part
-		if residual != 0 {
-			image, err = affineImage(image, o, residual)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// Extract area from image
-		image, err = extractImage(image, o)
+	if shouldTransformImage(o, inWidth, inHeight) {
+		image, err = transformImage(image, o, shrink, residual)
 		if err != nil {
 			return nil, err
 		}
@@ -150,16 +128,57 @@ func applyDefaults(o *Options, imageType ImageType) {
 }
 
 func normalizeOperation(o *Options, inWidth, inHeight int) {
-	if o.Crop == false && o.Enlarge == false && o.Rotate == 0 && (o.Width > 0 || o.Height > 0) {
-		if inWidth > o.Width || inHeight > o.Height {
-			o.Crop = true
-		} else {
-			o.Enlarge = true
-		}
+	if !o.Force && !o.Crop && !o.Embed && !o.Enlarge && o.Rotate == 0 && (o.Width > 0 || o.Height > 0) {
+		o.Force = true
 	}
 }
 
-func extractImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
+func shouldTransformImage(o Options, inWidth, inHeight int) bool {
+	return o.Force || (o.Width > 0 && o.Width != inWidth) ||
+		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0
+}
+
+func transformImage(image *C.struct__VipsImage, o Options, shrink int, residual float64) (*C.struct__VipsImage, error) {
+	var err error
+
+	// Use vips_shrink with the integral reduction
+	if shrink > 1 {
+		image, residual, err = shrinkImage(image, o, residual, shrink)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	residualx, residualy := residual, residual
+	if o.Force {
+		residualx = float64(o.Width) / float64(image.Xsize)
+		residualy = float64(o.Height) / float64(image.Ysize)
+	}
+
+	if o.Force || residual != 0 {
+		image, err = vipsAffine(image, residualx, residualy, o.Interpolator)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if o.Force {
+		o.Crop = false
+		o.Embed = false
+	}
+
+	image, err = extractOrEmbedImage(image, o)
+	if err != nil {
+		return nil, err
+	}
+
+	debug("Transform: shrink=%v, residual=%v, interpolator=%v",
+		shrink, residual, o.Interpolator.String())
+
+	return image, nil
+}
+
+func extractOrEmbedImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
 	var err error = nil
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
@@ -261,22 +280,6 @@ func zoomImage(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, erro
 		return image, nil
 	}
 	return vipsZoom(image, zoom+1)
-}
-
-func affineImage(image *C.struct__VipsImage, o Options, residual float64) (*C.struct__VipsImage, error) {
-	newImage, err := vipsAffine(image, residual, o.Interpolator)
-	if err != nil {
-		C.g_object_unref(C.gpointer(image))
-		return nil, err
-	}
-
-	if o.Enlarge || o.Width > 0 || (o.Width > int(newImage.Xsize) && o.Height > int(newImage.Ysize)) {
-		C.g_object_unref(C.gpointer(image))
-		return newImage, nil
-	}
-
-	C.g_object_unref(C.gpointer(newImage))
-	return image, nil
 }
 
 func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {

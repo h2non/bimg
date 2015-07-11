@@ -58,7 +58,7 @@ func TestVipsRotate(t *testing.T) {
 func TestVipsZoom(t *testing.T) {
 	image, _, _ := vipsRead(readImage("test.jpg"))
 
-	newImg, err := vipsRotate(image, D90)
+	newImg, err := vipsZoom(image, 1)
 	if err != nil {
 		t.Fatal("Cannot save the image")
 	}

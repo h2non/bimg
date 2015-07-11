@@ -105,6 +105,7 @@ type Options struct {
 	Embed          bool
 	Flip           bool
 	Flop           bool
+	Force          bool
 	NoAutoRotate   bool
 	NoProfile      bool
 	Interlace      bool

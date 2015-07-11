@@ -367,15 +367,16 @@ func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int)
 	return image, nil
 }
 
-func vipsAffine(input *C.struct__VipsImage, residual float64, i Interpolator) (*C.struct__VipsImage, error) {
+func vipsAffine(input *C.struct__VipsImage, residualx, residualy float64, i Interpolator) (*C.struct__VipsImage, error) {
 	var image *C.struct__VipsImage
 	cstring := C.CString(i.String())
 	interpolator := C.vips_interpolate_new(cstring)
 
 	defer C.free(unsafe.Pointer(cstring))
+	defer C.g_object_unref(C.gpointer(input))
 	defer C.g_object_unref(C.gpointer(interpolator))
 
-	err := C.vips_affine_interpolator(input, &image, C.double(residual), 0, 0, C.double(residual), interpolator)
+	err := C.vips_affine_interpolator(input, &image, C.double(residualx), 0, 0, C.double(residualy), interpolator)
 	if err != 0 {
 		return nil, catchVipsError()
 	}
