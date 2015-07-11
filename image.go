@@ -14,6 +14,16 @@ func (i *Image) Resize(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Force resize with custom size (aspect ratio won't be maintained)
+func (i *Image) ForceResize(width, height int) ([]byte, error) {
+	options := Options{
+		Width:  width,
+		Height: height,
+		Force:  true,
+	}
+	return i.Process(options)
+}
+
 // Resize the image to fixed width and height with additional crop transformation
 func (i *Image) ResizeAndCrop(width, height int) ([]byte, error) {
 	options := Options{

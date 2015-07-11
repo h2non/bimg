@@ -156,6 +156,25 @@ if bimg.NewImage(newImage).Type() == "png" {
 }
 ```
 
+#### Force resize
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+newImage, err := bimg.NewImage(buffer).ForceResize(1000, 500)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+  
+size := bimg.Size(newImage)
+if size.Width != 1000 || size.Height != 500 {
+  fmt.Fprintln(os.Stderr, "Incorrect image size")
+}
+```
+
 #### Custom options
 
 See [Options](https://godoc.org/github.com/h2non/bimg#Options) struct to discover all the available fields
