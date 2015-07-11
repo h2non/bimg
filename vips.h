@@ -135,9 +135,9 @@ vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int 
 };
 
 int
-vips_colourspace_bridge(VipsImage *in, VipsImage **out)
+vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space)
 {
-    return vips_colourspace(in, out, VIPS_INTERPRETATION_sRGB, NULL);
+    return vips_colourspace(in, out, space, NULL);
 };
 
 gboolean

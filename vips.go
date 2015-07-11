@@ -37,6 +37,7 @@ type vipsSaveOptions struct {
 	Type        ImageType
 	Interlace   bool
 	NoProfile   bool
+	Interpretation Interpretation
 }
 
 type vipsWatermarkOptions struct {
@@ -227,6 +228,10 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	length := C.size_t(0)
 	err := C.int(0)
 	interlace := C.int(boolToInt(o.Interlace))
+	if o.Interpretation == 0 {
+		o.Interpretation = sRGB
+	}
+	interpretation := C.VipsInterpretation(o.Interpretation)
 
 	// Remove ICC profile metadata
 	if o.NoProfile {
@@ -235,7 +240,7 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 
 	// Force RGB color space
 	var outImage *C.struct__VipsImage
-	C.vips_colourspace_bridge(image, &outImage)
+	C.vips_colourspace_bridge(image, &outImage, interpretation)
 
 	defer C.g_object_unref(C.gpointer(image))
 	defer C.g_object_unref(C.gpointer(outImage))
