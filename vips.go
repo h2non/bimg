@@ -226,10 +226,10 @@ func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
 
 func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	image, _, err := vipsRead(buf)
-	defer C.g_object_unref(C.gpointer(image))
 	if err != nil {
 		return false, err
 	}
+	C.g_object_unref(C.gpointer(image))
 	return vipsColourspaceIsSupported(image), nil
 }
 
@@ -239,10 +239,10 @@ func vipsColourspaceIsSupported(image *C.struct__VipsImage) bool {
 
 func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 	image, _, err := vipsRead(buf)
-	defer C.g_object_unref(C.gpointer(image))
 	if err != nil {
-		return Interpretation(-1), err
+		return INTERPRETATION_ERROR, err
 	}
+	C.g_object_unref(C.gpointer(image))
 	return vipsInterpretation(image), nil
 }
 
@@ -266,10 +266,10 @@ func vipsPreSave(image *C.struct__VipsImage, o *vipsSaveOptions) (*C.struct__Vip
 	var outImage *C.struct__VipsImage
 	if vipsColourspaceIsSupported(image) {
 		err := int(C.vips_colourspace_bridge(image, &outImage, interpretation))
-		C.g_object_unref(C.gpointer(image))
 		if err != 0 {
 			return nil, catchVipsError()
 		}
+		C.g_object_unref(C.gpointer(image))
 		image = outImage
 	}
 

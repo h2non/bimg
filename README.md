@@ -175,6 +175,25 @@ if size.Width != 1000 || size.Height != 500 {
 }
 ```
 
+#### Custom colour space (black & white)
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+newImage, err := bimg.NewImage(buffer).Colourspace(bimg.INTERPRETATION_B_W)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+  
+colourSpace, _ := bimg.ImageInterpretation(newImage)
+if colourSpace != bimg.INTERPRETATION_B_W {
+  fmt.Fprintln(os.Stderr, "Invalid colour space")
+}
+```
+
 #### Custom options
 
 See [Options](https://godoc.org/github.com/h2non/bimg#Options) struct to discover all the available fields

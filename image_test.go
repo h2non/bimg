@@ -272,15 +272,25 @@ func TestInterpretation(t *testing.T) {
 	}
 }
 
-func TestImageColourspaceBW(t *testing.T) {
-	buf, err := initImage("test.jpg").Colourspace(INTERPRETATION_B_W)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+func TestImageColourspace(t *testing.T) {
+	tests := []struct {
+		file           string
+		interpretation Interpretation
+	}{
+		{"test.jpg", INTERPRETATION_sRGB},
+		{"test.jpg", INTERPRETATION_B_W},
 	}
 
-	interpretation, err := ImageInterpretation(buf)
-	if interpretation != INTERPRETATION_B_W {
-		t.Errorf("Invalid colourspace")
+	for _, test := range tests {
+		buf, err := initImage(test.file).Colourspace(test.interpretation)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		interpretation, err := ImageInterpretation(buf)
+		if interpretation != test.interpretation {
+			t.Errorf("Invalid colourspace")
+		}
 	}
 }
 
