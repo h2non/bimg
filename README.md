@@ -1,9 +1,8 @@
 # bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GitHub release](http://img.shields.io/github/tag/h2non/bimg.svg?style=flat-square)](https://github.com/h2non/bimg/releases) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg) [![Coverage Status](https://coveralls.io/repos/h2non/bimg/badge.svg?branch=master)](https://coveralls.io/r/h2non/bimg?branch=master)
 
-Small [Go](http://golang.org) package for fast high-level image processing and transformation using [libvips](https://github.com/jcupitt/libvips) via C bindings, provinding a simple, elegant and fluent [programmatic API](#examples).
+Small [Go](http://golang.org) package for fast high-level image processing and transformation using [libvips](https://github.com/jcupitt/libvips) via C bindings. Provides a simple, elegant and fluent [programmatic API](#examples).
 
-bimg was designed to be a small and efficient library providing a generic high-level [image operations](#supported-image-operations) such as crop, resize, rotate, zoom, watermark...
-It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them.
+bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them.
 
 bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
