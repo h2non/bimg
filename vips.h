@@ -2,6 +2,12 @@
 #include <vips/vips.h>
 #include <vips/vips7compat.h>
 
+#ifdef  VIPS_MAGICK_H
+#define VIPS_MAGICK_SUPPORT 1
+#else
+#define VIPS_MAGICK_SUPPORT 0
+#endif
+
 enum types {
 	UNKNOWN = 0,
 	JPEG,

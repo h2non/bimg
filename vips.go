@@ -15,6 +15,8 @@ import (
 	"unsafe"
 )
 
+const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
+
 const (
 	maxCacheMem  = 100 * 1024 * 1024
 	maxCacheSize = 500
@@ -384,36 +386,37 @@ func vipsAffine(input *C.struct__VipsImage, residualx, residualy float64, i Inte
 	return image, nil
 }
 
-func vipsImageType(buf []byte) ImageType {
-	imageType := UNKNOWN
-
-	if len(buf) == 0 {
-		return imageType
+func vipsImageType(bytes []byte) ImageType {
+	if len(bytes) == 0 {
+		return UNKNOWN
 	}
 
+	if bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
+		return PNG
+	}
+	if bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF {
+		return JPEG
+	}
+	if bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50 {
+		return WEBP
+	}
+	if (bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x0) ||
+		(bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x0 && bytes[3] == 0x2A) {
+		return TIFF
+	}
+	if HasMagickSupport && strings.HasSuffix(readImageType(bytes), "MagickBuffer") {
+		return MAGICK
+	}
+
+	return UNKNOWN
+}
+
+func readImageType(buf []byte) string {
 	length := C.size_t(len(buf))
 	imageBuf := unsafe.Pointer(&buf[0])
-	bufferType := C.GoString(C.vips_foreign_find_load_buffer(imageBuf, length))
-
-	switch {
-	case strings.HasSuffix(bufferType, "JpegBuffer"):
-		imageType = JPEG
-		break
-	case strings.HasSuffix(bufferType, "PngBuffer"):
-		imageType = PNG
-		break
-	case strings.HasSuffix(bufferType, "TiffBuffer"):
-		imageType = TIFF
-		break
-	case strings.HasSuffix(bufferType, "WebpBuffer"):
-		imageType = WEBP
-		break
-	case strings.HasSuffix(bufferType, "MagickBuffer"):
-		imageType = MAGICK
-		break
-	}
-
-	return imageType
+	load := C.vips_foreign_find_load_buffer(imageBuf, length)
+	defer C.free(imageBuf)
+	return C.GoString(load)
 }
 
 func catchVipsError() error {
