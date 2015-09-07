@@ -138,7 +138,7 @@ func shouldTransformImage(o Options, inWidth, inHeight int) bool {
 		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0
 }
 
-func transformImage(image *C.struct__VipsImage, o Options, shrink int, residual float64) (*C.struct__VipsImage, error) {
+func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
 	var err error
 
 	// Use vips_shrink with the integral reduction
@@ -178,7 +178,7 @@ func transformImage(image *C.struct__VipsImage, o Options, shrink int, residual 
 	return image, nil
 }
 
-func extractOrEmbedImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
+func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	var err error = nil
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
@@ -212,7 +212,7 @@ func extractOrEmbedImage(image *C.struct__VipsImage, o Options) (*C.struct__Vips
 	return image, err
 }
 
-func rotateAndFlipImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsImage, error) {
+func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	var err error
 	var direction Direction = -1
 
@@ -243,7 +243,7 @@ func rotateAndFlipImage(image *C.struct__VipsImage, o Options) (*C.struct__VipsI
 	return image, err
 }
 
-func watermakImage(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImage, error) {
+func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	if w.Text == "" {
 		return image, nil
 	}
@@ -275,14 +275,14 @@ func watermakImage(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImag
 	return image, nil
 }
 
-func zoomImage(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error) {
+func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
 	if zoom == 0 {
 		return image, nil
 	}
 	return vipsZoom(image, zoom+1)
 }
 
-func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink int) (*C.struct__VipsImage, float64, error) {
+func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*C.VipsImage, float64, error) {
 	// Use vips_shrink with the integral reduction
 	image, err := vipsShrink(image, shrink)
 	if err != nil {
@@ -302,8 +302,8 @@ func shrinkImage(image *C.struct__VipsImage, o Options, residual float64, shrink
 	return image, residual, nil
 }
 
-func shrinkJpegImage(buf []byte, input *C.struct__VipsImage, factor float64, shrink int) (*C.struct__VipsImage, float64, error) {
-	var image *C.struct__VipsImage
+func shrinkJpegImage(buf []byte, input *C.VipsImage, factor float64, shrink int) (*C.VipsImage, float64, error) {
+	var image *C.VipsImage
 	var err error
 	shrinkOnLoad := 1
 
@@ -381,7 +381,7 @@ func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) 
 	return left, top
 }
 
-func calculateRotationAndFlip(image *C.struct__VipsImage, angle Angle) (Angle, bool) {
+func calculateRotationAndFlip(image *C.VipsImage, angle Angle) (Angle, bool) {
 	rotate := D0
 	flip := false
 

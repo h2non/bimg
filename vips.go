@@ -122,15 +122,15 @@ func VipsMemory() VipsMemoryInfo {
 	}
 }
 
-func vipsExifOrientation(image *C.struct__VipsImage) int {
+func vipsExifOrientation(image *C.VipsImage) int {
 	return int(C.vips_exif_orientation(image))
 }
 
-func vipsHasAlpha(image *C.struct__VipsImage) bool {
+func vipsHasAlpha(image *C.VipsImage) bool {
 	return int(C.has_alpha_channel(image)) > 0
 }
 
-func vipsHasProfile(image *C.struct__VipsImage) bool {
+func vipsHasProfile(image *C.VipsImage) bool {
 	return int(C.has_profile_embed(image)) > 0
 }
 
@@ -140,12 +140,12 @@ func vipsWindowSize(name string) float64 {
 	return float64(C.interpolator_window_size(cname))
 }
 
-func vipsSpace(image *C.struct__VipsImage) string {
+func vipsSpace(image *C.VipsImage) string {
 	return C.GoString(C.vips_enum_nick_bridge(image))
 }
 
-func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, error) {
-	var out *C.struct__VipsImage
+func vipsRotate(image *C.VipsImage, angle Angle) (*C.VipsImage, error) {
+	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_rotate(image, &out, C.int(angle))
@@ -156,8 +156,8 @@ func vipsRotate(image *C.struct__VipsImage, angle Angle) (*C.struct__VipsImage, 
 	return out, nil
 }
 
-func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsImage, error) {
-	var out *C.struct__VipsImage
+func vipsFlip(image *C.VipsImage, direction Direction) (*C.VipsImage, error) {
+	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_flip_bridge(image, &out, C.int(direction))
@@ -168,8 +168,8 @@ func vipsFlip(image *C.struct__VipsImage, direction Direction) (*C.struct__VipsI
 	return out, nil
 }
 
-func vipsZoom(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error) {
-	var out *C.struct__VipsImage
+func vipsZoom(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
+	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
 	err := C.vips_zoom_bridge(image, &out, C.int(zoom), C.int(zoom))
@@ -180,8 +180,8 @@ func vipsZoom(image *C.struct__VipsImage, zoom int) (*C.struct__VipsImage, error
 	return out, nil
 }
 
-func vipsWatermark(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImage, error) {
-	var out *C.struct__VipsImage
+func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+	var out *C.VipsImage
 
 	// Defaults
 	noReplicate := 0
@@ -207,8 +207,8 @@ func vipsWatermark(image *C.struct__VipsImage, w Watermark) (*C.struct__VipsImag
 	return out, nil
 }
 
-func vipsRead(buf []byte) (*C.struct__VipsImage, ImageType, error) {
-	var image *C.struct__VipsImage
+func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
+	var image *C.VipsImage
 	imageType := vipsImageType(buf)
 
 	if imageType == UNKNOWN {
@@ -235,7 +235,7 @@ func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	return vipsColourspaceIsSupported(image), nil
 }
 
-func vipsColourspaceIsSupported(image *C.struct__VipsImage) bool {
+func vipsColourspaceIsSupported(image *C.VipsImage) bool {
 	return int(C.vips_colourspace_issupported_bridge(image)) == 1
 }
 
@@ -248,11 +248,11 @@ func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 	return vipsInterpretation(image), nil
 }
 
-func vipsInterpretation(image *C.struct__VipsImage) Interpretation {
+func vipsInterpretation(image *C.VipsImage) Interpretation {
 	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
 }
 
-func vipsPreSave(image *C.struct__VipsImage, o *vipsSaveOptions) (*C.struct__VipsImage, error) {
+func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 	// Remove ICC profile metadata
 	if o.NoProfile {
 		C.remove_profile(image)
@@ -265,7 +265,7 @@ func vipsPreSave(image *C.struct__VipsImage, o *vipsSaveOptions) (*C.struct__Vip
 	interpretation := C.VipsInterpretation(o.Interpretation)
 
 	// Apply the proper colour space
-	var outImage *C.struct__VipsImage
+	var outImage *C.VipsImage
 	if vipsColourspaceIsSupported(image) {
 		err := int(C.vips_colourspace_bridge(image, &outImage, interpretation))
 		if err != 0 {
@@ -278,7 +278,7 @@ func vipsPreSave(image *C.struct__VipsImage, o *vipsSaveOptions) (*C.struct__Vip
 	return image, nil
 }
 
-func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
+func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	defer C.g_object_unref(C.gpointer(image))
 
 	image, err := vipsPreSave(image, &o)
@@ -317,8 +317,8 @@ func vipsSave(image *C.struct__VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
-func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.struct__VipsImage, error) {
-	var buf *C.struct__VipsImage
+func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage, error) {
+	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
 	if width > MAX_SIZE || height > MAX_SIZE {
@@ -333,8 +333,8 @@ func vipsExtract(image *C.struct__VipsImage, left, top, width, height int) (*C.s
 	return buf, nil
 }
 
-func vipsShrinkJpeg(buf []byte, input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, error) {
-	var image *C.struct__VipsImage
+func vipsShrinkJpeg(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
+	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_jpegload_buffer_shrink(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), &image, C.int(shrink))
@@ -345,8 +345,8 @@ func vipsShrinkJpeg(buf []byte, input *C.struct__VipsImage, shrink int) (*C.stru
 	return image, nil
 }
 
-func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, error) {
-	var image *C.struct__VipsImage
+func vipsShrink(input *C.VipsImage, shrink int) (*C.VipsImage, error) {
+	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_shrink_bridge(input, &image, C.double(float64(shrink)), C.double(float64(shrink)))
@@ -357,8 +357,8 @@ func vipsShrink(input *C.struct__VipsImage, shrink int) (*C.struct__VipsImage, e
 	return image, nil
 }
 
-func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int) (*C.struct__VipsImage, error) {
-	var image *C.struct__VipsImage
+func vipsEmbed(input *C.VipsImage, left, top, width, height, extend int) (*C.VipsImage, error) {
+	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
@@ -369,8 +369,8 @@ func vipsEmbed(input *C.struct__VipsImage, left, top, width, height, extend int)
 	return image, nil
 }
 
-func vipsAffine(input *C.struct__VipsImage, residualx, residualy float64, i Interpolator) (*C.struct__VipsImage, error) {
-	var image *C.struct__VipsImage
+func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator) (*C.VipsImage, error) {
+	var image *C.VipsImage
 	cstring := C.CString(i.String())
 	interpolator := C.vips_interpolate_new(cstring)
 
