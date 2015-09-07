@@ -31,39 +31,57 @@ typedef struct {
 	double Background[3];
 } WatermarkOptions;
 
+static int
+has_profile_embed(VipsImage *image) {
+	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
+}
+
+static void
+remove_profile(VipsImage *image) {
+	vips_image_remove(image, VIPS_META_ICC_NAME);
+}
+
+static gboolean
+with_interlace(int interlace) {
+	return interlace > 0 ? TRUE : FALSE;
+}
+
+static int
+has_alpha_channel(VipsImage *image) {
+	return (
+		(image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
+		(image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
+		(image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
+	) ? 1 : 0;
+}
+
 void
-vips_enable_cache_set_trace()
-{
+vips_enable_cache_set_trace() {
 	vips_cache_set_trace(TRUE);
-};
+}
 
 int
-vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator)
-{
+vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator) {
 	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, NULL);
-};
+}
 
 int
-vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink)
-{
+vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
 	return vips_jpegload_buffer(buf, len, out, "shrink", shrink, NULL);
-};
+}
 
 int
-vips_flip_bridge(VipsImage *in, VipsImage **out, int direction)
-{
+vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
 	return vips_flip(in, out, direction, NULL);
-};
+}
 
 int
-vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink)
-{
+vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink) {
 	return vips_shrink(in, out, xshrink, yshrink, NULL);
-};
+}
 
 int
-vips_rotate(VipsImage *in, VipsImage **out, int angle)
-{
+vips_rotate(VipsImage *in, VipsImage **out, int angle) {
 	int rotate = VIPS_ANGLE_D0;
 
 	if (angle == 90) {
@@ -75,7 +93,7 @@ vips_rotate(VipsImage *in, VipsImage **out, int angle)
 	}
 
 	return vips_rot(in, out, rotate, NULL);
-};
+}
 
 int
 vips_exif_orientation(VipsImage *image) {
@@ -88,26 +106,7 @@ vips_exif_orientation(VipsImage *image) {
 		orientation = atoi(&exif[0]);
 	}
 	return orientation;
-};
-
-int
-has_profile_embed(VipsImage *image) {
-	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
-};
-
-void
-remove_profile(VipsImage *image) {
-	vips_image_remove(image, VIPS_META_ICC_NAME);
-};
-
-int
-has_alpha_channel(VipsImage *image) {
-	return (
-		(image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
-		(image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
-		(image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
-	) ? 1 : 0;
-};
+}
 
 int
 interpolator_window_size(char const *name) {
@@ -115,56 +114,45 @@ interpolator_window_size(char const *name) {
 	int window_size = vips_interpolate_get_window_size(interpolator);
 	g_object_unref(interpolator);
 	return window_size;
-};
+}
 
 const char *
 vips_enum_nick_bridge(VipsImage *image) {
 	return vips_enum_nick(VIPS_TYPE_INTERPRETATION, image->Type);
-};
+}
 
 int
-vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac)
-{
+vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac) {
 	return vips_zoom(in, out, xfac, yfac, NULL);
-};
+}
 
 int
-vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend)
-{
+vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend) {
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
-};
+}
 
 int
-vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height)
-{
+vips_extract_area_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height) {
 	return vips_extract_area(in, out, left, top, width, height, NULL);
-};
+}
 
 int
-vips_colourspace_issupported_bridge(VipsImage *in)
-{
+vips_colourspace_issupported_bridge(VipsImage *in) {
 	return vips_colourspace_issupported(in) ? 1 : 0;
-};
+}
 
 VipsInterpretation
 vips_image_guess_interpretation_bridge(VipsImage *in) {
 	return vips_image_guess_interpretation(in);
-};
+}
 
 int
-vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space)
-{
-    return vips_colourspace(in, out, space, NULL);
-};
-
-gboolean
-with_interlace(int interlace) {
-	return interlace > 0 ? TRUE : FALSE;
-};
+vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space) {
+	return vips_colourspace(in, out, space, NULL);
+}
 
 int
-vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace)
-{
+vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace) {
 	return vips_jpegsave_buffer(in, buf, len,
 		"strip", strip,
 		"Q", quality,
@@ -172,11 +160,10 @@ vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 		"interlace", with_interlace(interlace),
 		NULL
 	);
-};
+}
 
 int
-vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace)
-{
+vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace) {
 #if (VIPS_MAJOR_VERSION >= 8 || (VIPS_MAJOR_VERSION >= 7 && VIPS_MINOR_VERSION >= 42))
 	return vips_pngsave_buffer(in, buf, len,
 		"strip", FALSE,
@@ -193,20 +180,19 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 		NULL
 	);
 #endif
-};
+}
 
 int
-vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality)
-{
+vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality) {
 	return vips_webpsave_buffer(in, buf, len,
 		"strip", strip,
 		"Q", quality,
 		NULL
 	);
-};
+}
 
 int
-vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
+vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	int code = 1;
 
 	if (imageType == JPEG) {
@@ -224,11 +210,10 @@ vips_init_image(void *buf, size_t len, int imageType, VipsImage **out) {
 	}
 
 	return code;
-};
+}
 
 int
-vips_watermark_replicate(VipsImage *orig, VipsImage *in, VipsImage **out)
-{
+vips_watermark_replicate (VipsImage *orig, VipsImage *in, VipsImage **out) {
 	VipsImage *cache = vips_image_new();
 
 	if (
@@ -241,12 +226,12 @@ vips_watermark_replicate(VipsImage *orig, VipsImage *in, VipsImage **out)
 		return 1;
 	}
 
+	g_object_unref(cache);
 	return 0;
-};
+}
 
 int
-vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, WatermarkOptions *o)
-{
+vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, WatermarkOptions *o) {
 	double ones[3] = { 1, 1, 1 };
 
 	VipsImage *base = vips_image_new();
@@ -300,4 +285,4 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 
 	g_object_unref(base);
 	return 0;
-};
+}
