@@ -8,6 +8,20 @@
 #define VIPS_MAGICK_SUPPORT 0
 #endif
 
+/**
+ * Starting libvips 7.41, VIPS_ANGLE_x has been renamed to VIPS_ANGLE_Dx
+ * "to help python". So we provide the macro to correctly build for versions
+ * before 7.41.x.
+ * https://github.com/jcupitt/libvips/blob/master/ChangeLog#L128
+ */
+
+#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+#define VIPS_ANGLE_D0 VIPS_ANGLE_0
+#define VIPS_ANGLE_D90 VIPS_ANGLE_90
+#define VIPS_ANGLE_D180 VIPS_ANGLE_180
+#define VIPS_ANGLE_D270 VIPS_ANGLE_270
+#endif
+
 enum types {
 	UNKNOWN = 0,
 	JPEG,
@@ -54,6 +68,27 @@ has_alpha_channel(VipsImage *image) {
 		(image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
 	) ? 1 : 0;
 }
+
+/**
+ * This method is here to handle the weird initialization of the vips lib.
+ * libvips use a macro VIPS_INIT() that call vips__init() in version < 7.41,
+ * or calls vips_init() in version >= 7.41.
+ *
+ * Anyway, it's not possible to build bimg on Debian Jessie with libvips 7.40.x,
+ * as vips_init() is a macro to VIPS_INIT(), which is also a macro, hence, cgo
+ * is unable to determine the return type of vips_init(), making the build impossible.
+ * In order to correctly build bimg, for version < 7.41, we should undef vips_init and
+ * creates a vips_init() method that calls VIPS_INIT().
+ */
+
+#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+#undef vips_init
+int
+vips_init(const char *argv0)
+{
+	return VIPS_INIT(argv0);
+}
+#endif
 
 void
 vips_enable_cache_set_trace() {
