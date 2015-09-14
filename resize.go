@@ -135,7 +135,8 @@ func normalizeOperation(o *Options, inWidth, inHeight int) {
 
 func shouldTransformImage(o Options, inWidth, inHeight int) bool {
 	return o.Force || (o.Width > 0 && o.Width != inWidth) ||
-		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0
+		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0 ||
+		o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0
 }
 
 func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
@@ -170,6 +171,13 @@ func transformImage(image *C.VipsImage, o Options, shrink int, residual float64)
 	image, err = extractOrEmbedImage(image, o)
 	if err != nil {
 		return nil, err
+	}
+
+	if o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 {
+		image, err = vipsGaussianBlur(image, o.GaussianBlur)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	debug("Transform: shrink=%v, residual=%v, interpolator=%v",
