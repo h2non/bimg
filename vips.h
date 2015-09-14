@@ -330,6 +330,6 @@ vips__gaussblur(VipsImage *in, VipsImage **out, double sigma, double min_ampl) {
 #if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
 	return vips_gaussblur(in, out, ceil(sigma), NULL);
 #else
-	return vips_gaussblur(in, out, sigma, NULL, "min_ampl", min_ampl);
+	return vips_gaussblur(in, out, sigma, NULL, "min_ampl", min_ampl, NULL);
 #endif
 }
