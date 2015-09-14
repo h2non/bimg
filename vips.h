@@ -16,6 +16,9 @@
  */
 
 #if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+/* we need math.h for ceil() in vips__gaussblur */
+#include <math.h>
+
 #define VIPS_ANGLE_D0 VIPS_ANGLE_0
 #define VIPS_ANGLE_D90 VIPS_ANGLE_90
 #define VIPS_ANGLE_D180 VIPS_ANGLE_180
@@ -320,4 +323,13 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 
 	g_object_unref(base);
 	return 0;
+}
+
+int
+vips__gaussblur(VipsImage *in, VipsImage **out, double sigma, double min_ampl) {
+#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+	return vips_gaussblur(in, out, ceil(sigma), NULL);
+#else
+	return vips_gaussblur(in, out, sigma, NULL, "min_ampl", min_ampl);
+#endif
 }

@@ -91,6 +91,11 @@ type Watermark struct {
 	Background  Color
 }
 
+type GaussianBlur struct {
+	Sigma   float64
+	MinAmpl float64
+}
+
 type Options struct {
 	Height         int
 	Width          int
@@ -117,4 +122,5 @@ type Options struct {
 	Type           ImageType
 	Interpolator   Interpolator
 	Interpretation Interpretation
+	GaussianBlur   GaussianBlur
 }

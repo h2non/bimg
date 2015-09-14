@@ -432,3 +432,14 @@ func boolToInt(b bool) int {
 	}
 	return 0
 }
+
+func vipsGaussianBlur(image *C.VipsImage, o GaussianBlur) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips__gaussblur(image, &out, C.double(o.Sigma), C.double(o.MinAmpl))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
