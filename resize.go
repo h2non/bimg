@@ -88,6 +88,14 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
+	// Apply effects, if necessary
+	if shouldApplyEffects(o) {
+		image, err = applyEffects(image, o)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	// Add watermark, if necessary
 	image, err = watermakImage(image, o.Watermark)
 	if err != nil {
@@ -135,8 +143,11 @@ func normalizeOperation(o *Options, inWidth, inHeight int) {
 
 func shouldTransformImage(o Options, inWidth, inHeight int) bool {
 	return o.Force || (o.Width > 0 && o.Width != inWidth) ||
-		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0 ||
-		o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0
+		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0
+}
+
+func shouldApplyEffects(o Options) bool {
+	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0
 }
 
 func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
@@ -173,6 +184,15 @@ func transformImage(image *C.VipsImage, o Options, shrink int, residual float64)
 		return nil, err
 	}
 
+	debug("Transform: shrink=%v, residual=%v, interpolator=%v",
+		shrink, residual, o.Interpolator.String())
+
+	return image, nil
+}
+
+func applyEffects(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+	var err error
+
 	if o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 {
 		image, err = vipsGaussianBlur(image, o.GaussianBlur)
 		if err != nil {
@@ -180,8 +200,8 @@ func transformImage(image *C.VipsImage, o Options, shrink int, residual float64)
 		}
 	}
 
-	debug("Transform: shrink=%v, residual=%v, interpolator=%v",
-		shrink, residual, o.Interpolator.String())
+	debug("Effects: gaussSigma=%v, gaussMinAmpl=%v",
+		o.GaussianBlur.Sigma, o.GaussianBlur.MinAmpl)
 
 	return image, nil
 }
