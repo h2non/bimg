@@ -8,8 +8,9 @@ bimg uses internally libvips, a powerful library written in C for image processi
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
 To get started you could take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
+
 If you're looking for a HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
-bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for node.js by [Lovell Fuller](https://github.com/lovell).
+bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org).
 
 ## Prerequisites
 
@@ -805,6 +806,15 @@ type Watermark struct {
   Background  Color
 }
 ```
+
+## Contributors
+
+Special thanks to people who freely contributed to improve `bimg` in some or other way.
+
+- [Yoan Blanc](https://github.com/greut)
+- [Christophe Eblé](https://github.com/chreble)
+- [Brant Fitzsimmons](https://github.com/bfitzsimmons)
+- [Thomas Meson](https://github.com/zllak)
 
 ## Special Thanks
 
