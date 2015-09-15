@@ -287,6 +287,18 @@ VIPS_TRACE=1 ./app
 
 ### Programmatic API 
 
+```go
+const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
+```
+
+```go
+const Version = "0.1.20"
+```
+
+```go
+const WATERMARK_FONT = "sans 10"
+```
+
 #### func  ColourspaceIsSupported
 
 ```go
@@ -396,6 +408,16 @@ const (
 )
 ```
 
+#### type GaussianBlur
+
+```go
+type GaussianBlur struct {
+  Sigma   float64
+  MinAmpl float64
+}
+```
+
+
 #### type Gravity
 
 ```go
@@ -504,6 +526,13 @@ Flip the image about the vertical Y axis
 func (i *Image) Flop() ([]byte, error)
 ```
 Flop the image about the horizontal X axis
+
+#### func (*Image) ForceResize
+
+```go
+func (i *Image) ForceResize(width, height int) ([]byte, error)
+```
+Force resize with custom size (aspect ratio won't be maintained)
 
 #### func (*Image) Image
 
@@ -697,6 +726,8 @@ const (
   INTERPRETATION_RGB16     Interpretation = C.VIPS_INTERPRETATION_RGB16
   INTERPRETATION_GREY16    Interpretation = C.VIPS_INTERPRETATION_GREY16
   INTERPRETATION_scRGB     Interpretation = C.VIPS_INTERPRETATION_scRGB
+  INTERPRETATION_LAB       Interpretation = C.VIPS_INTERPRETATION_LAB
+  INTERPRETATION_XYZ       Interpretation = C.VIPS_INTERPRETATION_XYZ
 )
 ```
 
@@ -737,6 +768,7 @@ type Options struct {
   Type           ImageType
   Interpolator   Interpolator
   Interpretation Interpretation
+  GaussianBlur   GaussianBlur
 }
 ```
 
