@@ -151,6 +151,23 @@ func TestNoColorProfile(t *testing.T) {
 	}
 }
 
+func TestGaussianBlur(t *testing.T) {
+	options := Options{Width: 800, Height: 600, GaussianBlur: GaussianBlur{Sigma: 5}}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_gaussian.jpg", newImg)
+}
+
 func TestConvert(t *testing.T) {
 	width, height := 300, 240
 	formats := [3]ImageType{PNG, WEBP, JPEG}

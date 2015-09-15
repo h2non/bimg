@@ -51,6 +51,7 @@ For platform specific installations, see  [Mac OS](https://github.com/lovell/sha
 - Thumbnail
 - Extract area
 - Watermark (text-based)
+- Gaussian blur effect
 - Custom output color space (RGB, grayscale...)
 - Format conversion (with additional quality/compression settings)
 - EXIF metadata (size, alpha channel, profile, orientation...)
