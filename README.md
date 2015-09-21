@@ -67,27 +67,27 @@ Here you can see some performance test comparisons for multiple scenarios:
 
 #### Benchmarks
 
-Tested using Go 1.4.1 and libvips-7.42.3 in OSX i7 2.7Ghz
+Tested using Go 1.5.1 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```
-BenchmarkResizeLargeJpeg  50    43400480 ns/op
-BenchmarkResizePng        20    57592174 ns/op
-BenchmarkResizeWebP       500    2872295 ns/op
-BenchmarkConvertToJpeg    30    41835497 ns/op
-BenchmarkConvertToPng     10   153382204 ns/op
-BenchmarkConvertToWebp    10000   264542 ns/op
-BenchmarkCropJpeg         30    52267699 ns/op
-BenchmarkCropPng          30    56477454 ns/op
-BenchmarkCropWebP         5000    274302 ns/op
-BenchmarkExtractJpeg      50    27827670 ns/op
-BenchmarkExtractPng       2000    769761 ns/op
-BenchmarkExtractWebp      3000    513954 ns/op
-BenchmarkZoomJpeg         10   159272494 ns/op
-BenchmarkZoomPng          20    65771476 ns/op
-BenchmarkZoomWebp         5000    368327 ns/op
-BenchmarkWatermarkJpeg    100   10026033 ns/op
-BenchmarkWatermarPng      200    7350821 ns/op
-BenchmarkWatermarWebp     200    9014197 ns/op
-ok 30.698s
+BenchmarkRotateJpeg-8     	      20	  64686945 ns/op
+BenchmarkResizeLargeJpeg-8	      20	  63390416 ns/op
+BenchmarkResizePng-8      	     100	  18147294 ns/op
+BenchmarkResizeWebP-8     	     100	  20836741 ns/op
+BenchmarkConvertToJpeg-8  	     100	  12831812 ns/op
+BenchmarkConvertToPng-8   	      10	 128901422 ns/op
+BenchmarkConvertToWebp-8  	      10	 204027990 ns/op
+BenchmarkCropJpeg-8       	      30	  59068572 ns/op
+BenchmarkCropPng-8        	      10	 117303259 ns/op
+BenchmarkCropWebP-8       	      10	 107060659 ns/op
+BenchmarkExtractJpeg-8    	      50	  30708919 ns/op
+BenchmarkExtractPng-8     	    3000	    595546 ns/op
+BenchmarkExtractWebp-8    	    3000	    386379 ns/op
+BenchmarkZoomJpeg-8       	      10	 160005424 ns/op
+BenchmarkZoomPng-8        	      30	  44561047 ns/op
+BenchmarkZoomWebp-8       	      10	 126732678 ns/op
+BenchmarkWatermarkJpeg-8  	      20	  79006133 ns/op
+BenchmarkWatermarPng-8    	     200	   8197291 ns/op
+BenchmarkWatermarWebp-8   	      30	  49360369 ns/op
 ```
 
 ## API
