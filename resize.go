@@ -103,12 +103,9 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Flatten image on a background, if necessary
-	black := Color{0, 0, 0}
-	if imageType == PNG && o.Background != black {
-		image, err = vipsFlatten(image, o.Background)
-		if err != nil {
-			return nil, err
-		}
+	image, err = imageFlatten(image, imageType, o)
+	if err != nil {
+		return nil, err
 	}
 
 	saveOptions := vipsSaveOptions{
@@ -310,6 +307,15 @@ func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	}
 
 	return image, nil
+}
+
+func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsImage, error) {
+	// Only PNG images are supported for now
+	if imageType != PNG || o.Background == ColorBlack {
+		return image, nil
+	}
+
+	return vipsFlattenBackground(image, o.Background)
 }
 
 func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
