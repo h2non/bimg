@@ -123,4 +123,5 @@ type Options struct {
 	Interpolator   Interpolator
 	Interpretation Interpretation
 	GaussianBlur   GaussianBlur
+	Background     Color
 }

@@ -252,6 +252,16 @@ func vipsInterpretation(image *C.VipsImage) Interpretation {
 	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
 }
 
+func vipsFlatten(image *C.VipsImage, background Color) (*C.VipsImage, error) {
+	var outImage *C.VipsImage
+	backgroundC := [3]C.double{C.double(background.R), C.double(background.G), C.double(background.B)}
+	err := int(C.vips_flatten_image(image, &outImage, (*C.double)(&backgroundC[0])))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return outImage, nil
+}
+
 func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 	// Remove ICC profile metadata
 	if o.NoProfile {

@@ -102,6 +102,15 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Flatten image on a background, if necessary
+	black := Color{0, 0, 0}
+	if imageType == PNG && o.Background != black {
+		image, err = vipsFlatten(image, o.Background)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	saveOptions := vipsSaveOptions{
 		Quality:        o.Quality,
 		Type:           o.Type,
