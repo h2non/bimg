@@ -252,6 +252,26 @@ func vipsInterpretation(image *C.VipsImage) Interpretation {
 	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
 }
 
+func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, error) {
+	var outImage *C.VipsImage
+
+	backgroundC := [3]C.double{
+		C.double(background.R),
+		C.double(background.G),
+		C.double(background.B),
+	}
+
+	err := C.vips_flatten_background_brigde(image, &outImage, (*C.double)(&backgroundC[0]))
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+
+	C.g_object_unref(C.gpointer(image))
+	image = outImage
+
+	return image, nil
+}
+
 func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 	// Remove ICC profile metadata
 	if o.NoProfile {
@@ -267,8 +287,8 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 	// Apply the proper colour space
 	var outImage *C.VipsImage
 	if vipsColourspaceIsSupported(image) {
-		err := int(C.vips_colourspace_bridge(image, &outImage, interpretation))
-		if err != 0 {
+		err := C.vips_colourspace_bridge(image, &outImage, interpretation)
+		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
 		C.g_object_unref(C.gpointer(image))

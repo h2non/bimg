@@ -227,6 +227,15 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 }
 
 int
+vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double background[3]) {
+	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
+	return vips_flatten(in, out,
+		"background", vipsBackground,
+		NULL
+	);
+}
+
+int
 vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	int code = 1;
 

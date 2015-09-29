@@ -246,6 +246,19 @@ func TestImageConvert(t *testing.T) {
 	Write("fixtures/test_image_convert_out.png", buf)
 }
 
+func TestTransparentImageConvert(t *testing.T) {
+	image := initImage("transparent.png")
+	options := Options{
+		Type:       JPEG,
+		Background: Color{255, 255, 255},
+	}
+	buf, err := image.Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_transparent_image_convert_out.jpg", buf)
+}
+
 func TestImageMetadata(t *testing.T) {
 	data, err := initImage("test.png").Metadata()
 	if err != nil {

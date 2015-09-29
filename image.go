@@ -4,6 +4,11 @@ type Image struct {
 	buffer []byte
 }
 
+// Creates a new image
+func NewImage(buf []byte) *Image {
+	return &Image{buf}
+}
+
 // Resize the image to fixed width and height
 func (i *Image) Resize(width, height int) ([]byte, error) {
 	options := Options{
@@ -189,9 +194,4 @@ func (i *Image) Size() (ImageSize, error) {
 // Get image buffer
 func (i *Image) Image() []byte {
 	return i.buffer
-}
-
-// Creates a new image
-func NewImage(buf []byte) *Image {
-	return &Image{buf}
 }

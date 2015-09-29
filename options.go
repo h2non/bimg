@@ -80,6 +80,10 @@ type Color struct {
 	R, G, B uint8
 }
 
+// Shortcut to black RGB color representation
+var ColorBlack = Color{0, 0, 0}
+
+// Text-based watermark configuration
 type Watermark struct {
 	Width       int
 	DPI         int
@@ -96,6 +100,7 @@ type GaussianBlur struct {
 	MinAmpl float64
 }
 
+// Supported image transformation options
 type Options struct {
 	Height         int
 	Width          int
@@ -117,6 +122,7 @@ type Options struct {
 	NoProfile      bool
 	Interlace      bool
 	Rotate         Angle
+	Background     Color
 	Gravity        Gravity
 	Watermark      Watermark
 	Type           ImageType
