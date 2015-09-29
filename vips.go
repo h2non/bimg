@@ -15,6 +15,9 @@ import (
 	"unsafe"
 )
 
+// Current libvips version
+const VipsVersion = string(C.VIPS_VERSION)
+
 const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
 
 const (
@@ -291,7 +294,6 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		C.g_object_unref(C.gpointer(image))
 		image = outImage
 	}
 
@@ -301,10 +303,11 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	defer C.g_object_unref(C.gpointer(image))
 
-	image, err := vipsPreSave(image, &o)
+	tmpImage, err := vipsPreSave(image, &o)
 	if err != nil {
 		return nil, err
 	}
+	defer C.g_object_unref(C.gpointer(tmpImage))
 
 	length := C.size_t(0)
 	saveErr := C.int(0)
@@ -314,13 +317,13 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	var ptr unsafe.Pointer
 	switch o.Type {
 	case WEBP:
-		saveErr = C.vips_webpsave_bridge(image, &ptr, &length, 1, quality)
+		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, 1, quality)
 		break
 	case PNG:
-		saveErr = C.vips_pngsave_bridge(image, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
+		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
 		break
 	default:
-		saveErr = C.vips_jpegsave_bridge(image, &ptr, &length, 1, quality, interlace)
+		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
 		break
 	}
 
@@ -355,9 +358,10 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 
 func vipsShrinkJpeg(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	var image *C.VipsImage
+	var ptr = unsafe.Pointer(&buf[0])
 	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_jpegload_buffer_shrink(unsafe.Pointer(&buf[0]), C.size_t(len(buf)), &image, C.int(shrink))
+	err := C.vips_jpegload_buffer_shrink(ptr, C.size_t(len(buf)), &image, C.int(shrink))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
