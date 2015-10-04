@@ -68,7 +68,7 @@ func TestIsTypeNameSupported(t *testing.T) {
 		name     string
 		expected bool
 	}{
-		{"jpg", true},
+		{"jpeg", true},
 		{"png", true},
 		{"webp", true},
 		{"gif", false},

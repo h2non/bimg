@@ -11,6 +11,15 @@ const (
 	MAGICK
 )
 
+// Pairs of image type and its name
+var ImageTypes = map[ImageType]string{
+	JPEG:   "jpeg",
+	PNG:    "png",
+	WEBP:   "webp",
+	TIFF:   "tiff",
+	MAGICK: "magick",
+}
+
 // Determines the image type format (jpeg, png, webp or tiff)
 func DetermineImageType(buf []byte) ImageType {
 	return vipsImageType(buf)
@@ -18,43 +27,28 @@ func DetermineImageType(buf []byte) ImageType {
 
 // Determines the image type format by name (jpeg, png, webp or tiff)
 func DetermineImageTypeName(buf []byte) string {
-	return getImageTypeName(vipsImageType(buf))
+	return ImageTypeName(vipsImageType(buf))
 }
 
 // Check if a given image type is supported
 func IsTypeSupported(t ImageType) bool {
-	return t == JPEG || t == PNG || t == WEBP || t == MAGICK
+	return ImageTypes[t] != ""
 }
 
 // Check if a given image type name is supported
 func IsTypeNameSupported(t string) bool {
-	return t == "jpeg" ||
-		t == "jpg" ||
-		t == "png" ||
-		t == "webp" ||
-		t == "magick"
+	for _, name := range ImageTypes {
+		if name == t {
+			return true
+		}
+	}
+	return false
 }
 
-func getImageTypeName(code ImageType) string {
-	imageType := "unknown"
-
-	switch {
-	case code == JPEG:
-		imageType = "jpeg"
-		break
-	case code == WEBP:
-		imageType = "webp"
-		break
-	case code == PNG:
-		imageType = "png"
-		break
-	case code == TIFF:
-		imageType = "tiff"
-		break
-	case code == MAGICK:
-		imageType = "magick"
-		break
+func ImageTypeName(t ImageType) string {
+	imageType := ImageTypes[t]
+	if imageType == "" {
+		return "unknown"
 	}
-
 	return imageType
 }

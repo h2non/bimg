@@ -68,7 +68,7 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 		Alpha:       vipsHasAlpha(image),
 		Profile:     vipsHasProfile(image),
 		Space:       vipsSpace(image),
-		Type:        getImageTypeName(imageType),
+		Type:        ImageTypeName(imageType),
 	}
 
 	return metadata, nil
