@@ -48,6 +48,20 @@ func TestImageExtract(t *testing.T) {
 	Write("fixtures/test_extract_out.jpg", buf)
 }
 
+func TestImageExtractZero(t *testing.T) {
+	buf, err := initImage("test.jpg").Extract(0, 0, 300, 200)
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 300, 200)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_extract_zero_out.jpg", buf)
+}
+
 func TestImageEnlarge(t *testing.T) {
 	buf, err := initImage("test.png").Enlarge(500, 375)
 	if err != nil {

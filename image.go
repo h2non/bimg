@@ -48,6 +48,11 @@ func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 		AreaWidth:  width,
 		AreaHeight: height,
 	}
+
+	if top == 0 && left == 0 {
+		options.Top = -1
+	}
+
 	return i.Process(options)
 }
 

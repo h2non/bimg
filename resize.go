@@ -229,7 +229,7 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend)
 		break
-	case o.Top > 0 || o.Left > 0:
+	case o.Top != 0 || o.Left != 0:
 		if o.AreaWidth == 0 {
 			o.AreaHeight = o.Width
 		}

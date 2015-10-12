@@ -8,6 +8,7 @@ import "C"
 
 import (
 	"errors"
+	"math"
 	"os"
 	"runtime"
 	"strings"
@@ -340,6 +341,10 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
+func max(x int) int {
+	return int(math.Max(float64(x), 0))
+}
+
 func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage, error) {
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
@@ -348,6 +353,7 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
+	top, left = max(top), max(left)
 	err := C.vips_extract_area_bridge(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
 	if err != 0 {
 		return nil, catchVipsError()
