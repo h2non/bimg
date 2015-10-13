@@ -9,7 +9,7 @@ and it's typically 4x faster than using the quickest ImageMagick and GraphicsMag
 
 To get started you could take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
 
-If you're looking for a HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
+If you're looking for an HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org).
 
 ## Prerequisites
