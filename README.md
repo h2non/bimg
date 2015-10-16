@@ -1,16 +1,44 @@
 # bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GitHub release](http://img.shields.io/github/tag/h2non/bimg.svg?style=flat-square)](https://github.com/h2non/bimg/releases) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg)
 
-Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings. Provides a simple, elegant and fluent [programmatic API](#examples).
+Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings, providing a simple, elegant and fluent [programmatic API](#examples).
 
 bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them.
 
 bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
-To get started you could take a look to the [examples](#examples) and [API](https://godoc.org/github.com/h2non/bimg) documentation. 
-
 If you're looking for an HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
+
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org).
+
+## Contents
+
+- [Supported image operations](#supported-image-operations)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Performance](#performance)
+- [Benchmark](#benchmark)
+- [Examples](#examples)
+- [Debugging](#debugging)
+- [API](#api)
+- [Credits](#credits)
+
+## Supported image operations
+
+- Resize
+- Enlarge
+- Crop
+- Rotate (with auto-rotate based on EXIF orientation)
+- Flip (with auto-flip based on EXIF metadata)
+- Flop
+- Zoom
+- Thumbnail
+- Extract area
+- Watermark (text-based)
+- Gaussian blur effect
+- Custom output color space (RGB, grayscale...)
+- Format conversion (with additional quality/compression settings)
+- EXIF metadata (size, alpha channel, profile, orientation...)
 
 ## Prerequisites
 
@@ -40,23 +68,6 @@ The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) 
 
 For platform specific installations, see  [Mac OS](https://github.com/lovell/sharp/blob/master/README.md#mac-os-tips) tips or [Windows](https://github.com/lovell/sharp/blob/master/README.md#windows) tips
 
-## Supported image operations
-
-- Resize
-- Enlarge
-- Crop
-- Rotate (with auto-rotate based on EXIF orientation)
-- Flip (with auto-flip based on EXIF metadata)
-- Flop
-- Zoom
-- Thumbnail
-- Extract area
-- Watermark (text-based)
-- Gaussian blur effect
-- Custom output color space (RGB, grayscale...)
-- Format conversion (with additional quality/compression settings)
-- EXIF metadata (size, alpha channel, profile, orientation...)
-
 ## Performance
 
 libvips is probably the faster open source solution for image processing. 
@@ -65,7 +76,7 @@ Here you can see some performance test comparisons for multiple scenarios:
 - [libvips speed and memory usage](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
 - [sharp performance tests](https://github.com/lovell/sharp#the-task) 
 
-#### Benchmarks
+## Benchmark
 
 Tested using Go 1.5.1 and libvips-7.42.3 in OSX i7 2.7Ghz
 ```
@@ -90,9 +101,7 @@ BenchmarkWatermarPng-8    	     200	   8197291 ns/op
 BenchmarkWatermarWebp-8   	      30	  49360369 ns/op
 ```
 
-## API
-
-### Examples
+## Examples
 
 ```go
 import (
@@ -158,6 +167,8 @@ if bimg.NewImage(newImage).Type() == "png" {
 ```
 
 #### Force resize
+
+Force resize operation without perserving the aspect ratio:
 
 ```go
 buffer, err := bimg.Read("image.jpg")
@@ -274,7 +285,7 @@ if err != nil {
 bimg.Write("new.jpg", newImage)
 ```
 
-#### Debugging
+## Debugging
 
 Run the process passing the `DEBUG` environment variable
 ```
@@ -286,539 +297,21 @@ Enable libvips traces (note that a lot of data will be written in stdout):
 VIPS_TRACE=1 ./app 
 ```
 
-### Programmatic API 
+## API 
 
-```go
-const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
-```
+See [godoc reference](https://godoc.org/github.com/h2non/bimg) for detailed API documentation.
 
-```go
-const Version = "0.1.20"
-```
+## Credits
 
-```go
-const WATERMARK_FONT = "sans 10"
-```
+People who recurrently contributed to improve `bimg` in some or other way.
 
-#### func  ColourspaceIsSupported
-
-```go
-func ColourspaceIsSupported(buf []byte) (bool, error)
-```
-Check in the image colourspace is supported by libvips
-
-#### func  DetermineImageTypeName
-
-```go
-func DetermineImageTypeName(buf []byte) string
-```
-Determines the image type format by name (jpeg, png, webp or tiff)
-
-#### func  Initialize
-
-```go
-func Initialize()
-```
-Explicit thread-safe start of libvips. Only call this function if you've
-previously shutdown libvips
-
-#### func  IsTypeNameSupported
-
-```go
-func IsTypeNameSupported(t string) bool
-```
-Check if a given image type name is supported
-
-#### func  IsTypeSupported
-
-```go
-func IsTypeSupported(t ImageType) bool
-```
-Check if a given image type is supported
-
-#### func  Read
-
-```go
-func Read(path string) ([]byte, error)
-```
-
-#### func  Resize
-
-```go
-func Resize(buf []byte, o Options) ([]byte, error)
-```
-
-#### func  Shutdown
-
-```go
-func Shutdown()
-```
-Thread-safe function to shutdown libvips. You can call this to drop caches as
-well. If libvips was already initialized, the function is no-op
-
-#### func  VipsDebugInfo
-
-```go
-func VipsDebugInfo()
-```
-Output to stdout vips collected data. Useful for debugging
-
-#### func  Write
-
-```go
-func Write(path string, buf []byte) error
-```
-
-#### type Angle
-
-```go
-type Angle int
-```
-
-
-```go
-const (
-  D0   Angle = 0
-  D90  Angle = 90
-  D180 Angle = 180
-  D270 Angle = 270
-)
-```
-
-#### type Color
-
-```go
-type Color struct {
-  R, G, B uint8
-}
-```
-
-Color represents a traditional RGB color scheme
-
-#### type Direction
-
-```go
-type Direction int
-```
-
-
-```go
-const (
-  HORIZONTAL Direction = C.VIPS_DIRECTION_HORIZONTAL
-  VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
-)
-```
-
-#### type GaussianBlur
-
-```go
-type GaussianBlur struct {
-  Sigma   float64
-  MinAmpl float64
-}
-```
-
-
-#### type Gravity
-
-```go
-type Gravity int
-```
-
-
-```go
-const (
-  CENTRE Gravity = iota
-  NORTH
-  EAST
-  SOUTH
-  WEST
-)
-```
-
-#### type Image
-
-```go
-type Image struct {
-}
-```
-
-
-#### func  NewImage
-
-```go
-func NewImage(buf []byte) *Image
-```
-Creates a new image
-
-#### func (*Image) Colourspace
-
-```go
-func (i *Image) Colourspace(c Interpretation) ([]byte, error)
-```
-Colour space conversion
-
-#### func (*Image) ColourspaceIsSupported
-
-```go
-func (i *Image) ColourspaceIsSupported() (bool, error)
-```
-Check if the current image has a valid colourspace
-
-#### func (*Image) Convert
-
-```go
-func (i *Image) Convert(t ImageType) ([]byte, error)
-```
-Convert image to another format
-
-#### func (*Image) Crop
-
-```go
-func (i *Image) Crop(width, height int, gravity Gravity) ([]byte, error)
-```
-Crop the image to the exact size specified
-
-#### func (*Image) CropByHeight
-
-```go
-func (i *Image) CropByHeight(height int) ([]byte, error)
-```
-Crop an image by height (auto width)
-
-#### func (*Image) CropByWidth
-
-```go
-func (i *Image) CropByWidth(width int) ([]byte, error)
-```
-Crop an image by width (auto height)
-
-#### func (*Image) Enlarge
-
-```go
-func (i *Image) Enlarge(width, height int) ([]byte, error)
-```
-Enlarge the image by width and height. Aspect ratio is maintained
-
-#### func (*Image) EnlargeAndCrop
-
-```go
-func (i *Image) EnlargeAndCrop(width, height int) ([]byte, error)
-```
-Enlarge the image by width and height with additional crop transformation
-
-#### func (*Image) Extract
-
-```go
-func (i *Image) Extract(top, left, width, height int) ([]byte, error)
-```
-Extract area from the by X/Y axis
-
-#### func (*Image) Flip
-
-```go
-func (i *Image) Flip() ([]byte, error)
-```
-Flip the image about the vertical Y axis
-
-#### func (*Image) Flop
-
-```go
-func (i *Image) Flop() ([]byte, error)
-```
-Flop the image about the horizontal X axis
-
-#### func (*Image) ForceResize
-
-```go
-func (i *Image) ForceResize(width, height int) ([]byte, error)
-```
-Force resize with custom size (aspect ratio won't be maintained)
-
-#### func (*Image) Image
-
-```go
-func (i *Image) Image() []byte
-```
-Get image buffer
-
-#### func (*Image) Interpretation
-
-```go
-func (i *Image) Interpretation() (Interpretation, error)
-```
-Get the image interpretation type See:
-http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
-
-#### func (*Image) Metadata
-
-```go
-func (i *Image) Metadata() (ImageMetadata, error)
-```
-Get image metadata (size, alpha channel, profile, EXIF rotation)
-
-#### func (*Image) Process
-
-```go
-func (i *Image) Process(o Options) ([]byte, error)
-```
-Transform the image by custom options
-
-#### func (*Image) Resize
-
-```go
-func (i *Image) Resize(width, height int) ([]byte, error)
-```
-Resize the image to fixed width and height
-
-#### func (*Image) ResizeAndCrop
-
-```go
-func (i *Image) ResizeAndCrop(width, height int) ([]byte, error)
-```
-Resize the image to fixed width and height with additional crop transformation
-
-#### func (*Image) Rotate
-
-```go
-func (i *Image) Rotate(a Angle) ([]byte, error)
-```
-Rotate the image by given angle degrees (0, 90, 180 or 270)
-
-#### func (*Image) Size
-
-```go
-func (i *Image) Size() (ImageSize, error)
-```
-Get image size
-
-#### func (*Image) Thumbnail
-
-```go
-func (i *Image) Thumbnail(pixels int) ([]byte, error)
-```
-Thumbnail the image by the a given width by aspect ratio 4:4
-
-#### func (*Image) Type
-
-```go
-func (i *Image) Type() string
-```
-Get image type format (jpeg, png, webp, tiff)
-
-#### func (*Image) Watermark
-
-```go
-func (i *Image) Watermark(w Watermark) ([]byte, error)
-```
-Add text as watermark on the given image
-
-#### func (*Image) Zoom
-
-```go
-func (i *Image) Zoom(factor int) ([]byte, error)
-```
-Zoom the image by the given factor. You should probably call Extract() before
-
-#### type ImageMetadata
-
-```go
-type ImageMetadata struct {
-  Orientation int
-  Channels    int
-  Alpha       bool
-  Profile     bool
-  Type        string
-  Space       string
-  Colourspace string
-  Size        ImageSize
-}
-```
-
-
-#### func  Metadata
-
-```go
-func Metadata(buf []byte) (ImageMetadata, error)
-```
-Extract the image metadata (size, type, alpha channel, profile, EXIF
-orientation...)
-
-#### type ImageSize
-
-```go
-type ImageSize struct {
-  Width  int
-  Height int
-}
-```
-
-
-#### func  Size
-
-```go
-func Size(buf []byte) (ImageSize, error)
-```
-Get the image size by width and height pixels
-
-#### type ImageType
-
-```go
-type ImageType int
-```
-
-
-```go
-const (
-  UNKNOWN ImageType = iota
-  JPEG
-  WEBP
-  PNG
-  TIFF
-  MAGICK
-)
-```
-
-#### func  DetermineImageType
-
-```go
-func DetermineImageType(buf []byte) ImageType
-```
-Determines the image type format (jpeg, png, webp or tiff)
-
-#### type Interpolator
-
-```go
-type Interpolator int
-```
-
-
-```go
-const (
-  BICUBIC Interpolator = iota
-  BILINEAR
-  NOHALO
-)
-```
-
-#### func (Interpolator) String
-
-```go
-func (i Interpolator) String() string
-```
-
-#### type Interpretation
-
-```go
-type Interpretation int
-```
-
-Image interpretation type See:
-http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
-
-```go
-const (
-  INTERPRETATION_ERROR     Interpretation = C.VIPS_INTERPRETATION_ERROR
-  INTERPRETATION_MULTIBAND Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
-  INTERPRETATION_B_W       Interpretation = C.VIPS_INTERPRETATION_B_W
-  INTERPRETATION_CMYK      Interpretation = C.VIPS_INTERPRETATION_CMYK
-  INTERPRETATION_RGB       Interpretation = C.VIPS_INTERPRETATION_RGB
-  INTERPRETATION_sRGB      Interpretation = C.VIPS_INTERPRETATION_sRGB
-  INTERPRETATION_RGB16     Interpretation = C.VIPS_INTERPRETATION_RGB16
-  INTERPRETATION_GREY16    Interpretation = C.VIPS_INTERPRETATION_GREY16
-  INTERPRETATION_scRGB     Interpretation = C.VIPS_INTERPRETATION_scRGB
-  INTERPRETATION_LAB       Interpretation = C.VIPS_INTERPRETATION_LAB
-  INTERPRETATION_XYZ       Interpretation = C.VIPS_INTERPRETATION_XYZ
-)
-```
-
-#### func  ImageInterpretation
-
-```go
-func ImageInterpretation(buf []byte) (Interpretation, error)
-```
-Get the image interpretation type See:
-http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
-
-#### type Options
-
-```go
-type Options struct {
-  Height         int
-  Width          int
-  AreaHeight     int
-  AreaWidth      int
-  Top            int
-  Left           int
-  Extend         int
-  Quality        int
-  Compression    int
-  Zoom           int
-  Crop           bool
-  Enlarge        bool
-  Embed          bool
-  Flip           bool
-  Flop           bool
-  Force          bool
-  NoAutoRotate   bool
-  NoProfile      bool
-  Interlace      bool
-  Rotate         Angle
-  Gravity        Gravity
-  Watermark      Watermark
-  Type           ImageType
-  Interpolator   Interpolator
-  Interpretation Interpretation
-  GaussianBlur   GaussianBlur
-}
-```
-
-
-#### type VipsMemoryInfo
-
-```go
-type VipsMemoryInfo struct {
-  Memory          int64
-  MemoryHighwater int64
-  Allocations     int64
-}
-```
-
-
-#### func  VipsMemory
-
-```go
-func VipsMemory() VipsMemoryInfo
-```
-Get memory info stats from vips (cache size, memory allocs...)
-
-#### type Watermark
-
-```go
-type Watermark struct {
-  Width       int
-  DPI         int
-  Margin      int
-  Opacity     float32
-  NoReplicate bool
-  Text        string
-  Font        string
-  Background  Color
-}
-```
-
-## Contributors
-
-Special thanks to people who freely contributed to improve `bimg` in some or other way.
-
+- [John Cupitt](https://github.com/jcupitt)
 - [Yoan Blanc](https://github.com/greut)
 - [Christophe Eblé](https://github.com/chreble)
 - [Brant Fitzsimmons](https://github.com/bfitzsimmons)
 - [Thomas Meson](https://github.com/zllak)
 
-## Special Thanks
-
-- [John Cupitt](https://github.com/jcupitt)
+Thank you!
 
 ## License
 
