@@ -22,6 +22,8 @@
 #define VIPS_ANGLE_D270 VIPS_ANGLE_270
 #endif
 
+#define EXIF_IFD0_ORIENTATION "exif-ifd0-Orientation"
+
 enum types {
 	UNKNOWN = 0,
 	JPEG,
@@ -135,8 +137,8 @@ vips_exif_orientation(VipsImage *image) {
 	int orientation = 0;
 	const char *exif;
 	if (
-		vips_image_get_typeof(image, "exif-ifd0-Orientation") != 0 &&
-		!vips_image_get_string(image, "exif-ifd0-Orientation", &exif)
+		vips_image_get_typeof(image, EXIF_IFD0_ORIENTATION) != 0 &&
+		!vips_image_get_string(image, EXIF_IFD0_ORIENTATION, &exif)
 	) {
 		orientation = atoi(&exif[0]);
 	}
