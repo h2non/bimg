@@ -118,12 +118,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Finally get the resultant buffer
-	buf, err = vipsSave(image, saveOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf, nil
+	return vipsSave(image, saveOptions)
 }
 
 func applyDefaults(o *Options, imageType ImageType) {
