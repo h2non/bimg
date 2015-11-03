@@ -23,8 +23,8 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
-	// Define default options
-	applyDefaults(&o, imageType)
+	// Clone and define default options
+	o = applyDefaults(o, imageType)
 
 	if IsTypeSupported(o.Type) == false {
 		return nil, errors.New("Unsupported image output type")
@@ -121,7 +121,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	return vipsSave(image, saveOptions)
 }
 
-func applyDefaults(o *Options, imageType ImageType) {
+func applyDefaults(o Options, imageType ImageType) Options {
 	if o.Quality == 0 {
 		o.Quality = QUALITY
 	}
@@ -134,6 +134,7 @@ func applyDefaults(o *Options, imageType ImageType) {
 	if o.Interpretation == 0 {
 		o.Interpretation = INTERPRETATION_sRGB
 	}
+	return o
 }
 
 func normalizeOperation(o *Options, inWidth, inHeight int) {
