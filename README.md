@@ -303,7 +303,7 @@ See [godoc reference](https://godoc.org/github.com/h2non/bimg) for detailed API 
 
 ## Credits
 
-People who recurrently contributed to improve `bimg` in some or other way.
+People who recurrently contributed to improve `bimg` in some way.
 
 - [John Cupitt](https://github.com/jcupitt)
 - [Yoan Blanc](https://github.com/greut)
