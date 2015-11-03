@@ -34,7 +34,7 @@ bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homol
 - Zoom
 - Thumbnail
 - Extract area
-- Watermark (text-based)
+- Watermark (text only)
 - Gaussian blur effect
 - Custom output color space (RGB, grayscale...)
 - Format conversion (with additional quality/compression settings)
