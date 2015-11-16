@@ -341,3 +341,12 @@ vips_gaussblur_bridge(VipsImage *in, VipsImage **out, double sigma, double min_a
 	return vips_gaussblur(in, out, sigma, NULL, "min_ampl", min_ampl, NULL);
 #endif
 }
+
+int
+vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, double y2, double y3, double m1, double m2) {
+#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+	return vips_sharpen(in, out, radius, x1, y2, y3, m1, m2, NULL);
+#else
+	return vips_sharpen(in, out, "radius", radius, "x1", x1, "y2", y2, "y3", y3, "m1", m1, "m2", m2, NULL);
+#endif
+}
