@@ -168,6 +168,23 @@ func TestGaussianBlur(t *testing.T) {
 	Write("fixtures/test_gaussian.jpg", newImg)
 }
 
+func TestSharpen(t *testing.T) {
+	options := Options{Width: 800, Height: 600, Sharpen: Sharpen{Radius: 1, X1: 1.5, Y2: 20, Y3: 50, M1: 1, M2: 2}}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_sharpen.jpg", newImg)
+}
+
 func TestConvert(t *testing.T) {
 	width, height := 300, 240
 	formats := [3]ImageType{PNG, WEBP, JPEG}

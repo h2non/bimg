@@ -473,3 +473,14 @@ func vipsGaussianBlur(image *C.VipsImage, o GaussianBlur) (*C.VipsImage, error) 
 	}
 	return out, nil
 }
+
+func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_sharpen_bridge(image, &out, C.int(o.Radius), C.double(o.X1), C.double(o.Y2), C.double(o.Y3), C.double(o.M1), C.double(o.M2))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}

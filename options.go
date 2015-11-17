@@ -100,6 +100,15 @@ type GaussianBlur struct {
 	MinAmpl float64
 }
 
+type Sharpen struct {
+	Radius  int
+	X1 float64
+	Y2 float64
+	Y3 float64
+	M1 float64
+	M2 float64
+}
+
 // Supported image transformation options
 type Options struct {
 	Height         int
@@ -129,4 +138,5 @@ type Options struct {
 	Interpolator   Interpolator
 	Interpretation Interpretation
 	GaussianBlur   GaussianBlur
+	Sharpen        Sharpen
 }
