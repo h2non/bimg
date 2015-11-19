@@ -4,12 +4,38 @@ type Image struct {
 	buffer []byte
 }
 
+// Creates a new image
+func NewImage(buf []byte) *Image {
+	return &Image{buf}
+}
+
 // Resize the image to fixed width and height
 func (i *Image) Resize(width, height int) ([]byte, error) {
 	options := Options{
 		Width:  width,
 		Height: height,
 		Embed:  true,
+	}
+	return i.Process(options)
+}
+
+// Force resize with custom size (aspect ratio won't be maintained)
+func (i *Image) ForceResize(width, height int) ([]byte, error) {
+	options := Options{
+		Width:  width,
+		Height: height,
+		Force:  true,
+	}
+	return i.Process(options)
+}
+
+// Resize the image to fixed width and height with additional crop transformation
+func (i *Image) ResizeAndCrop(width, height int) ([]byte, error) {
+	options := Options{
+		Width:  width,
+		Height: height,
+		Embed:  true,
+		Crop:   true,
 	}
 	return i.Process(options)
 }
@@ -22,15 +48,31 @@ func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 		AreaWidth:  width,
 		AreaHeight: height,
 	}
+
+	if top == 0 && left == 0 {
+		options.Top = -1
+	}
+
 	return i.Process(options)
 }
 
-// Enlarge the image from the by X/Y axis
+// Enlarge the image by width and height. Aspect ratio is maintained
 func (i *Image) Enlarge(width, height int) ([]byte, error) {
 	options := Options{
 		Width:   width,
 		Height:  height,
 		Enlarge: true,
+	}
+	return i.Process(options)
+}
+
+// Enlarge the image by width and height with additional crop transformation
+func (i *Image) EnlargeAndCrop(width, height int) ([]byte, error) {
+	options := Options{
+		Width:   width,
+		Height:  height,
+		Enlarge: true,
+		Crop:    true,
 	}
 	return i.Process(options)
 }
@@ -75,15 +117,16 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Insert an image to the existent one as watermark
+// Add text as watermark on the given image
 func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	options := Options{Watermark: w}
 	return i.Process(options)
 }
 
-// Zoom the image by the given factor
-func (i *Image) Zoom(level int) ([]byte, error) {
-	options := Options{Zoom: level}
+// Zoom the image by the given factor.
+// You should probably call Extract() before
+func (i *Image) Zoom(factor int) ([]byte, error) {
+	options := Options{Zoom: factor}
 	return i.Process(options)
 }
 
@@ -111,6 +154,12 @@ func (i *Image) Convert(t ImageType) ([]byte, error) {
 	return i.Process(options)
 }
 
+// Colour space conversion
+func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
+	options := Options{Interpretation: c}
+	return i.Process(options)
+}
+
 // Transform the image by custom options
 func (i *Image) Process(o Options) ([]byte, error) {
 	image, err := Resize(i.buffer, o)
@@ -126,6 +175,17 @@ func (i *Image) Metadata() (ImageMetadata, error) {
 	return Metadata(i.buffer)
 }
 
+// Get the image interpretation type
+// See: http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
+func (i *Image) Interpretation() (Interpretation, error) {
+	return ImageInterpretation(i.buffer)
+}
+
+// Check if the current image has a valid colourspace
+func (i *Image) ColourspaceIsSupported() (bool, error) {
+	return ColourspaceIsSupported(i.buffer)
+}
+
 // Get image type format (jpeg, png, webp, tiff)
 func (i *Image) Type() string {
 	return DetermineImageTypeName(i.buffer)
@@ -139,9 +199,4 @@ func (i *Image) Size() (ImageSize, error) {
 // Get image buffer
 func (i *Image) Image() []byte {
 	return i.buffer
-}
-
-// Creates a new image
-func NewImage(buf []byte) *Image {
-	return &Image{buf}
 }

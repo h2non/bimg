@@ -17,7 +17,6 @@ func TestSize(t *testing.T) {
 		{"test.png", 400, 300},
 		{"test.webp", 550, 368},
 	}
-
 	for _, file := range files {
 		size, err := Size(readFile(file.name))
 		if err != nil {
@@ -39,15 +38,15 @@ func TestMetadata(t *testing.T) {
 		profile     bool
 		space       string
 	}{
-		{"test.jpg", "jpeg", 0, false, false, "bicubic"},
-		{"test.png", "png", 0, true, false, "bicubic"},
-		{"test.webp", "webp", 0, false, false, "bicubic"},
+		{"test.jpg", "jpeg", 0, false, false, "srgb"},
+		{"test.png", "png", 0, true, false, "srgb"},
+		{"test.webp", "webp", 0, false, false, "srgb"},
 	}
 
 	for _, file := range files {
 		metadata, err := Metadata(readFile(file.name))
 		if err != nil {
-			t.Fatalf("Cannot read the image: %#v", err)
+			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
 		}
 
 		if metadata.Type != file.format {
@@ -62,6 +61,58 @@ func TestMetadata(t *testing.T) {
 		if metadata.Profile != file.profile {
 			t.Fatalf("Unexpected image profile: %s != %s", metadata.Profile, file.profile)
 		}
+		if metadata.Space != file.space {
+			t.Fatalf("Unexpected image profile: %s != %s", metadata.Profile, file.profile)
+		}
+	}
+}
+
+func TestImageInterpretation(t *testing.T) {
+	files := []struct {
+		name           string
+		interpretation Interpretation
+	}{
+		{"test.jpg", INTERPRETATION_sRGB},
+		{"test.png", INTERPRETATION_sRGB},
+		{"test.webp", INTERPRETATION_sRGB},
+	}
+
+	for _, file := range files {
+		interpretation, err := ImageInterpretation(readFile(file.name))
+		if err != nil {
+			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
+		}
+		if interpretation != file.interpretation {
+			t.Fatalf("Unexpected image interpretation")
+		}
+	}
+}
+
+func TestColourspaceIsSupported(t *testing.T) {
+	files := []struct {
+		name string
+	}{
+		{"test.jpg"},
+		{"test.png"},
+		{"test.webp"},
+	}
+
+	for _, file := range files {
+		supported, err := ColourspaceIsSupported(readFile(file.name))
+		if err != nil {
+			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
+		}
+		if supported != true {
+			t.Fatalf("Unsupported image colourspace")
+		}
+	}
+
+	supported, err := initImage("test.jpg").ColourspaceIsSupported()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	if supported != true {
+		t.Errorf("Non-supported colourspace")
 	}
 }
 

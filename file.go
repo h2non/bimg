@@ -1,23 +1,9 @@
 package bimg
 
-import (
-	"io/ioutil"
-	"os"
-)
+import "io/ioutil"
 
 func Read(path string) ([]byte, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	buf, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf, nil
+	return ioutil.ReadFile(path)
 }
 
 func Write(path string, buf []byte) error {

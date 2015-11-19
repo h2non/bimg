@@ -20,18 +20,46 @@ func TestImageResize(t *testing.T) {
 	Write("fixtures/test_resize_out.jpg", buf)
 }
 
-func TestImageExtract(t *testing.T) {
-	buf, err := initImage("test.jpg").Extract(100, 100, 300, 300)
+func TestImageResizeAndCrop(t *testing.T) {
+	buf, err := initImage("test.jpg").ResizeAndCrop(300, 200)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
 
-	err = assertSize(buf, 300, 300)
+	err = assertSize(buf, 300, 200)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_resize_crop_out.jpg", buf)
+}
+
+func TestImageExtract(t *testing.T) {
+	buf, err := initImage("test.jpg").Extract(100, 100, 300, 200)
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 300, 200)
 	if err != nil {
 		t.Error(err)
 	}
 
 	Write("fixtures/test_extract_out.jpg", buf)
+}
+
+func TestImageExtractZero(t *testing.T) {
+	buf, err := initImage("test.jpg").Extract(0, 0, 300, 200)
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 300, 200)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_extract_zero_out.jpg", buf)
 }
 
 func TestImageEnlarge(t *testing.T) {
@@ -48,10 +76,24 @@ func TestImageEnlarge(t *testing.T) {
 	Write("fixtures/test_enlarge_out.jpg", buf)
 }
 
+func TestImageEnlargeAndCrop(t *testing.T) {
+	buf, err := initImage("test.png").EnlargeAndCrop(800, 480)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	err = assertSize(buf, 800, 480)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("fixtures/test_enlarge_crop_out.jpg", buf)
+}
+
 func TestImageCrop(t *testing.T) {
 	buf, err := initImage("test.jpg").Crop(800, 600, NORTH)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 800, 600)
@@ -65,7 +107,7 @@ func TestImageCrop(t *testing.T) {
 func TestImageCropByWidth(t *testing.T) {
 	buf, err := initImage("test.jpg").CropByWidth(600)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 600, 375)
@@ -79,7 +121,7 @@ func TestImageCropByWidth(t *testing.T) {
 func TestImageCropByHeight(t *testing.T) {
 	buf, err := initImage("test.jpg").CropByHeight(300)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 480, 300)
@@ -93,7 +135,7 @@ func TestImageCropByHeight(t *testing.T) {
 func TestImageThumbnail(t *testing.T) {
 	buf, err := initImage("test.jpg").Thumbnail(100)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
 	err = assertSize(buf, 100, 100)
@@ -134,13 +176,51 @@ func TestImageWatermark(t *testing.T) {
 	Write("fixtures/test_watermark_out.jpg", buf)
 }
 
-func TestImageZoom(t *testing.T) {
-	buf, err := initImage("test.jpg").Zoom(1)
+func TestImageWatermarkNoReplicate(t *testing.T) {
+	image := initImage("test.jpg")
+	_, err := image.Crop(800, 600, NORTH)
 	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+		t.Errorf("Cannot process the image: %s", err)
 	}
 
-	err = assertSize(buf, 3360, 2100)
+	buf, err := image.Watermark(Watermark{
+		Text:        "Copy me if you can",
+		Opacity:     0.5,
+		Width:       200,
+		DPI:         100,
+		NoReplicate: true,
+		Background:  Color{255, 255, 255},
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if DetermineImageType(buf) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	Write("fixtures/test_watermark_replicate_out.jpg", buf)
+}
+
+func TestImageZoom(t *testing.T) {
+	image := initImage("test.jpg")
+
+	_, err := image.Extract(100, 100, 400, 300)
+	if err != nil {
+		t.Errorf("Cannot extract the image: %s", err)
+	}
+
+	buf, err := image.Zoom(1)
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 800, 600)
 	if err != nil {
 		t.Error(err)
 	}
@@ -180,6 +260,19 @@ func TestImageConvert(t *testing.T) {
 	Write("fixtures/test_image_convert_out.png", buf)
 }
 
+func TestTransparentImageConvert(t *testing.T) {
+	image := initImage("transparent.png")
+	options := Options{
+		Type:       JPEG,
+		Background: Color{255, 255, 255},
+	}
+	buf, err := image.Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("fixtures/test_transparent_image_convert_out.jpg", buf)
+}
+
 func TestImageMetadata(t *testing.T) {
 	data, err := initImage("test.png").Metadata()
 	if err != nil {
@@ -193,6 +286,48 @@ func TestImageMetadata(t *testing.T) {
 	}
 	if data.Type != "png" {
 		t.Fatal("Invalid image type")
+	}
+}
+
+func TestInterpretation(t *testing.T) {
+	interpretation, err := initImage("test.jpg").Interpretation()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	if interpretation != INTERPRETATION_sRGB {
+		t.Errorf("Invalid interpretation: %d", interpretation)
+	}
+}
+
+func TestImageColourspace(t *testing.T) {
+	tests := []struct {
+		file           string
+		interpretation Interpretation
+	}{
+		{"test.jpg", INTERPRETATION_sRGB},
+		{"test.jpg", INTERPRETATION_B_W},
+	}
+
+	for _, test := range tests {
+		buf, err := initImage(test.file).Colourspace(test.interpretation)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		interpretation, err := ImageInterpretation(buf)
+		if interpretation != test.interpretation {
+			t.Errorf("Invalid colourspace")
+		}
+	}
+}
+
+func TestImageColourspaceIsSupported(t *testing.T) {
+	supported, err := initImage("test.jpg").ColourspaceIsSupported()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	if supported != true {
+		t.Errorf("Non-supported colourspace")
 	}
 }
 
