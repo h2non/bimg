@@ -1,7 +1,9 @@
 package bimg
 
 import (
+	"bytes"
 	"fmt"
+	"image/jpeg"
 	"path"
 	"testing"
 )
@@ -46,6 +48,29 @@ func TestImageExtract(t *testing.T) {
 	}
 
 	Write("fixtures/test_extract_out.jpg", buf)
+}
+
+func TestImageExtractPixel(t *testing.T) {
+	oldImageDecoded, err := jpeg.Decode(bytes.NewReader(initImage("test.jpg").buffer))
+	if err != nil {
+		t.Error(err)
+	}
+
+	buf, err := initImage("test.jpg").Extract(100, 100, 300, 200)
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	imageDecoded, err := jpeg.Decode(bytes.NewReader(buf))
+	if err != nil {
+		t.Error(err)
+	}
+
+	if oldImageDecoded.At(100, 100) != imageDecoded.At(0, 0) {
+		t.Error("Invalid pixel found in extracted image point", imageDecoded.At(0, 0), oldImageDecoded.At(100, 100))
+	}
+
+	Write("fixtures/test_extract_out_pixel.jpg", buf)
 }
 
 func TestImageExtractZero(t *testing.T) {
