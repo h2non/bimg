@@ -6,11 +6,13 @@ package bimg
 */
 import "C"
 
+// ImageSize represents the image width and height values
 type ImageSize struct {
 	Width  int
 	Height int
 }
 
+// ImageMedatada represents the basic metadata fields
 type ImageMetadata struct {
 	Orientation int
 	Channels    int

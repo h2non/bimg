@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"testing"
 )
 
@@ -28,27 +29,70 @@ func TestResize(t *testing.T) {
 	Write("fixtures/test_out.jpg", newImg)
 }
 
-func TestResizeCustomSizes(t *testing.T) {
+func TestResizeVerticalImage(t *testing.T) {
 	tests := []struct {
-		file    string
 		format  ImageType
 		options Options
 	}{
-		{"test.jpg", JPEG, Options{Width: 800, Height: 600}},
-		{"test.jpg", JPEG, Options{Width: 1000, Height: 1000}},
-		{"test.jpg", JPEG, Options{Width: 100, Height: 50}},
-		{"test.jpg", JPEG, Options{Width: 2000, Height: 2000}},
-		{"test.jpg", JPEG, Options{Width: 500, Height: 1000}},
-		{"test.jpg", JPEG, Options{Width: 500}},
-		{"test.jpg", JPEG, Options{Height: 500}},
-		{"test.jpg", JPEG, Options{Crop: true, Width: 500, Height: 1000}},
-		{"test.jpg", JPEG, Options{Crop: true, Enlarge: true, Width: 2000, Height: 1400}},
-		{"test.jpg", JPEG, Options{Enlarge: true, Force: true, Width: 2000, Height: 2000}},
-		{"test.jpg", JPEG, Options{Force: true, Width: 2000, Height: 2000}},
+		{JPEG, Options{Width: 800, Height: 600}},
+		{JPEG, Options{Width: 1000, Height: 1000}},
+		{JPEG, Options{Width: 1000, Height: 1500}},
+		{JPEG, Options{Width: 1000}},
+		{JPEG, Options{Height: 1500}},
+		{JPEG, Options{Width: 100, Height: 50}},
+		{JPEG, Options{Width: 2000, Height: 2000}},
+		{JPEG, Options{Width: 500, Height: 1000}},
+		{JPEG, Options{Width: 500}},
+		{JPEG, Options{Height: 500}},
+		{JPEG, Options{Crop: true, Width: 500, Height: 1000}},
+		{JPEG, Options{Crop: true, Enlarge: true, Width: 2000, Height: 1400}},
+		{JPEG, Options{Enlarge: true, Force: true, Width: 2000, Height: 2000}},
+		{JPEG, Options{Force: true, Width: 2000, Height: 2000}},
 	}
 
+	buf, _ := Read("fixtures/vertical.jpg")
 	for _, test := range tests {
-		buf, _ := Read("fixtures/" + test.file)
+		image, err := Resize(buf, test.options)
+		if err != nil {
+			t.Errorf("Resize(imgData, %#v) error: %#v", test.options, err)
+		}
+
+		if DetermineImageType(image) != test.format {
+			t.Fatal("Image format is invalid. Expected: %s", test.format)
+		}
+
+		size, _ := Size(image)
+		if test.options.Height > 0 && size.Height != test.options.Height {
+			t.Fatalf("Invalid height: %d", size.Height)
+		}
+		if test.options.Width > 0 && size.Width != test.options.Width {
+			t.Fatalf("Invalid width: %d", size.Width)
+		}
+
+		Write("fixtures/test_vertical_"+strconv.Itoa(test.options.Width)+"x"+strconv.Itoa(test.options.Height)+".jpg", image)
+	}
+}
+
+func TestResizeCustomSizes(t *testing.T) {
+	tests := []struct {
+		format  ImageType
+		options Options
+	}{
+		{JPEG, Options{Width: 800, Height: 600}},
+		{JPEG, Options{Width: 1000, Height: 1000}},
+		{JPEG, Options{Width: 100, Height: 50}},
+		{JPEG, Options{Width: 2000, Height: 2000}},
+		{JPEG, Options{Width: 500, Height: 1000}},
+		{JPEG, Options{Width: 500}},
+		{JPEG, Options{Height: 500}},
+		{JPEG, Options{Crop: true, Width: 500, Height: 1000}},
+		{JPEG, Options{Crop: true, Enlarge: true, Width: 2000, Height: 1400}},
+		{JPEG, Options{Enlarge: true, Force: true, Width: 2000, Height: 2000}},
+		{JPEG, Options{Force: true, Width: 2000, Height: 2000}},
+	}
+
+	buf, _ := Read("fixtures/test.jpg")
+	for _, test := range tests {
 		image, err := Resize(buf, test.options)
 		if err != nil {
 			t.Errorf("Resize(imgData, %#v) error: %#v", test.options, err)

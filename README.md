@@ -1,4 +1,4 @@
-# bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GitHub release](http://img.shields.io/github/tag/h2non/bimg.svg?style=flat-square)](https://github.com/h2non/bimg/releases) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg)
+# bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg) [![Go Report Card](http://goreportcard.com/badge/h2non/bimg)](http://goreportcard.com/report/h2non/bimg)
 
 Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings, providing a simple, elegant and fluent [programmatic API](#examples).
 
@@ -295,6 +295,21 @@ DEBUG=bimg ./app
 Enable libvips traces (note that a lot of data will be written in stdout):
 ```
 VIPS_TRACE=1 ./app 
+```
+
+You can also dump a core on failure, as [John Cuppit](https://github.com/jcupitt) said: 
+```c
+g_log_set_always_fatal(
+                G_LOG_FLAG_RECURSION |
+                G_LOG_FLAG_FATAL |
+                G_LOG_LEVEL_ERROR |
+                G_LOG_LEVEL_CRITICAL |
+                G_LOG_LEVEL_WARNING );
+```
+
+Or set the G_DEBUG environment variable:
+```
+export G_DEBUG=fatal-warnings,fatal-criticals
 ```
 
 ## API 

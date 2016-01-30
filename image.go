@@ -1,5 +1,6 @@
 package bimg
 
+// Image encapsulates the whole image buffer
 type Image struct {
 	buffer []byte
 }
