@@ -37,6 +37,8 @@ func TestResizeVerticalImage(t *testing.T) {
 		{JPEG, Options{Width: 800, Height: 600}},
 		{JPEG, Options{Width: 1000, Height: 1000}},
 		{JPEG, Options{Width: 1000, Height: 1500}},
+		{JPEG, Options{Width: 1000}},
+		{JPEG, Options{Height: 1500}},
 		{JPEG, Options{Width: 100, Height: 50}},
 		{JPEG, Options{Width: 2000, Height: 2000}},
 		{JPEG, Options{Width: 500, Height: 1000}},
