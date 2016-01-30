@@ -65,7 +65,7 @@ func init() {
 }
 
 // Explicit thread-safe start of libvips.
-// Only call this function if you've previously shutdown libvips
+// Only call this function if you previously shutdown libvips
 func Initialize() {
 	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
 		panic("unsupported libvips version!")
