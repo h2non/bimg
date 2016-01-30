@@ -32,6 +32,14 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	debug("Options: %#v", o)
 
+	// Initial image auto rotate / flip for proper transformation calculus
+	if o.Rotate == 0 {
+		image, err = rotateAndFlipImage(image, o)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
@@ -74,12 +82,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
-	// Rotate / flip image, if necessary
-	image, err = rotateAndFlipImage(image, o)
-	if err != nil {
-		return nil, err
-	}
-
 	// Transform image, if necessary
 	if shouldTransformImage(o, inWidth, inHeight) {
 		image, err = transformImage(image, o, shrink, residual)
@@ -98,6 +100,12 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	// Add watermark, if necessary
 	image, err = watermakImage(image, o.Watermark)
+	if err != nil {
+		return nil, err
+	}
+
+	// Transform to original rotation, if necessary
+	image, err = rotateAndFlipImage(image, o)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +157,7 @@ func shouldTransformImage(o Options, inWidth, inHeight int) bool {
 }
 
 func shouldApplyEffects(o Options) bool {
-	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 || o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0 
+	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 || o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0
 }
 
 func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
