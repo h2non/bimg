@@ -32,14 +32,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	debug("Options: %#v", o)
 
-	// Initial image auto rotate / flip for proper transformation calculus
-	if o.Rotate == 0 {
-		image, err = rotateAndFlipImage(image, o)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
@@ -76,6 +68,12 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		residual = float64(shrink) / factor
 	}
 
+	// Explicit or auto rotate image based on EXIF header
+	image, err = rotateAndFlipImage(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	// Zoom image, if necessary
 	image, err = zoomImage(image, o.Zoom)
 	if err != nil {
@@ -100,12 +98,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	// Add watermark, if necessary
 	image, err = watermakImage(image, o.Watermark)
-	if err != nil {
-		return nil, err
-	}
-
-	// Transform to original rotation, if necessary
-	image, err = rotateAndFlipImage(image, o)
 	if err != nil {
 		return nil, err
 	}
@@ -266,7 +258,7 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		if flip {
 			o.Flip = flip
 		}
-		if rotation > D0 && o.Rotate == 0 {
+		if rotation > 0 && o.Rotate == 0 {
 			o.Rotate = rotation
 		}
 	}
