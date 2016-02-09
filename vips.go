@@ -341,8 +341,23 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
-func max(x int) int {
-	return int(math.Max(float64(x), 0))
+func getImageBuffer(image *C.VipsImage) ([]byte, error) {
+	var ptr unsafe.Pointer
+
+	length := C.size_t(0)
+	interlace := C.int(0)
+	quality := C.int(100)
+
+	err := C.int(0)
+	err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, quality, interlace)
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+
+	defer C.g_free(C.gpointer(ptr))
+	defer C.vips_error_clear()
+
+	return C.GoBytes(ptr, C.int(length)), nil
 }
 
 func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage, error) {
@@ -483,4 +498,8 @@ func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
 		return nil, catchVipsError()
 	}
 	return out, nil
+}
+
+func max(x int) int {
+	return int(math.Max(float64(x), 0))
 }

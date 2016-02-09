@@ -32,6 +32,20 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 	debug("Options: %#v", o)
 
+	// Auto rotate image based on EXIF orientation header
+	image, rotated, err := rotateAndFlipImage(image, o)
+	if err != nil {
+		return nil, err
+	}
+
+	// If JPEG image, retrieve the buffer
+	if rotated && imageType == JPEG && !o.NoAutoRotate {
+		buf, err = getImageBuffer(image)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
@@ -66,12 +80,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		factor = math.Max(factor, 1.0)
 		shrink = int(math.Floor(factor))
 		residual = float64(shrink) / factor
-	}
-
-	// Explicit or auto rotate image based on EXIF header
-	image, err = rotateAndFlipImage(image, o)
-	if err != nil {
-		return nil, err
 	}
 
 	// Zoom image, if necessary
@@ -249,8 +257,9 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	return image, err
 }
 
-func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, error) {
 	var err error
+	var rotated bool
 	var direction Direction = -1
 
 	if o.NoAutoRotate == false {
@@ -264,6 +273,7 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	}
 
 	if o.Rotate > 0 {
+		rotated = true
 		image, err = vipsRotate(image, getAngle(o.Rotate))
 	}
 
@@ -274,10 +284,11 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	}
 
 	if direction != -1 {
+		rotated = true
 		image, err = vipsFlip(image, direction)
 	}
 
-	return image, err
+	return image, rotated, err
 }
 
 func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
