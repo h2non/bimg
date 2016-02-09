@@ -113,7 +113,7 @@ func TestResizeCustomSizes(t *testing.T) {
 }
 
 func TestRotate(t *testing.T) {
-	options := Options{Width: 800, Height: 600, Rotate: 270}
+	options := Options{Width: 800, Height: 600, Rotate: 270, Crop: true}
 	buf, _ := Read("fixtures/test.jpg")
 
 	newImg, err := Resize(buf, options)
@@ -122,19 +122,19 @@ func TestRotate(t *testing.T) {
 	}
 
 	if DetermineImageType(newImg) != JPEG {
-		t.Fatal("Image is not jpeg")
+		t.Error("Image is not jpeg")
 	}
 
 	size, _ := Size(newImg)
-	if size.Height != options.Width {
-		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	if size.Width != options.Width || size.Height != options.Height {
+		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
 	Write("fixtures/test_rotate_out.jpg", newImg)
 }
 
-func TestInvalidRotate(t *testing.T) {
-	options := Options{Width: 800, Height: 600, Rotate: 111}
+func TestInvalidRotateDegrees(t *testing.T) {
+	options := Options{Width: 800, Height: 600, Rotate: 111, Crop: true}
 	buf, _ := Read("fixtures/test.jpg")
 
 	newImg, err := Resize(buf, options)
@@ -143,15 +143,15 @@ func TestInvalidRotate(t *testing.T) {
 	}
 
 	if DetermineImageType(newImg) != JPEG {
-		t.Fatal("Image is not jpeg")
+		t.Errorf("Image is not jpeg")
 	}
 
 	size, _ := Size(newImg)
-	if size.Height != options.Width {
-		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	if size.Width != options.Width || size.Height != options.Height {
+		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("fixtures/test_invalid_rotate_out.jpg", newImg)
+	Write("fixtures/test_rotate_invalid_out.jpg", newImg)
 }
 
 func TestCorruptedImage(t *testing.T) {
