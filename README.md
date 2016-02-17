@@ -1,4 +1,4 @@
-# bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg) [![Go Report Card](http://goreportcard.com/badge/h2non/bimg)](http://goreportcard.com/report/h2non/bimg)
+# bimg [![Build Status](https://travis-ci.org/h2non/bimg.png)](https://travis-ci.org/h2non/bimg) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg) [![Go Report Card](http://goreportcard.com/badge/h2non/bimg)](http://goreportcard.com/report/h2non/bimg) [![Coverage Status](https://coveralls.io/repos/github/h2non/bimg/badge.svg?branch=master)](https://coveralls.io/github/h2non/bimg?branch=master)
 
 Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings, providing a simple, elegant and fluent [programmatic API](#examples).
 
