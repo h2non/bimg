@@ -2,7 +2,7 @@
 
 Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings, providing a simple, elegant and fluent [programmatic API](#examples).
 
-bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion between them.
+bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion across them.
 
 bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
