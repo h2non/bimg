@@ -1,3 +1,4 @@
 package bimg
 
-const Version = "0.1.24"
+// Version represents the current package semantic version.
+const Version = "1.0.0"

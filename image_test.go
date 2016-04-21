@@ -91,7 +91,7 @@ func TestImageEnlargeAndCrop(t *testing.T) {
 }
 
 func TestImageCrop(t *testing.T) {
-	buf, err := initImage("test.jpg").Crop(800, 600, NORTH)
+	buf, err := initImage("test.jpg").Crop(800, 600, GravityNorth)
 	if err != nil {
 		t.Errorf("Cannot process the image: %s", err)
 	}
@@ -148,7 +148,7 @@ func TestImageThumbnail(t *testing.T) {
 
 func TestImageWatermark(t *testing.T) {
 	image := initImage("test.jpg")
-	_, err := image.Crop(800, 600, NORTH)
+	_, err := image.Crop(800, 600, GravityNorth)
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
@@ -178,7 +178,7 @@ func TestImageWatermark(t *testing.T) {
 
 func TestImageWatermarkNoReplicate(t *testing.T) {
 	image := initImage("test.jpg")
-	_, err := image.Crop(800, 600, NORTH)
+	_, err := image.Crop(800, 600, GravityNorth)
 	if err != nil {
 		t.Errorf("Cannot process the image: %s", err)
 	}
@@ -294,7 +294,7 @@ func TestInterpretation(t *testing.T) {
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
-	if interpretation != INTERPRETATION_sRGB {
+	if interpretation != InterpretationSRGB {
 		t.Errorf("Invalid interpretation: %d", interpretation)
 	}
 }
@@ -304,8 +304,8 @@ func TestImageColourspace(t *testing.T) {
 		file           string
 		interpretation Interpretation
 	}{
-		{"test.jpg", INTERPRETATION_sRGB},
-		{"test.jpg", INTERPRETATION_B_W},
+		{"test.jpg", InterpretationSRGB},
+		{"test.jpg", InterpretationBW},
 	}
 
 	for _, test := range tests {

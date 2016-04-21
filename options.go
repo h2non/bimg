@@ -7,83 +7,115 @@ package bimg
 import "C"
 
 const (
-	QUALITY  = 80
-	MAX_SIZE = 16383
+	// Quality defines the default JPEG quality to be used.
+	Quality = 80
+	// MaxSize defines the maximum pixels width or height supported.
+	MaxSize = 16383
 )
 
+// Gravity represents the image gravity value.
 type Gravity int
 
 const (
-	CENTRE Gravity = iota
-	NORTH
-	EAST
-	SOUTH
-	WEST
+	// GravityCentre represents the centre value used for image gravity orientation.
+	GravityCentre Gravity = iota
+	// GravityNorth represents the north value used for image gravity orientation.
+	GravityNorth
+	// GravityEast represents the east value used for image gravity orientation.
+	GravityEast
+	// GravitySouth represents the south value used for image gravity orientation.
+	GravitySouth
+	// GravityWest represents the west value used for image gravity orientation.
+	GravityWest
 )
 
+// Interpolator represents the image interpolation value.
 type Interpolator int
 
 const (
-	BICUBIC Interpolator = iota
-	BILINEAR
-	NOHALO
+	// Bicubic interpolation value.
+	Bicubic Interpolator = iota
+	// Bilinear interpolation value.
+	Bilinear
+	// Nohalo interpolation value.
+	Nohalo
 )
 
 var interpolations = map[Interpolator]string{
-	BICUBIC:  "bicubic",
-	BILINEAR: "bilinear",
-	NOHALO:   "nohalo",
+	Bicubic:  "bicubic",
+	Bilinear: "bilinear",
+	Nohalo:   "nohalo",
 }
 
 func (i Interpolator) String() string {
 	return interpolations[i]
 }
 
+// Angle represents the image rotation angle value.
 type Angle int
 
 const (
-	D0   Angle = 0
-	D90  Angle = 90
+	// D0 represents the rotation angle 0 degrees.
+	D0 Angle = 0
+	// D90 represents the rotation angle 90 degrees.
+	D90 Angle = 90
+	// D180 represents the rotation angle 180 degrees.
 	D180 Angle = 180
+	// D270 represents the rotation angle 270 degrees.
 	D270 Angle = 270
 )
 
+// Direction represents the image direction value.
 type Direction int
 
 const (
-	HORIZONTAL Direction = C.VIPS_DIRECTION_HORIZONTAL
-	VERTICAL   Direction = C.VIPS_DIRECTION_VERTICAL
+	// Horizontal represents the orizontal image direction value.
+	Horizontal Direction = C.VIPS_DIRECTION_HORIZONTAL
+	// Vertical represents the vertical image direction value.
+	Vertical Direction = C.VIPS_DIRECTION_VERTICAL
 )
 
-// Image interpretation type
+// Interpretation represents the image interpretation type.
 // See: http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
 type Interpretation int
 
 const (
-	INTERPRETATION_ERROR     Interpretation = C.VIPS_INTERPRETATION_ERROR
-	INTERPRETATION_MULTIBAND Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
-	INTERPRETATION_B_W       Interpretation = C.VIPS_INTERPRETATION_B_W
-	INTERPRETATION_CMYK      Interpretation = C.VIPS_INTERPRETATION_CMYK
-	INTERPRETATION_RGB       Interpretation = C.VIPS_INTERPRETATION_RGB
-	INTERPRETATION_sRGB      Interpretation = C.VIPS_INTERPRETATION_sRGB
-	INTERPRETATION_RGB16     Interpretation = C.VIPS_INTERPRETATION_RGB16
-	INTERPRETATION_GREY16    Interpretation = C.VIPS_INTERPRETATION_GREY16
-	INTERPRETATION_scRGB     Interpretation = C.VIPS_INTERPRETATION_scRGB
-	INTERPRETATION_LAB       Interpretation = C.VIPS_INTERPRETATION_LAB
-	INTERPRETATION_XYZ       Interpretation = C.VIPS_INTERPRETATION_XYZ
+	// InterpretationError points to the libvips interpretation error type.
+	InterpretationError Interpretation = C.VIPS_INTERPRETATION_ERROR
+	// InterpretationMultiband points to its libvips interpretation equivalent type.
+	InterpretationMultiband Interpretation = C.VIPS_INTERPRETATION_MULTIBAND
+	// InterpretationBW points to its libvips interpretation equivalent type.
+	InterpretationBW Interpretation = C.VIPS_INTERPRETATION_B_W
+	// InterpretationCMYK points to its libvips interpretation equivalent type.
+	InterpretationCMYK Interpretation = C.VIPS_INTERPRETATION_CMYK
+	// InterpretationRGB points to its libvips interpretation equivalent type.
+	InterpretationRGB Interpretation = C.VIPS_INTERPRETATION_RGB
+	// InterpretationSRGB points to its libvips interpretation equivalent type.
+	InterpretationSRGB Interpretation = C.VIPS_INTERPRETATION_sRGB
+	// InterpretationRGB16 points to its libvips interpretation equivalent type.
+	InterpretationRGB16 Interpretation = C.VIPS_INTERPRETATION_RGB16
+	// InterpretationGREY16 points to its libvips interpretation equivalent type.
+	InterpretationGREY16 Interpretation = C.VIPS_INTERPRETATION_GREY16
+	// InterpretationScRGB points to its libvips interpretation equivalent type.
+	InterpretationScRGB Interpretation = C.VIPS_INTERPRETATION_scRGB
+	// InterpretationLAB points to its libvips interpretation equivalent type.
+	InterpretationLAB Interpretation = C.VIPS_INTERPRETATION_LAB
+	// InterpretationXYZ points to its libvips interpretation equivalent type.
+	InterpretationXYZ Interpretation = C.VIPS_INTERPRETATION_XYZ
 )
 
-const WATERMARK_FONT = "sans 10"
+// WatermarkFont defines the default watermark font to be used.
+var WatermarkFont = "sans 10"
 
-// Color represents a traditional RGB color scheme
+// Color represents a traditional RGB color scheme.
 type Color struct {
 	R, G, B uint8
 }
 
-// Shortcut to black RGB color representation
+// ColorBlack is a shortcut to black RGB color representation.
 var ColorBlack = Color{0, 0, 0}
 
-// Text-based watermark configuration
+// Watermark represents the text-based watermark supported options.
 type Watermark struct {
 	Width       int
 	DPI         int
@@ -95,11 +127,13 @@ type Watermark struct {
 	Background  Color
 }
 
+// GaussianBlur represents the gaussian image transformation values.
 type GaussianBlur struct {
 	Sigma   float64
 	MinAmpl float64
 }
 
+// Sharpen represents the image sharp transformation options.
 type Sharpen struct {
 	Radius int
 	X1     float64
@@ -109,7 +143,7 @@ type Sharpen struct {
 	M2     float64
 }
 
-// Supported image transformation options
+// Options represents the supported image transformation options.
 type Options struct {
 	Height         int
 	Width          int

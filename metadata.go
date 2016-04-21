@@ -12,7 +12,7 @@ type ImageSize struct {
 	Height int
 }
 
-// ImageMedatada represents the basic metadata fields
+// ImageMetadata represents the basic metadata fields
 type ImageMetadata struct {
 	Orientation int
 	Channels    int
@@ -24,7 +24,7 @@ type ImageMetadata struct {
 	Size        ImageSize
 }
 
-// Get the image size by width and height pixels
+// Size returns the image size by width and height pixels.
 func Size(buf []byte) (ImageSize, error) {
 	metadata, err := Metadata(buf)
 	if err != nil {
@@ -37,18 +37,18 @@ func Size(buf []byte) (ImageSize, error) {
 	}, nil
 }
 
-// Check in the image colourspace is supported by libvips
+// ColourspaceIsSupported checks if the image colourspace is supported by libvips.
 func ColourspaceIsSupported(buf []byte) (bool, error) {
 	return vipsColourspaceIsSupportedBuffer(buf)
 }
 
-// Get the image interpretation type
+// ImageInterpretation returns the image interpretation type.
 // See: http://www.vips.ecs.soton.ac.uk/supported/current/doc/html/libvips/VipsImage.html#VipsInterpretation
 func ImageInterpretation(buf []byte) (Interpretation, error) {
 	return vipsInterpretationBuffer(buf)
 }
 
-// Extract the image metadata (size, type, alpha channel, profile, EXIF orientation...)
+// Metadata returns the image metadata (size, type, alpha channel, profile, EXIF orientation...).
 func Metadata(buf []byte) (ImageMetadata, error) {
 	defer C.vips_thread_shutdown()
 
