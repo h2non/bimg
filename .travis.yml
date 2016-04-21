@@ -9,7 +9,6 @@ script:
   - diff -u <(echo -n) <(gofmt -s -d ./)
   - diff -u <(echo -n) <(go vet ./)
   - diff -u <(echo -n) <(golint ./)
-  - go test -v -race ./...
   - go test -v -race -covermode=atomic -coverprofile=coverage.out
 
 after_success:
