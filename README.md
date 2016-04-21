@@ -52,7 +52,7 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 ## Installation
 
 ```bash
-go get -u gopkg.in/h2non/bimg.v0
+go get -u gopkg.in/h2non/bimg.v1
 ```
 
 ### libvips
