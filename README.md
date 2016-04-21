@@ -11,6 +11,9 @@ If you're looking for an HTTP based image processing solution, see [imaginary](h
 
 bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org).
 
+**v1 notice**: `bimg` introduces some minor breaking changes in `v1` release. 
+If you're using `gopkg.in`, you can still rely in the `v0` without worrying about breaking changes.
+
 ## Contents
 
 - [Supported image operations](#supported-image-operations)

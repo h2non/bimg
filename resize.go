@@ -11,6 +11,8 @@ import (
 	"math"
 )
 
+// Resize is used to transform a given image as byte buffer
+// with the passed options.
 func Resize(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
@@ -131,7 +133,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 
 func applyDefaults(o Options, imageType ImageType) Options {
 	if o.Quality == 0 {
-		o.Quality = QUALITY
+		o.Quality = Quality
 	}
 	if o.Compression == 0 {
 		o.Compression = 6
@@ -140,7 +142,7 @@ func applyDefaults(o Options, imageType ImageType) Options {
 		o.Type = imageType
 	}
 	if o.Interpretation == 0 {
-		o.Interpretation = INTERPRETATION_sRGB
+		o.Interpretation = InterpretationSRGB
 	}
 	return o
 }
@@ -224,7 +226,7 @@ func applyEffects(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 }
 
 func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
-	var err error = nil
+	var err error
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
@@ -278,9 +280,9 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, erro
 	}
 
 	if o.Flip {
-		direction = HORIZONTAL
+		direction = Horizontal
 	} else if o.Flop {
-		direction = VERTICAL
+		direction = Vertical
 	}
 
 	if direction != -1 {
@@ -298,7 +300,7 @@ func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 
 	// Defaults
 	if w.Font == "" {
-		w.Font = WATERMARK_FONT
+		w.Font = WatermarkFont
 	}
 	if w.Width == 0 {
 		w.Width = int(math.Floor(float64(image.Xsize / 6)))
@@ -420,15 +422,15 @@ func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) 
 	left, top := 0, 0
 
 	switch gravity {
-	case NORTH:
+	case GravityNorth:
 		left = (inWidth - outWidth + 1) / 2
-	case EAST:
+	case GravityEast:
 		left = inWidth - outWidth
 		top = (inHeight - outHeight + 1) / 2
-	case SOUTH:
+	case GravitySouth:
 		left = (inWidth - outWidth + 1) / 2
 		top = inHeight - outHeight
-	case WEST:
+	case GravityWest:
 		top = (inHeight - outHeight + 1) / 2
 	default:
 		left = (inWidth - outWidth + 1) / 2

@@ -72,9 +72,9 @@ func TestImageInterpretation(t *testing.T) {
 		name           string
 		interpretation Interpretation
 	}{
-		{"test.jpg", INTERPRETATION_sRGB},
-		{"test.png", INTERPRETATION_sRGB},
-		{"test.webp", INTERPRETATION_sRGB},
+		{"test.jpg", InterpretationSRGB},
+		{"test.png", InterpretationSRGB},
+		{"test.webp", InterpretationSRGB},
 	}
 
 	for _, file := range files {

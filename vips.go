@@ -14,11 +14,18 @@ import (
 	"strings"
 	"sync"
 	"unsafe"
+
+	d "github.com/tj/go-debug"
 )
 
-// Current libvips version
+// debug is internally used to
+var debug = d.Debug("bimg")
+
+// VipsVersion exposes the current libvips semantic version
 const VipsVersion = string(C.VIPS_VERSION)
 
+// HasMagickSupport exposes if the current libvips compilation
+// supports libmagick bindings.
 const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
 
 const (
@@ -31,12 +38,14 @@ var (
 	initialized bool
 )
 
+// VipsMemoryInfo represents the memory stats provided by libvips.
 type VipsMemoryInfo struct {
 	Memory          int64
 	MemoryHighwater int64
 	Allocations     int64
 }
 
+// vipsSaveOptions represents the internal option used to talk with libvips.
 type vipsSaveOptions struct {
 	Quality        int
 	Compression    int
@@ -64,8 +73,8 @@ func init() {
 	Initialize()
 }
 
-// Explicit thread-safe start of libvips.
-// Only call this function if you previously shutdown libvips
+// Initialize is used to explicitly start libvips in thread-safe way.
+// Only call this function if you have previously turned off libvips.
 func Initialize() {
 	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
 		panic("unsupported libvips version!")
@@ -99,7 +108,7 @@ func Initialize() {
 	initialized = true
 }
 
-// Thread-safe function to shutdown libvips.
+// Shutdown is used to shutdown libvips in a thread-safe way.
 // You can call this to drop caches as well.
 // If libvips was already initialized, the function is no-op
 func Shutdown() {
@@ -112,12 +121,12 @@ func Shutdown() {
 	}
 }
 
-// Output to stdout vips collected data. Useful for debugging
+// VipsDebugInfo outputs to stdout libvips collected data. Useful for debugging.
 func VipsDebugInfo() {
 	C.im__print_all()
 }
 
-// Get memory info stats from vips (cache size, memory allocs...)
+// VipsMemory gets memory info stats from libvips (cache size, memory allocs...)
 func VipsMemory() VipsMemoryInfo {
 	return VipsMemoryInfo{
 		Memory:          int64(C.vips_tracked_get_mem()),
@@ -246,7 +255,7 @@ func vipsColourspaceIsSupported(image *C.VipsImage) bool {
 func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 	image, _, err := vipsRead(buf)
 	if err != nil {
-		return INTERPRETATION_ERROR, err
+		return InterpretationError, err
 	}
 	C.g_object_unref(C.gpointer(image))
 	return vipsInterpretation(image), nil
@@ -284,7 +293,7 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 
 	// Use a default interpretation and cast it to C type
 	if o.Interpretation == 0 {
-		o.Interpretation = INTERPRETATION_sRGB
+		o.Interpretation = InterpretationSRGB
 	}
 	interpretation := C.VipsInterpretation(o.Interpretation)
 
@@ -364,7 +373,7 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	if width > MAX_SIZE || height > MAX_SIZE {
+	if width > MaxSize || height > MaxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
