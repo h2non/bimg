@@ -9,7 +9,7 @@ and it's typically 4x faster than using the quickest ImageMagick and GraphicsMag
 
 If you're looking for an HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
 
-bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org).
+bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org). bimg is used in production environments for more than a year processing thousands of images per day. 
 
 **v1 notice**: `bimg` introduces some minor breaking changes in `v1` release. 
 If you're using `gopkg.in`, you can still rely in the `v0` without worrying about breaking changes.
