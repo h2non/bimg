@@ -279,8 +279,8 @@ func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, 
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-	C.g_object_unref(C.gpointer(image))
-	image = outImage
+		C.g_object_unref(C.gpointer(image))
+		image = outImage
 	}
 
 	return image, nil
