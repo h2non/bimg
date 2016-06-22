@@ -318,9 +318,12 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	//When an image has an unsupported color space, vipsPreSave returns the pointer of the image passed to it unmodified.
-	//When this occurs, we must take care to not dereference the original image a second time;
-	//we may otherwise erroneously free the object twice
+
+	// When an image has an unsupported color space, vipsPreSave
+	// returns the pointer of the image passed to it unmodified.
+	// When this occurs, we must take care to not dereference the
+	// original image a second time; we may otherwise erroneously
+	// free the object twice.
 	if tmpImage != image {
 		defer C.g_object_unref(C.gpointer(tmpImage))
 	}
