@@ -20,6 +20,66 @@ func TestImageResize(t *testing.T) {
 	Write("fixtures/test_resize_out.jpg", buf)
 }
 
+func TestImageGifResize(t *testing.T) {
+	_, err := initImage("test.gif").Resize(300, 240)
+	if err == nil {
+		t.Errorf("GIF shouldn't be saved within VIPS.")
+	}
+}
+
+func TestImagePdfResize(t *testing.T) {
+	_, err := initImage("test.pdf").Resize(300, 240)
+	if err == nil {
+		t.Errorf("PDF cannot be saved within VIPS.")
+	}
+}
+
+func TestImageSvgResize(t *testing.T) {
+	_, err := initImage("test.svg").Resize(300, 240)
+	if err == nil {
+		t.Errorf("SVG cannot be saved within VIPS.")
+	}
+}
+
+func TestImageGifToJpeg(t *testing.T) {
+	i := initImage("test.gif")
+	options := Options{
+		Type: JPEG,
+	}
+	buf, err := i.Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	Write("fixtures/test_gif.jpg", buf)
+}
+
+func TestImagePdfToJpeg(t *testing.T) {
+	i := initImage("test.pdf")
+	options := Options{
+		Type: JPEG,
+	}
+	buf, err := i.Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	Write("fixtures/test_pdf.jpg", buf)
+}
+
+func TestImageSvgToJpeg(t *testing.T) {
+	i := initImage("test.svg")
+	options := Options{
+		Type: JPEG,
+	}
+	buf, err := i.Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	Write("fixtures/test_svg.jpg", buf)
+}
+
 func TestImageResizeAndCrop(t *testing.T) {
 	buf, err := initImage("test.jpg").ResizeAndCrop(300, 200)
 	if err != nil {

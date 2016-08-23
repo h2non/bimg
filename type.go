@@ -14,6 +14,12 @@ const (
 	PNG
 	// TIFF represents the TIFF image type.
 	TIFF
+	// GIF represents the GIF image type.
+	GIF
+	// PDF represents the PDF type.
+	PDF
+	// SVG represents the SVG image type.
+	SVG
 	// MAGICK represents the libmagick compatible genetic image type.
 	MAGICK
 )
@@ -24,6 +30,9 @@ var ImageTypes = map[ImageType]string{
 	PNG:    "png",
 	WEBP:   "webp",
 	TIFF:   "tiff",
+	GIF:    "gif",
+	PDF:    "pdf",
+	SVG:    "svg",
 	MAGICK: "magick",
 }
 

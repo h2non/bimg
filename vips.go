@@ -341,6 +341,12 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	case PNG:
 		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
 		break
+	case GIF:
+		return nil, errors.New("VIPS cannot save to GIF")
+	case PDF:
+		return nil, errors.New("VIPS cannot save to PDF")
+	case SVG:
+		return nil, errors.New("VIPS cannot save to SVG")
 	default:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
 		break
@@ -466,6 +472,17 @@ func vipsImageType(bytes []byte) ImageType {
 	if (bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x0) ||
 		(bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x0 && bytes[3] == 0x2A) {
 		return TIFF
+	}
+	if bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == '8' &&
+		bytes[4] == '9' && bytes[5] == 'a' {
+		return GIF
+	}
+	if bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F' {
+		return PDF
+	}
+	if bytes[0] == '<' && bytes[1] == '?' && bytes[2] == 'x' && bytes[3] == 'm' &&
+		bytes[4] == 'l' && bytes[5] == ' ' {
+		return SVG
 	}
 	if HasMagickSupport && strings.HasSuffix(readImageType(bytes), "MagickBuffer") {
 		return MAGICK

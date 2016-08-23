@@ -5,6 +5,12 @@ go:
   - 1.5
   - tip
 
+before_install:
+  - curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
+
+before_script:
+  - go get -u github.com/golang/lint/golint
+
 script:
   - diff -u <(echo -n) <(gofmt -s -d ./)
   - diff -u <(echo -n) <(go vet ./)
@@ -13,6 +19,3 @@ script:
 
 after_success:
   - goveralls -coverprofile=coverage.out -service=travis-ci
-
-before_install:
-  - curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -

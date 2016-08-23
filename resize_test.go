@@ -58,7 +58,7 @@ func TestResizeVerticalImage(t *testing.T) {
 		}
 
 		if DetermineImageType(image) != test.format {
-			t.Fatal("Image format is invalid. Expected: %s", test.format)
+			t.Fatalf("Image format is invalid. Expected: %#v", test.format)
 		}
 
 		size, _ := Size(image)
@@ -99,7 +99,7 @@ func TestResizeCustomSizes(t *testing.T) {
 		}
 
 		if DetermineImageType(image) != test.format {
-			t.Fatal("Image format is invalid. Expected: %s", test.format)
+			t.Fatalf("Image format is invalid. Expected: %#v", test.format)
 		}
 
 		size, _ := Size(image)
