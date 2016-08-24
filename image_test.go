@@ -23,21 +23,21 @@ func TestImageResize(t *testing.T) {
 func TestImageGifResize(t *testing.T) {
 	_, err := initImage("test.gif").Resize(300, 240)
 	if err == nil {
-		t.Errorf("GIF shouldn't be saved within VIPS.")
+		t.Errorf("GIF shouldn't be saved within VIPS")
 	}
 }
 
 func TestImagePdfResize(t *testing.T) {
 	_, err := initImage("test.pdf").Resize(300, 240)
 	if err == nil {
-		t.Errorf("PDF cannot be saved within VIPS.")
+		t.Errorf("PDF cannot be saved within VIPS")
 	}
 }
 
 func TestImageSvgResize(t *testing.T) {
 	_, err := initImage("test.svg").Resize(300, 240)
 	if err == nil {
-		t.Errorf("SVG cannot be saved within VIPS.")
+		t.Errorf("SVG cannot be saved within VIPS")
 	}
 }
 
