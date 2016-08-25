@@ -57,12 +57,20 @@ type Angle int
 const (
 	// D0 represents the rotation angle 0 degrees.
 	D0 Angle = 0
+	// D45 represents the rotation angle 90 degrees.
+	D45 Angle = 45
 	// D90 represents the rotation angle 90 degrees.
 	D90 Angle = 90
+	// D135 represents the rotation angle 90 degrees.
+	D135 Angle = 135
 	// D180 represents the rotation angle 180 degrees.
 	D180 Angle = 180
+	// D180 represents the rotation angle 180 degrees.
+	D235 Angle = 235
 	// D270 represents the rotation angle 270 degrees.
 	D270 Angle = 270
+	// D315 represents the rotation angle 180 degrees.
+	D315 Angle = 315
 )
 
 // Direction represents the image direction value.
