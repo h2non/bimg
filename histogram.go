@@ -1,5 +1,9 @@
 package bimg
 
+/*
+#cgo pkg-config: vips
+#include "vips/vips.h"
+*/
 import "C"
 
 import "errors"
