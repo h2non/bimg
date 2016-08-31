@@ -204,3 +204,8 @@ func (i *Image) Size() (ImageSize, error) {
 func (i *Image) Image() []byte {
 	return i.buffer
 }
+
+// Image returns the current histogram
+func (i *Image) Histogram() ([]byte, error) {
+	return Histogram(i.buffer)
+}
