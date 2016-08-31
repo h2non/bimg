@@ -425,3 +425,8 @@ int
 vips_hist_norm_bridge(VipsImage *in, VipsImage **out) {
 	return vips_hist_norm(in, out, NULL);
 }
+
+int
+vips_hist_find_bridge(VipsImage *in, VipsImage **out) {
+    return vips_hist_find(in, out, NULL);
+}
