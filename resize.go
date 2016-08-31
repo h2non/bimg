@@ -387,6 +387,10 @@ func shrinkJpegImage(buf []byte, input *C.VipsImage, factor float64, shrink int)
 	return image, factor, err
 }
 
+func round(f float64) float64 {
+	return math.Floor(f + .5)
+}
+
 func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	factor := 1.0
 	xfactor := float64(inWidth) / float64(o.Width)
@@ -403,11 +407,13 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	// Fixed width, auto height
 	case o.Width > 0:
 		factor = xfactor
-		o.Height = int(math.Floor(float64(inHeight) / factor))
+		//o.Height = int(math.Floor(float64(inHeight) / factor))
+		o.Height = round(float64(inHeight) / factor)
 	// Fixed height, auto width
 	case o.Height > 0:
 		factor = yfactor
-		o.Width = int(math.Floor(float64(inWidth) / factor))
+		//o.Width = int(math.Floor(float64(inWidth) / factor))
+		o.Width = round(float64(inWidth) / factor)
 	// Identity transform
 	default:
 		o.Width = inWidth

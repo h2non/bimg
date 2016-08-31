@@ -1,3 +1,5 @@
+*.iml
+.idea/*
 /bimg
 /bundle
 bin
