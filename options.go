@@ -65,7 +65,7 @@ const (
 	D135 Angle = 135
 	// D180 represents the rotation angle 180 degrees.
 	D180 Angle = 180
-	// D180 represents the rotation angle 180 degrees.
+	// D235 represents the rotation angle 235 degrees.
 	D235 Angle = 235
 	// D270 represents the rotation angle 270 degrees.
 	D270 Angle = 270
