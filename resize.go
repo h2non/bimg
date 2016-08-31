@@ -11,6 +11,26 @@ import (
 	"math"
 )
 
+func Histogram(buf []byte) ([]byte, error) {
+	defer C.vips_thread_shutdown()
+
+	if len(buf) == 0 {
+		return nil, errors.New("Image buffer is empty")
+	}
+
+	image, _, err := vipsRead(buf)
+	if err != nil {
+		return nil, err
+	}
+
+	imageHist, err := vipsHistogram(image)
+	if err != nil {
+		return nil, err
+	}
+
+	return getImageBuffer(imageHist)
+}
+
 // Resize is used to transform a given image as byte buffer
 // with the passed options.
 func Resize(buf []byte, o Options) ([]byte, error) {
@@ -387,6 +407,10 @@ func shrinkJpegImage(buf []byte, input *C.VipsImage, factor float64, shrink int)
 	return image, factor, err
 }
 
+func round(f float64) int {
+	return int(math.Floor(f + .5))
+}
+
 func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	factor := 1.0
 	xfactor := float64(inWidth) / float64(o.Width)
@@ -403,11 +427,13 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	// Fixed width, auto height
 	case o.Width > 0:
 		factor = xfactor
-		o.Height = int(math.Floor(float64(inHeight) / factor))
+		//o.Height = int(math.Floor(float64(inHeight) / factor))
+		o.Height = round(float64(inHeight) / factor)
 	// Fixed height, auto width
 	case o.Height > 0:
 		factor = yfactor
-		o.Width = int(math.Floor(float64(inWidth) / factor))
+		//o.Width = int(math.Floor(float64(inWidth) / factor))
+		o.Width = round(float64(inWidth) / factor)
 	// Identity transform
 	default:
 		o.Width = inWidth

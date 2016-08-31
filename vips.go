@@ -518,6 +518,17 @@ func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
 	return out, nil
 }
 
+func vipsHistogram(image *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_hist_norm_bridge(image, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
 func max(x int) int {
 	return int(math.Max(float64(x), 0))
 }
