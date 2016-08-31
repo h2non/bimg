@@ -387,8 +387,8 @@ func shrinkJpegImage(buf []byte, input *C.VipsImage, factor float64, shrink int)
 	return image, factor, err
 }
 
-func round(f float64) float64 {
-	return math.Floor(f + .5)
+func round(f float64) int {
+	return int(math.Floor(f + .5))
 }
 
 func imageCalculations(o *Options, inWidth, inHeight int) float64 {
