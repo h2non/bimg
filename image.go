@@ -206,6 +206,11 @@ func (i *Image) Image() []byte {
 }
 
 // Image returns the current histogram
-func (i *Image) Histogram() ([]byte, error) {
-	return Histogram(i.buffer)
+func (i *Image) HistogramFind() ([]byte, error) {
+	return HistogramFind(i.buffer)
+}
+
+// Image returns the current histogram normalized
+func (i *Image) HistogramNorm() ([]byte, error) {
+	return HistogramNorm(i.buffer)
 }
