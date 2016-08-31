@@ -42,16 +42,26 @@ func TestVipsSave(t *testing.T) {
 }
 
 func TestVipsRotate(t *testing.T) {
-	image, _, _ := vipsRead(readImage("test.jpg"))
-
-	newImg, err := vipsRotate(image, D90)
-	if err != nil {
-		t.Fatal("Cannot save the image")
+	files := []struct {
+		name   string
+		rotate Angle
+	}{
+		{"test.jpg", D90},
+		{"test_square.jpg", D45},
 	}
 
-	buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
-	if len(buf) == 0 {
-		t.Fatal("Empty image")
+	for _, file := range files {
+		image, _, _ := vipsRead(readImage(file.name))
+
+		newImg, err := vipsRotate(image, file.rotate)
+		if err != nil {
+			t.Fatal("Cannot rotate the image")
+		}
+
+		buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
+		if len(buf) == 0 {
+			t.Fatal("Empty image")
+		}
 	}
 }
 

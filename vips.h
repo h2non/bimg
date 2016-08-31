@@ -121,15 +121,31 @@ int
 vips_rotate(VipsImage *in, VipsImage **out, int angle) {
 	int rotate = VIPS_ANGLE_D0;
 
-	if (angle == 90) {
+	angle %= 360;
+
+	if (angle == 45) {
+		rotate = VIPS_ANGLE45_D45;
+	} else if (angle == 90) {
 		rotate = VIPS_ANGLE_D90;
+	} else if (angle == 135) {
+		rotate = VIPS_ANGLE45_D135;
 	} else if (angle == 180) {
 		rotate = VIPS_ANGLE_D180;
+	} else if (angle == 225) {
+		rotate = VIPS_ANGLE45_D225;
 	} else if (angle == 270) {
 		rotate = VIPS_ANGLE_D270;
+	} else if (angle == 315) {
+		rotate = VIPS_ANGLE45_D315;
+	} else {
+		angle = 0;
 	}
 
-	return vips_rot(in, out, rotate, NULL);
+	if (angle > 0 && angle % 90 != 0) {
+		return vips_rot45(in, out, "angle", rotate, NULL);
+	} else {
+		return vips_rot(in, out, rotate, NULL);
+	}
 }
 
 int
