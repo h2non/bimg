@@ -11,26 +11,6 @@ import (
 	"math"
 )
 
-func Histogram(buf []byte) ([]byte, error) {
-	defer C.vips_thread_shutdown()
-
-	if len(buf) == 0 {
-		return nil, errors.New("Image buffer is empty")
-	}
-
-	image, _, err := vipsRead(buf)
-	if err != nil {
-		return nil, err
-	}
-
-	imageHist, err := vipsHistogram(image)
-	if err != nil {
-		return nil, err
-	}
-
-	return getImageBuffer(imageHist)
-}
-
 // Resize is used to transform a given image as byte buffer
 // with the passed options.
 func Resize(buf []byte, o Options) ([]byte, error) {
