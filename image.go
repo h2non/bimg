@@ -214,3 +214,7 @@ func (i *Image) HistogramFind() ([]byte, error) {
 func (i *Image) HistogramNorm() ([]byte, error) {
 	return HistogramNorm(i.buffer)
 }
+
+func (i *Image) Avg() (float64, error) {
+	return Avg(i.buffer)
+}
