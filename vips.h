@@ -376,3 +376,8 @@ int
 vips_hist_find_bridge(VipsImage *in, VipsImage **out) {
     return vips_hist_find(in, out, NULL);
 }
+
+int
+vips_avg_bridge(VipsImage *in, double *out) {
+    return vips_avg(in, out, NULL);
+}
