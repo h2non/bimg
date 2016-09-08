@@ -33,6 +33,6 @@ func TestWrite(t *testing.T) {
 
 	err = Write("fixtures/test_write_out.jpg", buf)
 	if err != nil {
-		t.Fatal("Cannot write the file: %#v", err)
+		t.Fatalf("Cannot write the file: %#v", err)
 	}
 }

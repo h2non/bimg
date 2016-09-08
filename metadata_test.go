@@ -56,13 +56,13 @@ func TestMetadata(t *testing.T) {
 			t.Fatalf("Unexpected image orientation: %d != %d", metadata.Orientation, file.orientation)
 		}
 		if metadata.Alpha != file.alpha {
-			t.Fatalf("Unexpected image alpha: %s != ", metadata.Alpha, file.alpha)
+			t.Fatalf("Unexpected image alpha: %v != %v", metadata.Alpha, file.alpha)
 		}
 		if metadata.Profile != file.profile {
-			t.Fatalf("Unexpected image profile: %s != %s", metadata.Profile, file.profile)
+			t.Fatalf("Unexpected image profile: %v != %v", metadata.Profile, file.profile)
 		}
 		if metadata.Space != file.space {
-			t.Fatalf("Unexpected image profile: %s != %s", metadata.Profile, file.profile)
+			t.Fatalf("Unexpected image profile: %v != %v", metadata.Profile, file.profile)
 		}
 	}
 }
