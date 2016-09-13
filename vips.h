@@ -47,7 +47,7 @@ typedef struct {
 	double Background[3];
 } WatermarkOptions;
 
-static int
+static unsigned long
 has_profile_embed(VipsImage *image) {
 	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
 }
