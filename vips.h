@@ -376,3 +376,18 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 	return vips_sharpen(in, out, "radius", radius, "x1", x1, "y2", y2, "y3", y3, "m1", m1, "m2", m2, NULL);
 #endif
 }
+
+int
+vips_hist_norm_bridge(VipsImage *in, VipsImage **out) {
+	return vips_hist_norm(in, out, NULL);
+}
+
+int
+vips_hist_find_bridge(VipsImage *in, VipsImage **out) {
+    return vips_hist_find(in, out, NULL);
+}
+
+int
+vips_avg_bridge(VipsImage *in, double *out) {
+    return vips_avg(in, out, NULL);
+}
