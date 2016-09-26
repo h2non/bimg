@@ -1,6 +1,9 @@
 package bimg
 
 import (
+	"bytes"
+	"image"
+	"image/jpeg"
 	"io/ioutil"
 	"os"
 	"path"
@@ -109,6 +112,24 @@ func TestResizeCustomSizes(t *testing.T) {
 		if test.options.Width > 0 && size.Width != test.options.Width {
 			t.Fatalf("Invalid width: %d", size.Width)
 		}
+	}
+}
+
+func TestResizePrecision(t *testing.T) {
+	// see https://github.com/h2non/bimg/issues/99
+	img := image.NewGray16(image.Rect(0, 0, 1920, 1080))
+	input := &bytes.Buffer{}
+	jpeg.Encode(input, img, nil)
+
+	opts := Options{Width: 300}
+	newImg, err := Resize(input.Bytes(), opts)
+	if err != nil {
+		t.Fatalf("Resize(imgData, %#v) error: %#v", opts, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Width != opts.Width {
+		t.Fatalf("Invalid width: %d", size.Width)
 	}
 }
 
