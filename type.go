@@ -61,6 +61,9 @@ var SupportedImageTypes = map[ImageType]bool{
 
 // isBinary checks if the given buffer is a binary file.
 func isBinary(buf []byte) bool {
+	if len(buf) < 24 {
+		return false
+	}
 	for i := 0; i < 24; i++ {
 		charCode, _ := utf8.DecodeRuneInString(string(buf[i]))
 		if charCode == 65533 || charCode <= 8 {
