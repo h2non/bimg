@@ -25,7 +25,7 @@ var debug = d.Debug("bimg")
 const VipsVersion = string(C.VIPS_VERSION)
 
 // VipsMajorVersion exposes the current libvips major version number
-const VipsMajorVersion = string(C.VIPS_MAJOR_VERSION)
+const VipsMajorVersion = int(C.VIPS_MAJOR_VERSION)
 
 // VipsMinorVersion exposes the current libvips minor version number
 const VipsMinorVersion = int(C.VIPS_MINOR_VERSION)

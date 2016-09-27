@@ -2,17 +2,18 @@
 
 Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings, providing a simple, elegant and fluent [programmatic API](#examples).
 
-bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP and TIFF formats and output to JPEG, PNG and WEBP, including conversion across them.
+bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP natively, and TIFF, PDF, GIF and SVG formats, if `libvips` is compiled with `libmagick` bindings.
+`bimg` is able to output images as JPEG, PNG and WEBP formats, including transparent conversion across them.
 
-bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use) 
-and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
+bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
+and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images.
 
-If you're looking for an HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary). 
+If you're looking for an HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary).
 
-bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org). bimg is used in production environments for more than a year processing thousands of images per day. 
+bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homologous package built for [node.js](http://nodejs.org). bimg is used in production environments processing thousands of images per day.
 
-**v1 notice**: `bimg` introduces some minor breaking changes in `v1` release. 
-If you're using `gopkg.in`, you can still rely in the `v0` without worrying about breaking changes.
+**v1 notice**: `bimg` introduces some minor breaking changes in `v1` release.
+If you're using `gopkg.in`, you can still rely in the `v0` without worrying about API breaking changes.
 
 ## Contents
 
@@ -73,11 +74,11 @@ For platform specific installations, see  [Mac OS](https://github.com/lovell/sha
 
 ## Performance
 
-libvips is probably the faster open source solution for image processing. 
+libvips is probably the faster open source solution for image processing.
 Here you can see some performance test comparisons for multiple scenarios:
 
 - [libvips speed and memory usage](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
-- [sharp performance tests](https://github.com/lovell/sharp#the-task) 
+- [sharp performance tests](https://github.com/lovell/sharp#the-task)
 
 ## Benchmark
 
@@ -183,7 +184,7 @@ newImage, err := bimg.NewImage(buffer).ForceResize(1000, 500)
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }
-  
+
 size := bimg.Size(newImage)
 if size.Width != 1000 || size.Height != 500 {
   fmt.Fprintln(os.Stderr, "Incorrect image size")
@@ -202,7 +203,7 @@ newImage, err := bimg.NewImage(buffer).Colourspace(bimg.INTERPRETATION_B_W)
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }
-  
+
 colourSpace, _ := bimg.ImageInterpretation(newImage)
 if colourSpace != bimg.INTERPRETATION_B_W {
   fmt.Fprintln(os.Stderr, "Invalid colour space")
@@ -292,15 +293,15 @@ bimg.Write("new.jpg", newImage)
 
 Run the process passing the `DEBUG` environment variable
 ```
-DEBUG=bimg ./app 
+DEBUG=bimg ./app
 ```
 
 Enable libvips traces (note that a lot of data will be written in stdout):
 ```
-VIPS_TRACE=1 ./app 
+VIPS_TRACE=1 ./app
 ```
 
-You can also dump a core on failure, as [John Cuppit](https://github.com/jcupitt) said: 
+You can also dump a core on failure, as [John Cuppit](https://github.com/jcupitt) said:
 ```c
 g_log_set_always_fatal(
                 G_LOG_FLAG_RECURSION |
@@ -315,7 +316,7 @@ Or set the G_DEBUG environment variable:
 export G_DEBUG=fatal-warnings,fatal-criticals
 ```
 
-## API 
+## API
 
 See [godoc reference](https://godoc.org/github.com/h2non/bimg) for detailed API documentation.
 
