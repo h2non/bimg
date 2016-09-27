@@ -42,42 +42,48 @@ func TestImageSvgResize(t *testing.T) {
 }
 
 func TestImageGifToJpeg(t *testing.T) {
-	i := initImage("test.gif")
-	options := Options{
-		Type: JPEG,
-	}
-	buf, err := i.Process(options)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
+	if VipsMinorVersion >= 8 && VipsMinorVersion > 2 {
+		i := initImage("test.gif")
+		options := Options{
+			Type: JPEG,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
 
-	Write("fixtures/test_gif.jpg", buf)
+		Write("fixtures/test_gif.jpg", buf)
+	}
 }
 
 func TestImagePdfToJpeg(t *testing.T) {
-	i := initImage("test.pdf")
-	options := Options{
-		Type: JPEG,
-	}
-	buf, err := i.Process(options)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
+	if VipsMinorVersion >= 8 && VipsMinorVersion > 2 {
+		i := initImage("test.pdf")
+		options := Options{
+			Type: JPEG,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
 
-	Write("fixtures/test_pdf.jpg", buf)
+		Write("fixtures/test_pdf.jpg", buf)
+	}
 }
 
 func TestImageSvgToJpeg(t *testing.T) {
-	i := initImage("test.svg")
-	options := Options{
-		Type: JPEG,
-	}
-	buf, err := i.Process(options)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
+	if VipsMinorVersion >= 8 && VipsMinorVersion > 2 {
+		i := initImage("test.svg")
+		options := Options{
+			Type: JPEG,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
 
-	Write("fixtures/test_svg.jpg", buf)
+		Write("fixtures/test_svg.jpg", buf)
+	}
 }
 
 func TestImageResizeAndCrop(t *testing.T) {
