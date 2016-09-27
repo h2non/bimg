@@ -28,7 +28,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	// Clone and define default options
 	o = applyDefaults(o, imageType)
 
-	if IsTypeSupported(o.Type) == false {
+	if !IsTypeSupported(o.Type) {
 		return nil, errors.New("Unsupported image output type")
 	}
 
@@ -330,7 +330,6 @@ func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsIm
 	if imageType != PNG || o.Background == ColorBlack {
 		return image, nil
 	}
-
 	return vipsFlattenBackground(image, o.Background)
 }
 

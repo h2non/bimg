@@ -1,12 +1,7 @@
 #include <stdlib.h>
 #include <vips/vips.h>
+#include <vips/foreign.h>
 #include <vips/vips7compat.h>
-
-#ifdef  VIPS_MAGICK_H
-#define VIPS_MAGICK_SUPPORT 1
-#else
-#define VIPS_MAGICK_SUPPORT 0
-#endif
 
 /**
  * Starting libvips 7.41, VIPS_ANGLE_x has been renamed to VIPS_ANGLE_Dx
@@ -118,6 +113,35 @@ vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
 int
 vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink) {
 	return vips_shrink(in, out, xshrink, yshrink, NULL);
+}
+
+int
+vips_type_find_bridge(int t) {
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "gifload");
+	}
+	if (t == PDF) {
+		return vips_type_find("VipsOperation", "pdfload");
+	}
+	if (t == TIFF) {
+		return vips_type_find("VipsOperation", "tiffload");
+	}
+	if (t == SVG) {
+		return vips_type_find("VipsOperation", "svgload");
+	}
+	if (t == WEBP) {
+		return vips_type_find("VipsOperation", "webpload");
+	}
+	if (t == PNG) {
+		return vips_type_find("VipsOperation", "pngload");
+	}
+	if (t == JPEG) {
+		return vips_type_find("VipsOperation", "jpegload");
+	}
+	if (t == MAGICK) {
+		return vips_type_find("VipsOperation", "magickload");
+	}
+	return 0;
 }
 
 int
@@ -253,12 +277,10 @@ vips_is_16bit (VipsInterpretation interpretation) {
 }
 
 int
-vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double background[3]) {
-	background[0] *= 256;
-	background[1] *= 256;
-	background[2] *= 256;
-
+vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double g, double b) {
+	double background[3] = {r, g, b};
 	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
+	
 	return vips_flatten(in, out,
 		"background", vipsBackground,
 		"max_alpha", vips_is_16bit(in->Type) ? 65535.0 : 255.0,
