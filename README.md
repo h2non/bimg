@@ -2,8 +2,9 @@
 
 Small [Go](http://golang.org) package for fast high-level image processing using [libvips](https://github.com/jcupitt/libvips) via C bindings, providing a simple, elegant and fluent [programmatic API](#examples).
 
-bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP natively, and TIFF, PDF, GIF and SVG formats, if `libvips` is compiled with `libmagick` bindings.
-`bimg` is able to output images as JPEG, PNG and WEBP formats, including transparent conversion across them.
+bimg was designed to be a small and efficient library supporting a common set of [image operations](#supported-image-operations) such as crop, resize, rotate, zoom or watermark. It can read JPEG, PNG, WEBP natively, and TIFF, PDF, GIF and SVG formats if `libvips@8.3+` is compiled with proper library bindings.
+
+bimg is able to output images as JPEG, PNG and WEBP formats, including transparent conversion across them.
 
 bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
 and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images.
@@ -46,9 +47,11 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 
 ## Prerequisites
 
-- [libvips](https://github.com/jcupitt/libvips) v7.40.0+ (7.42.0+ recommended)
+- [libvips](https://github.com/jcupitt/libvips) 7.40.0+ or 8+ (8.3+ recommended)
 - C compatible compiler such as gcc 4.6+ or clang 3.0+
 - Go 1.3+
+
+**Note**: `libvips` v8.3+ is required for GIF, PDF and SVG support.
 
 ## Installation
 
