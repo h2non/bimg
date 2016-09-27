@@ -30,8 +30,8 @@ const (
 type ImageType int
 
 var (
-	htmlCommentRegex = regexp.MustCompile("<!--([\\s\\S]*?)-->")
-	svgRegex         = regexp.MustCompile(`^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
+	htmlCommentRegex = regexp.MustCompile("(?i)<!--([\\s\\S]*?)-->")
+	svgRegex         = regexp.MustCompile(`(?i)^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
 )
 
 // ImageTypes stores as pairs of image types supported and its alias names.
@@ -75,7 +75,7 @@ func isBinary(buf []byte) bool {
 
 // IsSVGImage returns true if the given buffer is a valid SVG image.
 func IsSVGImage(buf []byte) bool {
-	return !isBinary(buf) && svgRegex.Match(htmlCommentRegex.ReplaceAll(buf, []byte{0}))
+	return !isBinary(buf) && svgRegex.Match(htmlCommentRegex.ReplaceAll(buf, []byte{}))
 }
 
 // DetermineImageType determines the image type format (jpeg, png, webp or tiff)
