@@ -4,6 +4,7 @@
 - fix(background): pass proper background RGB color for PNG image conversion.
 - feat(types): validate supported image types by current `libvips` compilation.
 - feat(types): consistent SVG image checking.
+- feat(api): add public functions `VipsIsTypeSupported()`, `IsImageTypeSupportedByVips()` and `IsSVGImage()`.
 
 ## 1.0.2 / 27-09-2016
 
