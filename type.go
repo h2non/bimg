@@ -2,6 +2,7 @@ package bimg
 
 import (
 	"regexp"
+	"sync"
 	"unicode/utf8"
 )
 
@@ -46,17 +47,28 @@ var ImageTypes = map[ImageType]string{
 	MAGICK: "magick",
 }
 
+// imageMutex is used to provide thread-safe synchronization
+// for SupportedImageTypes map.
+var imageMutex = &sync.RWMutex{}
+
 // SupportedImageTypes stores the optional image type supported
 // by the current libvips compilation.
-var SupportedImageTypes = map[ImageType]bool{
-	JPEG:   HasJPEGSupport,
-	PNG:    HasPNGSupport,
-	WEBP:   HasWEBPSupport,
-	TIFF:   HasTIFFSupport,
-	GIF:    HasGIFSupport,
-	SVG:    HasSVGSupport,
-	PDF:    HasPDFSupport,
-	MAGICK: HasMagickSupport,
+// Note: lazy evaluation as demand is required due
+// to bootstrap runtime limitation with C/libvips world.
+var SupportedImageTypes = map[ImageType]bool{}
+
+// discoverSupportedImageTypes is used to fill SupportedImageTypes map.
+func discoverSupportedImageTypes() {
+	imageMutex.Lock()
+	SupportedImageTypes[JPEG] = VipsIsTypeSupported(JPEG)
+	SupportedImageTypes[PNG] = VipsIsTypeSupported(PNG)
+	SupportedImageTypes[GIF] = VipsIsTypeSupported(GIF)
+	SupportedImageTypes[WEBP] = VipsIsTypeSupported(WEBP)
+	SupportedImageTypes[SVG] = VipsIsTypeSupported(SVG)
+	SupportedImageTypes[TIFF] = VipsIsTypeSupported(TIFF)
+	SupportedImageTypes[PDF] = VipsIsTypeSupported(PDF)
+	SupportedImageTypes[MAGICK] = VipsIsTypeSupported(MAGICK)
+	imageMutex.Unlock()
 }
 
 // isBinary checks if the given buffer is a binary file.
@@ -91,21 +103,35 @@ func DetermineImageTypeName(buf []byte) string {
 // IsImageTypeSupportedByVips returns true if the given image type
 // is supported by current libvips compilation.
 func IsImageTypeSupportedByVips(t ImageType) bool {
+	imageMutex.RLock()
+
+	// Discover supported image types and cache the result
+	itShouldDiscovery := len(SupportedImageTypes) == 0
+	if itShouldDiscovery {
+		imageMutex.RUnlock()
+		discoverSupportedImageTypes()
+	}
+
+	// Check if image type is actually supported
 	isSupported, ok := SupportedImageTypes[t]
+	if !itShouldDiscovery {
+		imageMutex.RUnlock()
+	}
+
 	return ok && isSupported
 }
 
 // IsTypeSupported checks if a given image type is supported
 func IsTypeSupported(t ImageType) bool {
 	_, ok := ImageTypes[t]
-	return ok
+	return ok && IsImageTypeSupportedByVips(t)
 }
 
 // IsTypeNameSupported checks if a given image type name is supported
 func IsTypeNameSupported(t string) bool {
-	for _, name := range ImageTypes {
+	for imageType, name := range ImageTypes {
 		if name == t {
-			return true
+			return IsImageTypeSupportedByVips(imageType)
 		}
 	}
 	return false

@@ -3,54 +3,6 @@
 #include <vips/foreign.h>
 #include <vips/vips7compat.h>
 
-#ifdef  VIPS_MAGICK_H
-#define VIPS_MAGICK_SUPPORT 1
-#else
-#define VIPS_MAGICK_SUPPORT 0
-#endif
-
-#ifdef  HAVE_JPEG
-#define VIPS_JPEG_SUPPORT 1
-#else
-#define VIPS_JPEG_SUPPORT 0
-#endif
-
-#ifdef  HAVE_PNG
-#define VIPS_PNG_SUPPORT 1
-#else
-#define VIPS_PNG_SUPPORT 0
-#endif
-
-#ifdef  HAVE_LIBWEBP
-#define VIPS_WEBP_SUPPORT 1
-#else
-#define VIPS_WEBP_SUPPORT 0
-#endif
-
-#ifdef  HAVE_GIFLIB
-#define VIPS_GIF_SUPPORT 1
-#else
-#define VIPS_GIF_SUPPORT 0
-#endif
-
-#ifdef  HAVE_RSVG
-#define VIPS_SVG_SUPPORT 1
-#else
-#define VIPS_SVG_SUPPORT 0
-#endif
-
-#ifdef  HAVE_POPPLER
-#define VIPS_PDF_SUPPORT 1
-#else
-#define VIPS_PDF_SUPPORT 0
-#endif
-
-#ifdef  HAVE_TIFF
-#define VIPS_TIFF_SUPPORT 1
-#else
-#define VIPS_TIFF_SUPPORT 0
-#endif
-
 /**
  * Starting libvips 7.41, VIPS_ANGLE_x has been renamed to VIPS_ANGLE_Dx
  * "to help python". So we provide the macro to correctly build for versions
@@ -161,6 +113,35 @@ vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
 int
 vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink) {
 	return vips_shrink(in, out, xshrink, yshrink, NULL);
+}
+
+int
+vips_type_find_bridge(int t) {
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "gifload");
+	}
+	if (t == PDF) {
+		return vips_type_find("VipsOperation", "pdfload");
+	}
+	if (t == TIFF) {
+		return vips_type_find("VipsOperation", "tiffload");
+	}
+	if (t == SVG) {
+		return vips_type_find("VipsOperation", "svgload");
+	}
+	if (t == WEBP) {
+		return vips_type_find("VipsOperation", "webpload");
+	}
+	if (t == PNG) {
+		return vips_type_find("VipsOperation", "pngload");
+	}
+	if (t == JPEG) {
+		return vips_type_find("VipsOperation", "jpegload");
+	}
+	if (t == MAGICK) {
+		return vips_type_find("VipsOperation", "magickload");
+	}
+	return 0;
 }
 
 int

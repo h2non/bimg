@@ -30,38 +30,6 @@ const VipsMajorVersion = int(C.VIPS_MAJOR_VERSION)
 // VipsMinorVersion exposes the current libvips minor version number
 const VipsMinorVersion = int(C.VIPS_MINOR_VERSION)
 
-// HasJPEGSupport exposes if the current libvips compilation
-// supports JPEG images.
-const HasJPEGSupport = int(C.VIPS_JPEG_SUPPORT) == 1
-
-// HasWEBPSupport exposes if the current libvips compilation
-// supports WEBP images.
-const HasWEBPSupport = int(C.VIPS_WEBP_SUPPORT) == 1
-
-// HasPNGSupport exposes if the current libvips compilation
-// supports PNG images.
-const HasPNGSupport = int(C.VIPS_PNG_SUPPORT) == 1
-
-// HasMagickSupport exposes if the current libvips compilation
-// supports libmagick bindings.
-const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
-
-// HasGIFSupport exposes if the current libvips compilation
-// supports GIF images.
-const HasGIFSupport = int(C.VIPS_GIF_SUPPORT) == 1
-
-// HasSVGSupport exposes if the current libvips compilation
-// supports SVG images.
-const HasSVGSupport = int(C.VIPS_SVG_SUPPORT) == 1
-
-// HasPDFSupport exposes if the current libvips compilation
-// supports PDF images.
-const HasPDFSupport = int(C.VIPS_PDF_SUPPORT) == 1
-
-// HasTIFFSupport exposes if the current libvips compilation
-// supports TIFF images.
-const HasTIFFSupport = int(C.VIPS_TIFF_SUPPORT) == 1
-
 const (
 	maxCacheMem  = 100 * 1024 * 1024
 	maxCacheSize = 500
@@ -167,6 +135,33 @@ func VipsMemory() VipsMemoryInfo {
 		MemoryHighwater: int64(C.vips_tracked_get_mem_highwater()),
 		Allocations:     int64(C.vips_tracked_get_allocs()),
 	}
+}
+
+// VipsIsTypeSupported returns true if the given image type
+// is supported by the current libvips compilation.
+func VipsIsTypeSupported(t ImageType) bool {
+	if t == JPEG {
+		return int(C.vips_type_find_bridge(C.JPEG)) != 0
+	}
+	if t == WEBP {
+		return int(C.vips_type_find_bridge(C.WEBP)) != 0
+	}
+	if t == PNG {
+		return int(C.vips_type_find_bridge(C.PNG)) != 0
+	}
+	if t == GIF {
+		return int(C.vips_type_find_bridge(C.GIF)) != 0
+	}
+	if t == PDF {
+		return int(C.vips_type_find_bridge(C.PDF)) != 0
+	}
+	if t == SVG {
+		return int(C.vips_type_find_bridge(C.SVG)) != 0
+	}
+	if t == TIFF {
+		return int(C.vips_type_find_bridge(C.TIFF)) != 0
+	}
+	return false
 }
 
 func vipsExifOrientation(image *C.VipsImage) int {
@@ -493,30 +488,30 @@ func vipsImageType(buf []byte) ImageType {
 	if len(buf) == 0 {
 		return UNKNOWN
 	}
-
 	if buf[0] == 0x89 && buf[1] == 0x50 && buf[2] == 0x4E && buf[3] == 0x47 {
 		return PNG
 	}
 	if buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
 		return JPEG
 	}
-	if buf[8] == 0x57 && buf[9] == 0x45 && buf[10] == 0x42 && buf[11] == 0x50 {
+	if IsImageTypeSupportedByVips(WEBP) && buf[8] == 0x57 && buf[9] == 0x45 && buf[10] == 0x42 && buf[11] == 0x50 {
 		return WEBP
 	}
-	if (buf[0] == 0x49 && buf[1] == 0x49 && buf[2] == 0x2A && buf[3] == 0x0) ||
-		(buf[0] == 0x4D && buf[1] == 0x4D && buf[2] == 0x0 && buf[3] == 0x2A) {
+	if IsImageTypeSupportedByVips(TIFF) &&
+		((buf[0] == 0x49 && buf[1] == 0x49 && buf[2] == 0x2A && buf[3] == 0x0) ||
+			(buf[0] == 0x4D && buf[1] == 0x4D && buf[2] == 0x0 && buf[3] == 0x2A)) {
 		return TIFF
 	}
-	if buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 {
+	if IsImageTypeSupportedByVips(GIF) && buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 {
 		return GIF
 	}
-	if buf[0] == 0x25 && buf[1] == 0x50 && buf[2] == 0x44 && buf[3] == 0x46 {
+	if IsImageTypeSupportedByVips(PDF) && buf[0] == 0x25 && buf[1] == 0x50 && buf[2] == 0x44 && buf[3] == 0x46 {
 		return PDF
 	}
-	if IsSVGImage(buf) {
+	if IsImageTypeSupportedByVips(SVG) && IsSVGImage(buf) {
 		return SVG
 	}
-	if HasMagickSupport && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
+	if strings.HasSuffix(readImageType(buf), "MagickBuffer") {
 		return MAGICK
 	}
 	return UNKNOWN
