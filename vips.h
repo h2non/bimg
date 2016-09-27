@@ -1,11 +1,54 @@
 #include <stdlib.h>
 #include <vips/vips.h>
+#include <vips/foreign.h>
 #include <vips/vips7compat.h>
 
 #ifdef  VIPS_MAGICK_H
 #define VIPS_MAGICK_SUPPORT 1
 #else
 #define VIPS_MAGICK_SUPPORT 0
+#endif
+
+#ifdef  HAVE_JPEG
+#define VIPS_JPEG_SUPPORT 1
+#else
+#define VIPS_JPEG_SUPPORT 0
+#endif
+
+#ifdef  HAVE_PNG
+#define VIPS_PNG_SUPPORT 1
+#else
+#define VIPS_PNG_SUPPORT 0
+#endif
+
+#ifdef  HAVE_LIBWEBP
+#define VIPS_WEBP_SUPPORT 1
+#else
+#define VIPS_WEBP_SUPPORT 0
+#endif
+
+#ifdef  HAVE_GIFLIB
+#define VIPS_GIF_SUPPORT 1
+#else
+#define VIPS_GIF_SUPPORT 0
+#endif
+
+#ifdef  HAVE_RSVG
+#define VIPS_SVG_SUPPORT 1
+#else
+#define VIPS_SVG_SUPPORT 0
+#endif
+
+#ifdef  HAVE_POPPLER
+#define VIPS_PDF_SUPPORT 1
+#else
+#define VIPS_PDF_SUPPORT 0
+#endif
+
+#ifdef  HAVE_TIFF
+#define VIPS_TIFF_SUPPORT 1
+#else
+#define VIPS_TIFF_SUPPORT 0
 #endif
 
 /**

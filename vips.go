@@ -30,9 +30,37 @@ const VipsMajorVersion = int(C.VIPS_MAJOR_VERSION)
 // VipsMinorVersion exposes the current libvips minor version number
 const VipsMinorVersion = int(C.VIPS_MINOR_VERSION)
 
+// HasJPEGSupport exposes if the current libvips compilation
+// supports JPEG images.
+const HasJPEGSupport = int(C.VIPS_JPEG_SUPPORT) == 1
+
+// HasWEBPSupport exposes if the current libvips compilation
+// supports WEBP images.
+const HasWEBPSupport = int(C.VIPS_WEBP_SUPPORT) == 1
+
+// HasPNGSupport exposes if the current libvips compilation
+// supports PNG images.
+const HasPNGSupport = int(C.VIPS_PNG_SUPPORT) == 1
+
 // HasMagickSupport exposes if the current libvips compilation
 // supports libmagick bindings.
 const HasMagickSupport = int(C.VIPS_MAGICK_SUPPORT) == 1
+
+// HasGIFSupport exposes if the current libvips compilation
+// supports GIF images.
+const HasGIFSupport = int(C.VIPS_GIF_SUPPORT) == 1
+
+// HasSVGSupport exposes if the current libvips compilation
+// supports SVG images.
+const HasSVGSupport = int(C.VIPS_SVG_SUPPORT) == 1
+
+// HasPDFSupport exposes if the current libvips compilation
+// supports PDF images.
+const HasPDFSupport = int(C.VIPS_PDF_SUPPORT) == 1
+
+// HasTIFFSupport exposes if the current libvips compilation
+// supports TIFF images.
+const HasTIFFSupport = int(C.VIPS_TIFF_SUPPORT) == 1
 
 const (
 	maxCacheMem  = 100 * 1024 * 1024
@@ -461,39 +489,36 @@ func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator
 	return image, nil
 }
 
-func vipsImageType(bytes []byte) ImageType {
-	if len(bytes) == 0 {
+func vipsImageType(buf []byte) ImageType {
+	if len(buf) == 0 {
 		return UNKNOWN
 	}
 
-	if bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 {
+	if buf[0] == 0x89 && buf[1] == 0x50 && buf[2] == 0x4E && buf[3] == 0x47 {
 		return PNG
 	}
-	if bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF {
+	if buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
 		return JPEG
 	}
-	if bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50 {
+	if buf[8] == 0x57 && buf[9] == 0x45 && buf[10] == 0x42 && buf[11] == 0x50 {
 		return WEBP
 	}
-	if (bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x0) ||
-		(bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x0 && bytes[3] == 0x2A) {
+	if (buf[0] == 0x49 && buf[1] == 0x49 && buf[2] == 0x2A && buf[3] == 0x0) ||
+		(buf[0] == 0x4D && buf[1] == 0x4D && buf[2] == 0x0 && buf[3] == 0x2A) {
 		return TIFF
 	}
-	if bytes[0] == 'G' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == '8' &&
-		bytes[4] == '9' && bytes[5] == 'a' {
+	if buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 {
 		return GIF
 	}
-	if bytes[0] == '%' && bytes[1] == 'P' && bytes[2] == 'D' && bytes[3] == 'F' {
+	if buf[0] == 0x25 && buf[1] == 0x50 && buf[2] == 0x44 && buf[3] == 0x46 {
 		return PDF
 	}
-	if bytes[0] == '<' && bytes[1] == '?' && bytes[2] == 'x' && bytes[3] == 'm' &&
-		bytes[4] == 'l' && bytes[5] == ' ' {
+	if IsSVGImage(buf) {
 		return SVG
 	}
-	if HasMagickSupport && strings.HasSuffix(readImageType(bytes), "MagickBuffer") {
+	if HasMagickSupport && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
 		return MAGICK
 	}
-
 	return UNKNOWN
 }
 

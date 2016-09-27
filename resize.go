@@ -28,7 +28,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	// Clone and define default options
 	o = applyDefaults(o, imageType)
 
-	if IsTypeSupported(o.Type) == false {
+	if !IsTypeSupported(o.Type) {
 		return nil, errors.New("Unsupported image output type")
 	}
 

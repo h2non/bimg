@@ -1,7 +1,9 @@
 package bimg
 
-// ImageType represents an image type value.
-type ImageType int
+import (
+	"regexp"
+	"unicode/utf8"
+)
 
 const (
 	// UNKNOWN represents an unknow image type value.
@@ -24,6 +26,14 @@ const (
 	MAGICK
 )
 
+// ImageType represents an image type value.
+type ImageType int
+
+var (
+	htmlCommentRegex = regexp.MustCompile("<!--([\\s\\S]*?)-->")
+	svgRegex         = regexp.MustCompile(`^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
+)
+
 // ImageTypes stores as pairs of image types supported and its alias names.
 var ImageTypes = map[ImageType]string{
 	JPEG:   "jpeg",
@@ -36,6 +46,35 @@ var ImageTypes = map[ImageType]string{
 	MAGICK: "magick",
 }
 
+// SupportedImageTypes stores the optional image type supported
+// by the current libvips compilation.
+var SupportedImageTypes = map[ImageType]bool{
+	JPEG:   HasJPEGSupport,
+	PNG:    HasPNGSupport,
+	WEBP:   HasWEBPSupport,
+	TIFF:   HasTIFFSupport,
+	GIF:    HasGIFSupport,
+	SVG:    HasSVGSupport,
+	PDF:    HasPDFSupport,
+	MAGICK: HasMagickSupport,
+}
+
+// isBinary checks if the given buffer is a binary file.
+func isBinary(buf []byte) bool {
+	for i := 0; i < 24; i++ {
+		charCode, _ := utf8.DecodeRuneInString(string(buf[i]))
+		if charCode == 65533 || charCode <= 8 {
+			return true
+		}
+	}
+	return false
+}
+
+// IsSVGImage returns true if the given buffer is a valid SVG image.
+func IsSVGImage(buf []byte) bool {
+	return !isBinary(buf) && svgRegex.Match(htmlCommentRegex.ReplaceAll(buf, []byte{0}))
+}
+
 // DetermineImageType determines the image type format (jpeg, png, webp or tiff)
 func DetermineImageType(buf []byte) ImageType {
 	return vipsImageType(buf)
@@ -46,9 +85,17 @@ func DetermineImageTypeName(buf []byte) string {
 	return ImageTypeName(vipsImageType(buf))
 }
 
+// IsImageTypeSupportedByVips returns true if the given image type
+// is supported by current libvips compilation.
+func IsImageTypeSupportedByVips(t ImageType) bool {
+	isSupported, ok := SupportedImageTypes[t]
+	return ok && isSupported
+}
+
 // IsTypeSupported checks if a given image type is supported
 func IsTypeSupported(t ImageType) bool {
-	return ImageTypes[t] != ""
+	_, ok := ImageTypes[t]
+	return ok
 }
 
 // IsTypeNameSupported checks if a given image type name is supported
