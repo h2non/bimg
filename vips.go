@@ -304,7 +304,8 @@ func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, 
 	}
 
 	if vipsHasAlpha(image) {
-		err := C.vips_flatten_background_brigde(image, &outImage, (*C.double)(&backgroundC[0]))
+		err := C.vips_flatten_background_brigde(image, &outImage,
+			backgroundC[0], backgroundC[1], backgroundC[2])
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}

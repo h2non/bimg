@@ -330,7 +330,6 @@ func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsIm
 	if imageType != PNG || o.Background == ColorBlack {
 		return image, nil
 	}
-
 	return vipsFlattenBackground(image, o.Background)
 }
 
