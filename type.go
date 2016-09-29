@@ -106,15 +106,15 @@ func IsImageTypeSupportedByVips(t ImageType) bool {
 	imageMutex.RLock()
 
 	// Discover supported image types and cache the result
-	itShouldDiscovery := len(SupportedImageTypes) == 0
-	if itShouldDiscovery {
+	itShouldDiscover := len(SupportedImageTypes) == 0
+	if itShouldDiscover {
 		imageMutex.RUnlock()
 		discoverSupportedImageTypes()
 	}
 
 	// Check if image type is actually supported
 	isSupported, ok := SupportedImageTypes[t]
-	if !itShouldDiscovery {
+	if !itShouldDiscover {
 		imageMutex.RUnlock()
 	}
 
