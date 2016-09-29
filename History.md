@@ -1,3 +1,7 @@
+## 1.0.4 / 29-09-2016
+
+- fix(#111): safe check of magick image type support.
+
 ## 1.0.3 / 28-09-2016
 
 - fix(#95): better image type inference and support check.
