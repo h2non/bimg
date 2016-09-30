@@ -112,6 +112,27 @@ const (
 	InterpretationXYZ Interpretation = C.VIPS_INTERPRETATION_XYZ
 )
 
+// Extend represents the image extend mode, used when the edges
+// of an image are extended, you can specify how you want the extension done.
+type Extend int
+
+const (
+	// ExtendBlack extend with black (all 0) pixels mode.
+	ExtendBlack Extend = C.VIPS_EXTEND_BLACK
+	// ExtendCopy copy the image edges.
+	ExtendCopy Extend = C.VIPS_EXTEND_COPY
+	// ExtendRepeat repeat the whole image.
+	ExtendRepeat Extend = C.VIPS_EXTEND_REPEAT
+	// ExtendMirro mirror the whole image.
+	ExtendMirror Extend = C.VIPS_EXTEND_MIRROR
+	// ExtendWhite extend with white (all bits set) pixels.
+	ExtendWhite Extend = C.VIPS_EXTEND_WHITE
+	// ExtendBackground with colour from the background property.
+	ExtendBackground Extend = C.VIPS_EXTEND_BACKGROUND
+	// ExtendLast extend with last pixel.
+	ExtendLast Extend = C.VIPS_EXTEND_LAST
+)
+
 // WatermarkFont defines the default watermark font to be used.
 var WatermarkFont = "sans 10"
 
@@ -159,7 +180,6 @@ type Options struct {
 	AreaWidth      int
 	Top            int
 	Left           int
-	Extend         int
 	Quality        int
 	Compression    int
 	Zoom           int
@@ -172,6 +192,7 @@ type Options struct {
 	NoAutoRotate   bool
 	NoProfile      bool
 	Interlace      bool
+	Extend         Extend
 	Rotate         Angle
 	Background     Color
 	Gravity        Gravity

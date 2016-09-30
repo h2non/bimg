@@ -216,6 +216,40 @@ func TestNoColorProfile(t *testing.T) {
 	}
 }
 
+func TestEmbedExtendColor(t *testing.T) {
+	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: ExtendWhite, Background: Color{255, 20, 10}}
+	buf, _ := Read("fixtures/test_issue.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_extend_white_out.jpg", newImg)
+}
+
+func TestEmbedExtendWithCustomColor(t *testing.T) {
+	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: 5, Background: Color{255, 20, 10}}
+	buf, _ := Read("fixtures/test_issue.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_extend_background_out.jpg", newImg)
+}
+
 func TestGaussianBlur(t *testing.T) {
 	options := Options{Width: 800, Height: 600, GaussianBlur: GaussianBlur{Sigma: 5}}
 	buf, _ := Read("fixtures/test.jpg")
