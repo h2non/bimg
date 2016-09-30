@@ -284,6 +284,40 @@ func TestSharpen(t *testing.T) {
 	Write("fixtures/test_sharpen.jpg", newImg)
 }
 
+func TestExtractWithDefaultAxis(t *testing.T) {
+	options := Options{AreaWidth: 200, AreaHeight: 200}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.AreaHeight || size.Width != options.AreaWidth {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_extract_defaults.jpg", newImg)
+}
+
+func TestExtractCustomAxis(t *testing.T) {
+	options := Options{Top: 100, Left: 100, AreaWidth: 200, AreaHeight: 200}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.AreaHeight || size.Width != options.AreaWidth {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_extract_custom_axis.jpg", newImg)
+}
+
 func TestConvert(t *testing.T) {
 	width, height := 300, 240
 	formats := [3]ImageType{PNG, WEBP, JPEG}
