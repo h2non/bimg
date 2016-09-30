@@ -123,7 +123,7 @@ const (
 	ExtendCopy Extend = C.VIPS_EXTEND_COPY
 	// ExtendRepeat repeat the whole image.
 	ExtendRepeat Extend = C.VIPS_EXTEND_REPEAT
-	// ExtendMirro mirror the whole image.
+	// ExtendMirror mirror the whole image.
 	ExtendMirror Extend = C.VIPS_EXTEND_MIRROR
 	// ExtendWhite extend with white (all bits set) pixels.
 	ExtendWhite Extend = C.VIPS_EXTEND_WHITE
