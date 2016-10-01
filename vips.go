@@ -459,11 +459,17 @@ func vipsShrink(input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	return image, nil
 }
 
-func vipsEmbed(input *C.VipsImage, left, top, width, height, extend int) (*C.VipsImage, error) {
+func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, background Color) (*C.VipsImage, error) {
 	var image *C.VipsImage
-	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width), C.int(height), C.int(extend))
+	// Max extend value, see: http://www.vips.ecs.soton.ac.uk/supported/8.4/doc/html/libvips/libvips-conversion.html#VipsExtend
+	if extend > 5 {
+		extend = ExtendBackground
+	}
+
+	defer C.g_object_unref(C.gpointer(input))
+	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width),
+		C.int(height), C.int(extend), C.double(background.R), C.double(background.G), C.double(background.B))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

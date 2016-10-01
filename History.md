@@ -1,3 +1,9 @@
+## 1.0.5 / 01-10-2016
+
+- feat(#92): support Extend param with optional background.
+- fix(#106): allow image area extraction without explicit x/y axis.
+- feat(api): add Extend type with `libvips` enum alias.
+
 ## 1.0.4 / 29-09-2016
 
 - fix(#111): safe check of magick image type support.
