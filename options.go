@@ -114,6 +114,7 @@ const (
 
 // Extend represents the image extend mode, used when the edges
 // of an image are extended, you can specify how you want the extension done.
+// See: http://www.vips.ecs.soton.ac.uk/supported/8.4/doc/html/libvips/libvips-conversion.html#VIPS-EXTEND-BACKGROUND:CAPS
 type Extend int
 
 const (
