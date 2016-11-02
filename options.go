@@ -39,9 +39,18 @@ const (
 	Bilinear
 	// Nohalo interpolation value.
 	Nohalo
+	// Nearest interpolation value
+	Nearest
+	// reduced halo bicubic
+	Lbb
+	// B-Splines with antialiasing smoothing
+	Vsqbs
 )
 
 var interpolations = map[Interpolator]string{
+	Lbb:      "lbb",
+	Vsqbs: 	  "Vsqbs",
+	Nearest:  "nearest",
 	Bicubic:  "bicubic",
 	Bilinear: "bilinear",
 	Nohalo:   "nohalo",
