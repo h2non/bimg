@@ -287,8 +287,7 @@ vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double 
 	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
 
 	return vips_flatten(in, out,
-		"background", vipsBackground,
-		"max_alpha", vips_is_16bit(in->Type) ? 65535.0 : 255.0,
+		"background", vipsBackground, "max_alpha", 255.0,
 		NULL
 	);
 }
