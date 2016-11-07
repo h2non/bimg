@@ -18,6 +18,7 @@ func TestDeterminateImageType(t *testing.T) {
 		{"test.gif", GIF},
 		{"test.pdf", PDF},
 		{"test.svg", SVG},
+		{"test.jp2", MAGICK},
 	}
 
 	for _, file := range files {
@@ -42,6 +43,7 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		{"test.gif", "gif"},
 		{"test.pdf", "pdf"},
 		{"test.svg", "svg"},
+		{"test.jp2", "magick"},
 	}
 
 	for _, file := range files {
