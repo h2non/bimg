@@ -114,7 +114,7 @@ BenchmarkWatermarWebp-8   	      30	  49360369 ns/op
 import (
   "fmt"
   "os"
-  "gopkg.in/h2non/bimg.v0"
+  "gopkg.in/h2non/bimg.v1"
 )
 ```
 
