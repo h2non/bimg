@@ -55,8 +55,6 @@ type vipsSaveOptions struct {
 	Interlace      bool
 	NoProfile      bool
 	Interpretation Interpretation
-	Flatten        bool
-	Background     Color
 }
 
 type vipsWatermarkOptions struct {
@@ -339,15 +337,6 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 		err := C.vips_colourspace_bridge(image, &outImage, interpretation)
 		if int(err) != 0 {
 			return nil, catchVipsError()
-		}
-		image = outImage
-	}
-
-	// Flatten image on a background, if necessary
-	if o.Flatten {
-		var err error
-		if outImage, err = vipsFlattenBackground(image, o.Background); err != nil {
-			return nil, err
 		}
 		image = outImage
 	}

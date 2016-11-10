@@ -283,11 +283,18 @@ vips_is_16bit (VipsInterpretation interpretation) {
 
 int
 vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double g, double b) {
+	if (vips_is_16bit(in->Type)) {
+		r = 65535 * r / 255;
+		g = 65535 * g / 255;
+		b = 65535 * b / 255;
+	}
+
 	double background[3] = {r, g, b};
 	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
 
 	return vips_flatten(in, out,
-		"background", vipsBackground, "max_alpha", 255.0,
+		"background", vipsBackground,
+		"max_alpha", vips_is_16bit(in->Type) ? 65535.0 : 255.0,
 		NULL
 	);
 }

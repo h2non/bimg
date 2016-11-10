@@ -112,8 +112,11 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
-	// Only flatten PNG for now
-	flatten := imageType == PNG && o.Background != ColorBlack
+	// Flatten image on a background, if necessary
+	image, err = imageFlatten(image, imageType, o)
+	if err != nil {
+		return nil, err
+	}
 
 	saveOptions := vipsSaveOptions{
 		Quality:        o.Quality,
@@ -122,8 +125,6 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		Interlace:      o.Interlace,
 		NoProfile:      o.NoProfile,
 		Interpretation: o.Interpretation,
-		Flatten:        flatten,
-		Background:     o.Background,
 	}
 
 	// Finally get the resultant buffer
@@ -322,6 +323,14 @@ func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	}
 
 	return image, nil
+}
+
+func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsImage, error) {
+	// Only PNG images are supported for now
+	if imageType != PNG || o.Background == ColorBlack {
+		return image, nil
+	}
+	return vipsFlattenBackground(image, o.Background)
 }
 
 func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
