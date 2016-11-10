@@ -531,7 +531,6 @@ func readImageType(buf []byte) string {
 	length := C.size_t(len(buf))
 	imageBuf := unsafe.Pointer(&buf[0])
 	load := C.vips_foreign_find_load_buffer(imageBuf, length)
-	defer C.free(imageBuf)
 	return C.GoString(load)
 }
 
