@@ -1,3 +1,9 @@
+## 1.0.6 / 12-11-2016
+
+- feat(#118): handle 16-bit PNGs.
+- feat(#119): adds JPEG2000 file for the type tests.
+- feat(#121): test bimg against multiple libvips versions.
+
 ## 1.0.5 / 01-10-2016
 
 - feat(#92): support Extend param with optional background.
