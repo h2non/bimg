@@ -8,6 +8,19 @@ go:
   - 1.7
   - tip
 
+env:
+  - LIBVIPS=7.42
+  - LIBVIPS=8.2
+  - LIBVIPS=8.3
+  - LIBVIPS=8.4
+  - LIBVIPS=master
+
+matrix:
+  allow_failures:
+    - env: LIBVIPS=7.42
+    - env: LIBVIPS=8.2
+    - env: LIBVIPS=8.3
+
 cache: apt
 
 addons:
@@ -29,10 +42,10 @@ addons:
 
 # VIPS 8.3.3 requires Poppler 0.30 which is not released on Trusty.
 before_install:
-  - wget https://github.com/jcupitt/libvips/archive/master.zip
-  - unzip master
-  - cd libvips-master
-  - ./autogen.sh
+  - wget https://github.com/jcupitt/libvips/archive/$LIBVIPS.zip
+  - unzip $LIBVIPS
+  - cd libvips-$LIBVIPS
+  - test -f autogen.sh && ./autogen.sh || ./bootstrap.sh
   - >
     CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0
     ./configure
