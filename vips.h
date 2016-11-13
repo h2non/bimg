@@ -145,6 +145,23 @@ vips_type_find_bridge(int t) {
 }
 
 int
+vips_type_find_save_bridge(int t) {
+	if (t == TIFF) {
+		return vips_type_find("VipsOperation", "tiffsave_buffer");
+	}
+	if (t == WEBP) {
+		return vips_type_find("VipsOperation", "webpsave_buffer");
+	}
+	if (t == PNG) {
+		return vips_type_find("VipsOperation", "pngsave_buffer");
+	}
+	if (t == JPEG) {
+		return vips_type_find("VipsOperation", "jpegsave_buffer");
+	}
+	return 0;
+}
+
+int
 vips_rotate(VipsImage *in, VipsImage **out, int angle) {
 	int rotate = VIPS_ANGLE_D0;
 
@@ -274,6 +291,17 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 		"Q", quality,
 		NULL
 	);
+}
+
+int
+vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
+#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+	return vips_tiffsave_buffer(in, buf, len,
+		NULL
+	);
+#else
+	return 0;
+#endif
 }
 
 int

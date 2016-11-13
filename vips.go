@@ -168,6 +168,25 @@ func VipsIsTypeSupported(t ImageType) bool {
 	return false
 }
 
+// VipsIsTypeSupportedSave returns true if the given image type
+// is supported by the current libvips compilation for the
+// save operation.
+func VipsIsTypeSupportedSave(t ImageType) bool {
+	if t == JPEG {
+		return int(C.vips_type_find_save_bridge(C.JPEG)) != 0
+	}
+	if t == WEBP {
+		return int(C.vips_type_find_save_bridge(C.WEBP)) != 0
+	}
+	if t == PNG {
+		return int(C.vips_type_find_save_bridge(C.PNG)) != 0
+	}
+	if t == TIFF {
+		return int(C.vips_type_find_save_bridge(C.TIFF)) != 0
+	}
+	return false
+}
+
 func vipsExifOrientation(image *C.VipsImage) int {
 	return int(C.vips_exif_orientation(image))
 }
@@ -367,18 +386,19 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	interlace := C.int(boolToInt(o.Interlace))
 	quality := C.int(o.Quality)
 
+	if o.Type != 0 && !VipsIsTypeSupportedSave(o.Type) {
+		return nil, fmt.Errorf("VIPS cannot save to %#v", ImageTypes[o.Type])
+	}
 	var ptr unsafe.Pointer
 	switch o.Type {
 	case WEBP:
 		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, 1, quality)
 	case PNG:
 		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
-	case 0:
-		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
-	case JPEG:
-		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
+	case TIFF:
+		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
 	default:
-		return nil, fmt.Errorf("VIPS cannot save to %v.", ImageTypes[o.Type])
+		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
 	}
 
 	if int(saveErr) != 0 {
