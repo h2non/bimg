@@ -29,7 +29,7 @@ func TestVipsRead(t *testing.T) {
 }
 
 func TestVipsSave(t *testing.T) {
-	types := [...]ImageType{JPEG, PNG, TIFF, WEBP}
+	types := [...]ImageType{JPEG, PNG, WEBP}
 
 	for _, typ := range types {
 		image, _, _ := vipsRead(readImage("test.jpg"))
@@ -46,7 +46,7 @@ func TestVipsSave(t *testing.T) {
 }
 
 func TestVipsCannotSave(t *testing.T) {
-	types := [...]ImageType{GIF, PDF, SVG, MAGICK}
+	types := [...]ImageType{GIF, MAGICK, PDF, SVG, TIFF}
 
 	for _, typ := range types {
 		image, _, _ := vipsRead(readImage("test.jpg"))
@@ -118,9 +118,9 @@ func TestVipsWatermark(t *testing.T) {
 		t.Errorf("Cannot add watermark: %s", err)
 	}
 
-	buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
-	if len(buf) == 0 {
-		t.Fatal("Empty image")
+	buf, err := vipsSave(newImg, vipsSaveOptions{Quality: 95})
+	if len(buf) == 0 || err != nil {
+		t.Fatalf("Empty image. %#v", err)
 	}
 }
 
