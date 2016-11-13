@@ -8,6 +8,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"os"
 	"runtime"
@@ -370,21 +371,14 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	switch o.Type {
 	case WEBP:
 		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, 1, quality)
-		break
 	case PNG:
 		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
-		break
-	case GIF:
-		return nil, errors.New("VIPS cannot save to GIF")
-	case PDF:
-		return nil, errors.New("VIPS cannot save to PDF")
-	case SVG:
-		return nil, errors.New("VIPS cannot save to SVG")
-	case MAGICK:
-		return nil, errors.New("VIPS cannot save to MAGICK")
-	default:
+	case 0:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
-		break
+	case JPEG:
+		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
+	default:
+		return nil, fmt.Errorf("VIPS cannot save to %v.", ImageTypes[o.Type])
 	}
 
 	if int(saveErr) != 0 {
