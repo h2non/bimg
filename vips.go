@@ -380,6 +380,8 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 		return nil, errors.New("VIPS cannot save to PDF")
 	case SVG:
 		return nil, errors.New("VIPS cannot save to SVG")
+	case MAGICK:
+		return nil, errors.New("VIPS cannot save to MAGICK")
 	default:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
 		break
