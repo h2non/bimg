@@ -29,15 +29,36 @@ func TestVipsRead(t *testing.T) {
 }
 
 func TestVipsSave(t *testing.T) {
-	image, _, _ := vipsRead(readImage("test.jpg"))
-	options := vipsSaveOptions{Quality: 95, Type: JPEG, Interlace: true}
+	types := [...]ImageType{JPEG, PNG, TIFF, WEBP}
 
-	buf, err := vipsSave(image, options)
-	if err != nil {
-		t.Fatal("Cannot save the image")
+	for _, typ := range types {
+		image, _, _ := vipsRead(readImage("test.jpg"))
+		options := vipsSaveOptions{Quality: 95, Type: typ}
+
+		buf, err := vipsSave(image, options)
+		if err != nil {
+			t.Fatalf("Cannot save the image as '%v'", ImageTypes[typ])
+		}
+		if len(buf) == 0 {
+			t.Fatalf("Empty saved '%v' image", ImageTypes[typ])
+		}
 	}
-	if len(buf) == 0 {
-		t.Fatal("Empty image")
+}
+
+func TestVipsCannotSave(t *testing.T) {
+	types := [...]ImageType{GIF, PDF, SVG, MAGICK}
+
+	for _, typ := range types {
+		image, _, _ := vipsRead(readImage("test.jpg"))
+		options := vipsSaveOptions{Quality: 95, Type: typ}
+
+		buf, err := vipsSave(image, options)
+		if err == nil {
+			t.Fatalf("Format '%v' shouldn't be supported", ImageTypes[typ])
+		}
+		if len(buf) != 0 {
+			t.Fatalf("'%v' image is not empty", ImageTypes[typ])
+		}
 	}
 }
 
