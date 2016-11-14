@@ -46,7 +46,7 @@ func TestVipsSave(t *testing.T) {
 }
 
 func TestVipsSaveTiff(t *testing.T) {
-	if !VipsIsTypeSupportedSave(TIFF) {
+	if !IsTypeSupportedSave(TIFF) {
 		t.Skipf("Format %#v is not supported", ImageTypes[TIFF])
 	}
 	image, _, _ := vipsRead(readImage("test.jpg"))
