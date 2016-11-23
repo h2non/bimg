@@ -63,17 +63,15 @@ go get -u gopkg.in/h2non/bimg.v1
 
 Run the following script as `sudo` (supports OSX, Debian/Ubuntu, Redhat, Fedora, Amazon Linux):
 ```bash
-curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
+curl -s https://raw.githubusercontent.com/h2non/bimg/master/preinstall.sh | sudo bash -
 ```
 
 If you wanna take the advantage of [OpenSlide](http://openslide.org/), simply add `--with-openslide` to enable it:
 ```bash
-curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -s --with-openslide
+curl -s https://raw.githubusercontent.com/h2non/bimg/master/preinstall.sh | sudo bash -s --with-openslide
 ```
 
-The [install script](https://github.com/lovell/sharp/blob/master/preinstall.sh) requires `curl` and `pkg-config`
-
-For platform specific installations, see  [Mac OS](https://github.com/lovell/sharp/blob/master/README.md#mac-os-tips) tips or [Windows](https://github.com/lovell/sharp/blob/master/README.md#windows) tips
+The [install script](https://github.com/h2non/bimg/blob/master/preinstall.sh) requires `curl` and `pkg-config`.
 
 ## Performance
 
@@ -81,7 +79,6 @@ libvips is probably the faster open source solution for image processing.
 Here you can see some performance test comparisons for multiple scenarios:
 
 - [libvips speed and memory usage](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
-- [sharp performance tests](https://github.com/lovell/sharp#the-task)
 
 ## Benchmark
 
