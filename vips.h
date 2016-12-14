@@ -421,6 +421,20 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 #endif
 }
 
+
+int
+vips_convsep_bridge(VipsImage *in, VipsImage **out, int percentage) {
+
+    double outerCoeff = -percentage / 400.0;
+    double innerCoeff = 1 - (2 * outerCoeff);
+	VipsImage *mask = vips_image_new_matrixv(1, 3, outerCoeff, innerCoeff, outerCoeff);
+
+	int result = vips_convsep(in, out, mask, NULL);
+	g_object_unref( mask );
+	return result;
+}
+
+
 int
 vips_hist_norm_bridge(VipsImage *in, VipsImage **out) {
 	return vips_hist_norm(in, out, NULL);

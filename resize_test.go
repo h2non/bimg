@@ -284,6 +284,23 @@ func TestSharpen(t *testing.T) {
 	Write("fixtures/test_sharpen.jpg", newImg)
 }
 
+func TestSharpenConv(t *testing.T) {
+	options := Options{Width: 800, Height: 600, SharpenConv: SharpenConv{Percentage: 100}}
+	buf, _ := Read("fixtures/test.jpg")
+
+	newImg, err := Resize(buf, options)
+	if err != nil {
+		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+	}
+
+	size, _ := Size(newImg)
+	if size.Height != options.Height || size.Width != options.Width {
+		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+	}
+
+	Write("fixtures/test_sharpen_conv.jpg", newImg)
+}
+
 func TestExtractWithDefaultAxis(t *testing.T) {
 	options := Options{AreaWidth: 200, AreaHeight: 200}
 	buf, _ := Read("fixtures/test.jpg")
