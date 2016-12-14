@@ -182,6 +182,10 @@ type Sharpen struct {
 	M2     float64
 }
 
+type SharpenConv struct {
+	Percentage int
+}
+
 // Options represents the supported image transformation options.
 type Options struct {
 	Height         int
@@ -212,4 +216,5 @@ type Options struct {
 	Interpretation Interpretation
 	GaussianBlur   GaussianBlur
 	Sharpen        Sharpen
+	SharpenConv    SharpenConv
 }

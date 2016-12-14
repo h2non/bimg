@@ -572,6 +572,18 @@ func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
 	return out, nil
 }
 
+func vipsConvSep(image *C.VipsImage, sharpenConv SharpenConv) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_convsep_bridge(image, &out, C.int(sharpenConv.Percentage))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
 func vipsHistogramNorm(image *C.VipsImage) (*C.VipsImage, error) {
 	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))

@@ -107,7 +107,7 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Add watermark, if necessary
-	image, err = watermakImage(image, o.Watermark)
+	image, err = watermarkImage(image, o.Watermark)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +159,7 @@ func shouldTransformImage(o Options, inWidth, inHeight int) bool {
 }
 
 func shouldApplyEffects(o Options) bool {
-	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 || o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0
+	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 || o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0 || o.SharpenConv.Percentage > 0
 }
 
 func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
@@ -217,10 +217,15 @@ func applyEffects(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		if err != nil {
 			return nil, err
 		}
+	} else if o.SharpenConv.Percentage > 0 {
+		image, err = vipsConvSep(image, o.SharpenConv)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	debug("Effects: gaussSigma=%v, gaussMinAmpl=%v, sharpenRadius=%v",
-		o.GaussianBlur.Sigma, o.GaussianBlur.MinAmpl, o.Sharpen.Radius)
+	debug("Effects: gaussSigma=%v, gaussMinAmpl=%v, sharpenRadius=%v, sharpenConvPercentage=%v",
+		o.GaussianBlur.Sigma, o.GaussianBlur.MinAmpl, o.Sharpen.Radius, o.SharpenConv.Percentage)
 
 	return image, nil
 }
@@ -293,7 +298,7 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, erro
 	return image, rotated, err
 }
 
-func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+func watermarkImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	if w.Text == "" {
 		return image, nil
 	}
