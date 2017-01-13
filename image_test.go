@@ -176,7 +176,7 @@ func TestImageCropByWidth(t *testing.T) {
 		t.Errorf("Cannot process the image: %s", err)
 	}
 
-	err = assertSize(buf, 600, 375)
+	err = assertSize(buf, 600, 1050)
 	if err != nil {
 		t.Error(err)
 	}
@@ -190,7 +190,7 @@ func TestImageCropByHeight(t *testing.T) {
 		t.Errorf("Cannot process the image: %s", err)
 	}
 
-	err = assertSize(buf, 480, 300)
+	err = assertSize(buf, 1680, 300)
 	if err != nil {
 		t.Error(err)
 	}
