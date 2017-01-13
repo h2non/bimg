@@ -401,12 +401,20 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 		}
 	// Fixed width, auto height
 	case o.Width > 0:
-		factor = xfactor
-		o.Height = roundFloat(float64(inHeight) / factor)
+		if o.Crop {
+			o.Height = inHeight
+		} else {
+			factor = xfactor
+			o.Height = roundFloat(float64(inHeight) / factor)
+		}
 	// Fixed height, auto width
 	case o.Height > 0:
-		factor = yfactor
-		o.Width = roundFloat(float64(inWidth) / factor)
+		if o.Crop {
+			o.Width = inWidth
+		} else {
+			factor = yfactor
+			o.Width = roundFloat(float64(inWidth) / factor)
+		}
 	// Identity transform
 	default:
 		o.Width = inWidth
