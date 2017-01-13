@@ -1,6 +1,7 @@
 ## 1.0.7 / 13-01-2017
 
 - fix(#128): crop image calculation for missing width or height axis.
+- feat: add TIFF save output format.
 
 ## 1.0.6 / 12-11-2016
 
