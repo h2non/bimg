@@ -1,7 +1,7 @@
 ## 1.0.7 / 13-01-2017
 
 - fix(#128): crop image calculation for missing width or height axis.
-- feat: add TIFF save output format (**note**: this introduces a minor interface bracking change in `bimg.IsImageTypeSupportedByVips` auxiliary function).
+- feat: add TIFF save output format (**note**: this introduces a minor interface breaking change in `bimg.IsImageTypeSupportedByVips` auxiliary function).
 
 ## 1.0.6 / 12-11-2016
 
