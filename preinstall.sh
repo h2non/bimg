@@ -1,19 +1,5 @@
 #!/bin/bash
 
-# Use of this script is deprecated
-
-echo
-echo "WARNING: THIS SCRIPT WILL STOP WORKING AT THE END OF 2016"
-echo
-echo "WARNING: THIS SCRIPT IS NO LONGER REQUIRED ON MOST 64-BIT LINUX SYSTEMS WHEN USING SHARP V0.12.0+"
-echo
-echo "See http://sharp.dimens.io/page/install#linux"
-echo
-echo "If you really, really need this script, it will attempt"
-echo "to globally install libvips if not already available."
-echo
-sleep 5
-
 vips_version_minimum=8.4.2
 vips_version_latest_major_minor=8.4
 vips_version_latest_patch=2
