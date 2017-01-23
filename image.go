@@ -204,3 +204,17 @@ func (i *Image) Size() (ImageSize, error) {
 func (i *Image) Image() []byte {
 	return i.buffer
 }
+
+// Image returns the current histogram
+func (i *Image) HistogramFind() ([]byte, error) {
+	return HistogramFind(i.buffer)
+}
+
+// Image returns the current histogram normalized
+func (i *Image) HistogramNorm() ([]byte, error) {
+	return HistogramNorm(i.buffer)
+}
+
+func (i *Image) Avg() (float64, error) {
+	return Avg(i.buffer)
+}

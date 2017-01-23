@@ -7,7 +7,7 @@ bimg was designed to be a small and efficient library supporting a common set of
 bimg is able to output images as JPEG, PNG and WEBP formats, including transparent conversion across them.
 
 bimg uses internally libvips, a powerful library written in C for image processing which requires a [low memory footprint](http://www.vips.ecs.soton.ac.uk/index.php?title=Speed_and_Memory_Use)
-and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images.
+and it's typically 4x faster than using the quickest ImageMagick and GraphicsMagick settings or Go native `image` package, and in some cases it's even 8x faster processing JPEG images. 
 
 If you're looking for an HTTP based image processing solution, see [imaginary](https://github.com/h2non/imaginary).
 
