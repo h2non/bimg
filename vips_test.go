@@ -127,6 +127,17 @@ func TestVipsImageType(t *testing.T) {
 	}
 }
 
+func TestVipsConv(t *testing.T) {
+	img, _, _ := vipsRead(readImage("test.jpg"))
+
+
+	_, err := vipsConvSep(img, SharpenConv{Percentage: 50})
+
+	if err != nil {
+		t.Fatal("Invalid convolution")
+	}
+}
+
 func TestVipsMemory(t *testing.T) {
 	mem := VipsMemory()
 

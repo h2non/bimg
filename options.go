@@ -39,9 +39,18 @@ const (
 	Bilinear
 	// Nohalo interpolation value.
 	Nohalo
+	// Nearest interpolation value
+	Nearest
+	// reduced halo bicubic
+	Lbb
+	// B-Splines with antialiasing smoothing
+	Vsqbs
 )
 
 var interpolations = map[Interpolator]string{
+	Lbb:      "lbb",
+	Vsqbs: 	  "Vsqbs",
+	Nearest:  "nearest",
 	Bicubic:  "bicubic",
 	Bilinear: "bilinear",
 	Nohalo:   "nohalo",
@@ -173,6 +182,10 @@ type Sharpen struct {
 	M2     float64
 }
 
+type SharpenConv struct {
+	Percentage int
+}
+
 // Options represents the supported image transformation options.
 type Options struct {
 	Height         int
@@ -203,4 +216,5 @@ type Options struct {
 	Interpretation Interpretation
 	GaussianBlur   GaussianBlur
 	Sharpen        Sharpen
+	SharpenConv    SharpenConv
 }
