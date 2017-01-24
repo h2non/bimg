@@ -5,3 +5,4 @@ bin
 /*.png
 /*.webp
 /fixtures/*_out.*
+/.idea/

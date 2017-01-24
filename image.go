@@ -124,6 +124,12 @@ func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	return i.Process(options)
 }
 
+// WatermarkImage adds image as watermark on the given image.
+func (i *Image) WatermarkImage(w WatermarkImage) ([]byte, error) {
+	options := Options{WatermarkImage: w}
+	return i.Process(options)
+}
+
 // Zoom zooms the image by the given factor.
 // You should probably call Extract() before.
 func (i *Image) Zoom(factor int) ([]byte, error) {

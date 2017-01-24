@@ -157,6 +157,14 @@ type Watermark struct {
 	Background  Color
 }
 
+// WatermarkImage represents the image-based watermark supported options.
+type WatermarkImage struct {
+	Left    int
+	Top     int
+	Buf     []byte
+	Opacity float32
+}
+
 // GaussianBlur represents the gaussian image transformation values.
 type GaussianBlur struct {
 	Sigma   float64
@@ -198,6 +206,7 @@ type Options struct {
 	Background     Color
 	Gravity        Gravity
 	Watermark      Watermark
+	WatermarkImage WatermarkImage
 	Type           ImageType
 	Interpolator   Interpolator
 	Interpretation Interpretation

@@ -239,7 +239,34 @@ func TestImageWatermark(t *testing.T) {
 		t.Fatal("Image is not jpeg")
 	}
 
-	Write("fixtures/test_watermark_out.jpg", buf)
+	Write("fixtures/test_watermark_text_out.jpg", buf)
+}
+
+func TestImageWatermarkWithImage(t *testing.T) {
+	image := initImage("test.jpg")
+	watermark, _ := imageBuf("transparent.png")
+
+	_, err := image.Crop(800, 600, GravityNorth)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	buf, err := image.WatermarkImage(WatermarkImage{Left: 100, Top: 100, Buf: watermark})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if DetermineImageType(buf) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	Write("fixtures/test_watermark_image_out.jpg", buf)
 }
 
 func TestImageWatermarkNoReplicate(t *testing.T) {
@@ -429,8 +456,12 @@ func TestFluentInterface(t *testing.T) {
 }
 
 func initImage(file string) *Image {
-	buf, _ := Read(path.Join("fixtures", file))
+	buf, _ := imageBuf(file)
 	return NewImage(buf)
+}
+
+func imageBuf(file string) ([]byte, error) {
+	return Read(path.Join("fixtures", file))
 }
 
 func assertSize(buf []byte, width, height int) error {

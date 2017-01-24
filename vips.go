@@ -67,6 +67,12 @@ type vipsWatermarkOptions struct {
 	Background  [3]C.double
 }
 
+type vipsWatermarkImageOptions struct {
+	Left    C.int
+	Top     C.int
+	Opacity C.float
+}
+
 type vipsWatermarkTextOptions struct {
 	Text *C.char
 	Font *C.char
@@ -588,4 +594,26 @@ func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
 
 func max(x int) int {
 	return int(math.Max(float64(x), 0))
+}
+
+func vipsDrawWatermark(image *C.VipsImage, watermark *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+
+	if !vipsHasAlpha(image) {
+		C.vips_add_band(image, &image, C.double(255.0))
+	}
+
+	if !vipsHasAlpha(watermark) {
+		C.vips_add_band(watermark, &watermark, C.double(255.0))
+	}
+
+	opts := vipsWatermarkImageOptions{C.int(o.Left), C.int(o.Top), C.float(o.Opacity)}
+
+	err := C.vips_watermark_image(image, watermark, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
+
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
 }

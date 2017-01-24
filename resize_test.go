@@ -72,7 +72,7 @@ func TestResizeVerticalImage(t *testing.T) {
 			t.Fatalf("Invalid width: %d", size.Width)
 		}
 
-		Write("fixtures/test_vertical_"+strconv.Itoa(test.options.Width)+"x"+strconv.Itoa(test.options.Height)+".jpg", image)
+		Write("fixtures/test_vertical_"+strconv.Itoa(test.options.Width)+"x"+strconv.Itoa(test.options.Height)+"_out.jpg", image)
 	}
 }
 
@@ -264,7 +264,7 @@ func TestGaussianBlur(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("fixtures/test_gaussian.jpg", newImg)
+	Write("fixtures/test_gaussian_out.jpg", newImg)
 }
 
 func TestSharpen(t *testing.T) {
@@ -281,7 +281,7 @@ func TestSharpen(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("fixtures/test_sharpen.jpg", newImg)
+	Write("fixtures/test_sharpen_out.jpg", newImg)
 }
 
 func TestExtractWithDefaultAxis(t *testing.T) {
@@ -298,7 +298,7 @@ func TestExtractWithDefaultAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("fixtures/test_extract_defaults.jpg", newImg)
+	Write("fixtures/test_extract_defaults_out.jpg", newImg)
 }
 
 func TestExtractCustomAxis(t *testing.T) {
@@ -315,7 +315,7 @@ func TestExtractCustomAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("fixtures/test_extract_custom_axis.jpg", newImg)
+	Write("fixtures/test_extract_custom_axis_out.jpg", newImg)
 }
 
 func TestConvert(t *testing.T) {
@@ -553,6 +553,45 @@ func BenchmarkWatermarWebp(b *testing.B) {
 			Margin:     150,
 			Font:       "sans bold 12",
 			Background: Color{255, 255, 255},
+		},
+	}
+	runBenchmarkResize("test.webp", options, b)
+}
+
+func BenchmarkWatermarkImageJpeg(b *testing.B) {
+	watermark := readFile("transparent.png")
+	options := Options{
+		WatermarkImage: WatermarkImage{
+			Buf:     watermark,
+			Opacity: 0.25,
+			Left:    100,
+			Top:     100,
+		},
+	}
+	runBenchmarkResize("test.jpg", options, b)
+}
+
+func BenchmarkWatermarImagePng(b *testing.B) {
+	watermark := readFile("transparent.png")
+	options := Options{
+		WatermarkImage: WatermarkImage{
+			Buf:     watermark,
+			Opacity: 0.25,
+			Left:    100,
+			Top:     100,
+		},
+	}
+	runBenchmarkResize("test.png", options, b)
+}
+
+func BenchmarkWatermarImageWebp(b *testing.B) {
+	watermark := readFile("transparent.png")
+	options := Options{
+		WatermarkImage: WatermarkImage{
+			Buf:     watermark,
+			Opacity: 0.25,
+			Left:    100,
+			Top:     100,
 		},
 	}
 	runBenchmarkResize("test.webp", options, b)
