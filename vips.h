@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <vips/vips.h>
 #include <vips/foreign.h>
 #include <vips/vips7compat.h>
@@ -44,6 +45,12 @@ typedef struct {
 	float  Opacity;
 	double Background[3];
 } WatermarkOptions;
+
+typedef struct {
+	int    Left;
+	int    Top;
+	float    Opacity;
+} WatermarkImageOptions;
 
 static unsigned long
 has_profile_embed(VipsImage *image) {
@@ -447,4 +454,121 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 #else
 	return vips_sharpen(in, out, "radius", radius, "x1", x1, "y2", y2, "y3", y3, "m1", m1, "m2", m2, NULL);
 #endif
+}
+
+int
+vips_add_band(VipsImage *in, VipsImage **out, double c) {
+    return vips_bandjoin_const1(in, out, c, NULL);
+}
+
+int
+vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkImageOptions *o) {
+    int bands = in->Bands;
+    double background[4] = {0.0, 0.0, 0.0, 0.0};
+
+    VipsArrayDouble *vipsBackground = vips_array_double_new(background, 4);
+
+    VipsImage *base = vips_image_new();
+    VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
+
+    t[0] = in;
+    t[1] = sub;
+
+    if (vips_embed(t[1], &t[2], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, "extend", VIPS_EXTEND_BACKGROUND, "background", vipsBackground, NULL)) {
+        g_object_unref(base);
+    	return 1;
+    }
+
+    //Get Sub bands without alpha
+    if (vips_extract_band(t[2], &t[3], 0, "n", t[2]->Bands - 1, NULL)) {
+        g_object_unref(base);
+    	return 1;
+    }
+
+    //Get Sub Image alpha
+    if (
+        vips_extract_band(t[2], &t[4], t[2]->Bands - 1, "n", 1, NULL) ||
+        vips_linear1(t[4], &t[4], o->Opacity / 255.0, 0.0, NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //Apply alpha to other sub bands to remove unwanted pixels
+    if (vips_multiply(t[3], t[4], &t[3], NULL)) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //Get in bands without alpha
+    if (vips_extract_band(t[0], &t[5], 0, "n", t[0]->Bands - 1, NULL)) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //Get in alpha
+    if (
+        vips_extract_band(t[0], &t[6], t[0]->Bands - 1, "n", 1, NULL) ||
+        vips_linear1(t[6], &t[6], 1.0 / 255.0, 0.0, NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+
+    // Compute normalized output alpha channel:
+    //
+    // References:
+    // - http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
+    // - https://github.com/jcupitt/ruby-vips/issues/28#issuecomment-9014826
+    //
+    // out_a = src_a + dst_a * (1 - src_a)
+    //                         ^^^^^^^^^^^
+
+    if (
+        vips_linear1(t[4], &t[7], -1.0, 1.0, NULL) ||
+        vips_multiply(t[6], t[7], &t[8], NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //outAlphaNormalized in t[8]
+    if (vips_add(t[4], t[8], &t[8], NULL)) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    // Compute output RGB channels:
+    //
+    // Wikipedia:
+    // out_rgb = (src_rgb * src_a + dst_rgb * dst_a * (1 - src_a)) / out_a
+    //                                                ^^^^^^^^^^^
+    //                                                    t0
+    //
+    // Omit division by `out_a` since `Compose` is supposed to output a
+    // premultiplied RGBA image as reversal of premultiplication is handled
+    // externally.
+
+    if (vips_multiply(t[5], t[7], &t[9], NULL)) {
+         g_object_unref(base);
+         return 1;
+    }
+
+    //outRGBPremultiplied in t[9]
+    if (vips_add(t[3], t[9], &t[9], NULL)) {
+         g_object_unref(base);
+         return 1;
+    }
+
+    if (
+        vips_linear1(t[8], &t[8], 255.0, 0.0, NULL) ||
+        vips_bandjoin2(t[9], t[8], out, NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    g_object_unref(base);
+    return 0;
 }

@@ -16,11 +16,8 @@ import (
 func Resize(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
-	if len(buf) == 0 {
-		return nil, errors.New("Image buffer is empty")
-	}
+	image, imageType, err := loadImage(buf)
 
-	image, imageType, err := vipsRead(buf)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +104,13 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Add watermark, if necessary
-	image, err = watermakImage(image, o.Watermark)
+	image, err = watermarkImageWithText(image, o.Watermark)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add watermark, if necessary
+	image, err = watermarkImageWithAnotherImage(image, o.WatermarkImage)
 	if err != nil {
 		return nil, err
 	}
@@ -118,17 +121,20 @@ func Resize(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
-	saveOptions := vipsSaveOptions{
-		Quality:        o.Quality,
-		Type:           o.Type,
-		Compression:    o.Compression,
-		Interlace:      o.Interlace,
-		NoProfile:      o.NoProfile,
-		Interpretation: o.Interpretation,
+	return saveImage(image, o)
+}
+
+func loadImage(buf []byte) (*C.VipsImage, ImageType, error) {
+	if len(buf) == 0 {
+		return nil, JPEG, errors.New("Image buffer is empty")
 	}
 
-	// Finally get the resultant buffer
-	return vipsSave(image, saveOptions)
+	image, imageType, err := vipsRead(buf)
+	if err != nil {
+		return nil, JPEG, err
+	}
+
+	return image, imageType, nil
 }
 
 func applyDefaults(o Options, imageType ImageType) Options {
@@ -145,6 +151,19 @@ func applyDefaults(o Options, imageType ImageType) Options {
 		o.Interpretation = InterpretationSRGB
 	}
 	return o
+}
+
+func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
+	saveOptions := vipsSaveOptions{
+		Quality:        o.Quality,
+		Type:           o.Type,
+		Compression:    o.Compression,
+		Interlace:      o.Interlace,
+		NoProfile:      o.NoProfile,
+		Interpretation: o.Interpretation,
+	}
+	// Finally get the resultant buffer
+	return vipsSave(image, saveOptions)
 }
 
 func normalizeOperation(o *Options, inWidth, inHeight int) {
@@ -164,7 +183,6 @@ func shouldApplyEffects(o Options) bool {
 
 func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
 	var err error
-
 	// Use vips_shrink with the integral reduction
 	if shrink > 1 {
 		image, residual, err = shrinkImage(image, o, residual, shrink)
@@ -242,6 +260,7 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend, o.Background)
 		break
+
 	case o.Top != 0 || o.Left != 0 || o.AreaWidth != 0 || o.AreaHeight != 0:
 		if o.AreaWidth == 0 {
 			o.AreaHeight = o.Width
@@ -293,7 +312,7 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, erro
 	return image, rotated, err
 }
 
-func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	if w.Text == "" {
 		return image, nil
 	}
@@ -318,6 +337,31 @@ func watermakImage(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	}
 
 	image, err := vipsWatermark(image, w)
+	if err != nil {
+		return nil, err
+	}
+
+	return image, nil
+}
+
+func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.VipsImage, error) {
+
+	if len(w.Buf) == 0 {
+		return image, nil
+	}
+
+	if w.Opacity == 0.0 {
+		w.Opacity = 1.0
+	}
+
+	watermark, _, err := loadImage(w.Buf)
+
+	if err != nil {
+		return nil, err
+	}
+
+	image, err = vipsDrawWatermark(image, watermark, w)
+
 	if err != nil {
 		return nil, err
 	}

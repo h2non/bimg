@@ -114,9 +114,26 @@ func TestVipsWatermark(t *testing.T) {
 		t.Errorf("Cannot add watermark: %s", err)
 	}
 
-	buf, err := vipsSave(newImg, vipsSaveOptions{Quality: 95})
-	if len(buf) == 0 || err != nil {
-		t.Fatalf("Empty image. %#v", err)
+	buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
+	if len(buf) == 0 {
+		t.Fatal("Empty image")
+	}
+}
+
+func TestVipsWatermarkWithImage(t *testing.T) {
+	image, _, _ := vipsRead(readImage("test.jpg"))
+
+	watermark, _, _ := vipsRead(readImage("transparent.png"))
+
+	options := WatermarkImage{Left: 100, Top: 100, Opacity: 1.0}
+	newImg, err := vipsDrawWatermark(image, watermark, options)
+	if err != nil {
+		t.Errorf("Cannot add watermark: %s", err)
+	}
+
+	buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
+	if len(buf) == 0 {
+		t.Fatal("Empty image")
 	}
 }
 
