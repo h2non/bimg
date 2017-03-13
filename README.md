@@ -16,6 +16,12 @@ bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homol
 **v1 notice**: `bimg` introduces some minor breaking changes in `v1` release.
 If you're using `gopkg.in`, you can still rely in the `v0` without worrying about API breaking changes.
 
+#### Seeking for maintainers
+
+As a single human with a full-time job and other projects in the queue, I'm not able to provide agile and reliable support to this project.
+
+If you or your company are relying on `bimg` and you wish to get back the favor to the open source community, please [take a look here](https://github.com/h2non/bimg/issues/139).
+
 ## Contents
 
 - [Supported image operations](#supported-image-operations)
