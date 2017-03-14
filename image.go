@@ -1,5 +1,7 @@
 package bimg
 
+import "fmt"
+
 // Image provides a simple method DSL to transform a given image as byte buffer.
 type Image struct {
 	buffer []byte
@@ -152,6 +154,52 @@ func (i *Image) Flip() ([]byte, error) {
 // Flop flops the image about the horizontal X axis.
 func (i *Image) Flop() ([]byte, error) {
 	options := Options{Flop: true}
+	return i.Process(options)
+}
+
+// AutoOrient automatically flips/flops/rotates the image
+// based on EXIF Orientation
+func (i *Image) AutoOrient() ([]byte, error) {
+	metadata, err := i.Metadata()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Image is already oriented correctly, do nothing.
+	if metadata.Orientation <= 1 {
+		return i.buffer, nil
+	}
+
+	options := Options{}
+
+	switch metadata.Orientation {
+	case 2:
+		options.Flip = true
+		break
+	case 3:
+		options.Rotate = 180
+		break
+	case 4:
+		options.Flop = true
+		break
+	case 5:
+		options.Flop = true
+		options.Rotate = 90
+		break
+	case 6:
+		options.Rotate = 90
+		break
+	case 7:
+		options.Flop = true
+		options.Rotate = -90
+	case 8:
+		options.Rotate = -90
+		break
+	default:
+		return nil, fmt.Errorf("unknown exif orientation: %d", metadata.Orientation)
+	}
+
 	return i.Process(options)
 }
 
