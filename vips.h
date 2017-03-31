@@ -464,17 +464,22 @@ vips_add_band(VipsImage *in, VipsImage **out, double c) {
 int
 vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkImageOptions *o) {
 	VipsImage *base = vips_image_new();
-	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 8);
+	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
 
+  // add in and sub for unreffing and later use
 	t[0] = in;
 	t[1] = sub;
 
   if (has_alpha_channel(in) == 0) {
 		vips_bandjoin_const1(in, &t[0], 255.0, NULL);
+		// in is no longer in the array and won't be unreffed, so add it at the end
+		t[8] = in;
 	}
 
 	if (has_alpha_channel(sub) == 0) {
 		vips_bandjoin_const1(sub, &t[1], 255.0, NULL);
+		// sub is no longer in the array and won't be unreffed, so add it at the end
+		t[9] = sub;
 	}
 
 	// Place watermark image in the right place and size it to the size of the
