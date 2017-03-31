@@ -123,10 +123,10 @@ func TestVipsWatermark(t *testing.T) {
 func TestVipsWatermarkWithImage(t *testing.T) {
 	image, _, _ := vipsRead(readImage("test.jpg"))
 
-	watermark, _, _ := vipsRead(readImage("transparent.png"))
+	watermark := readImage("transparent.png")
 
-	options := WatermarkImage{Left: 100, Top: 100, Opacity: 1.0}
-	newImg, err := vipsDrawWatermark(image, watermark, options)
+	options := WatermarkImage{Left: 100, Top: 100, Opacity: 1.0, Buf: watermark}
+	newImg, err := vipsDrawWatermark(image, options)
 	if err != nil {
 		t.Errorf("Cannot add watermark: %s", err)
 	}
