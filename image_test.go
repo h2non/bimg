@@ -455,6 +455,23 @@ func TestFluentInterface(t *testing.T) {
 	Write("fixtures/test_image_fluent_out.png", image.Image())
 }
 
+func TestImageSmartCrop(t *testing.T) {
+	if VipsMajorVersion >= 8 && VipsMinorVersion > 4 {
+		i := initImage("northern_cardinal_bird.jpg")
+		buf, err := i.SmartCrop(300, 300)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		err = assertSize(buf, 300, 300)
+		if err != nil {
+			t.Error(err)
+		}
+
+		Write("fixtures/test_smart_crop.jpg", buf)
+	}
+}
+
 func initImage(file string) *Image {
 	buf, _ := imageBuf(file)
 	return NewImage(buf)

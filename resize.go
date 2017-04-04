@@ -249,6 +249,9 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	inHeight := int(image.Ysize)
 
 	switch {
+	case o.SmartCrop:
+		image, err = vipsSmartCrop(image, o.Width, o.Height)
+		break
 	case o.Crop:
 		width := int(math.Min(float64(inWidth), float64(o.Width)))
 		height := int(math.Min(float64(inHeight), float64(o.Height)))
