@@ -42,7 +42,7 @@ func TestImageSvgResize(t *testing.T) {
 }
 
 func TestImageGifToJpeg(t *testing.T) {
-	if VipsMinorVersion >= 8 && VipsMinorVersion > 2 {
+	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
 		i := initImage("test.gif")
 		options := Options{
 			Type: JPEG,
@@ -57,7 +57,7 @@ func TestImageGifToJpeg(t *testing.T) {
 }
 
 func TestImagePdfToJpeg(t *testing.T) {
-	if VipsMinorVersion >= 8 && VipsMinorVersion > 2 {
+	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
 		i := initImage("test.pdf")
 		options := Options{
 			Type: JPEG,
@@ -72,7 +72,7 @@ func TestImagePdfToJpeg(t *testing.T) {
 }
 
 func TestImageSvgToJpeg(t *testing.T) {
-	if VipsMinorVersion >= 8 && VipsMinorVersion > 2 {
+	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
 		i := initImage("test.svg")
 		options := Options{
 			Type: JPEG,
