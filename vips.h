@@ -463,51 +463,112 @@ vips_add_band(VipsImage *in, VipsImage **out, double c) {
 
 int
 vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkImageOptions *o) {
-	VipsImage *base = vips_image_new();
-	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
+    int bands = in->Bands;
+    double background[4] = {0.0, 0.0, 0.0, 0.0};
 
-  // add in and sub for unreffing and later use
-	t[0] = in;
-	t[1] = sub;
+    VipsArrayDouble *vipsBackground = vips_array_double_new(background, 4);
 
-  if (has_alpha_channel(in) == 0) {
-		vips_bandjoin_const1(in, &t[0], 255.0, NULL);
-		// in is no longer in the array and won't be unreffed, so add it at the end
-		t[8] = in;
-	}
+    VipsImage *base = vips_image_new();
+    VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
 
-	if (has_alpha_channel(sub) == 0) {
-		vips_bandjoin_const1(sub, &t[1], 255.0, NULL);
-		// sub is no longer in the array and won't be unreffed, so add it at the end
-		t[9] = sub;
-	}
+    t[0] = in;
+    t[1] = sub;
 
-	// Place watermark image in the right place and size it to the size of the
-	// image that should be watermarked
-	if (
-		vips_embed(t[1], &t[2], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, NULL)) {
-			g_object_unref(base);
-		return 1;
-	}
+    if (vips_embed(t[1], &t[2], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, "extend", VIPS_EXTEND_BACKGROUND, "background", vipsBackground, NULL)) {
+        g_object_unref(base);
+    	return 1;
+    }
 
-	// Create a mask image based on the alpha band from the watermark image
-	// and place it in the right position
-	if (
-		vips_extract_band(t[1], &t[3], t[1]->Bands - 1, "n", 1, NULL) ||
-		vips_linear1(t[3], &t[4], o->Opacity, 0.0, NULL) ||
-		vips_cast(t[4], &t[5], VIPS_FORMAT_UCHAR, NULL) ||
-		vips_copy(t[5], &t[6], "interpretation", t[0]->Type, NULL) ||
-		vips_embed(t[6], &t[7], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, NULL))	{
-			g_object_unref(base);
-		return 1;
-	}
+    //Get Sub bands without alpha
+    if (vips_extract_band(t[2], &t[3], 0, "n", t[2]->Bands - 1, NULL)) {
+        g_object_unref(base);
+    	return 1;
+    }
 
-	// Blend the mask and watermark image and write to output.
-	if (vips_ifthenelse(t[7], t[2], t[0], out, "blend", TRUE, NULL)) {
-		g_object_unref(base);
-		return 1;
-	}
+    //Get Sub Image alpha
+    if (
+        vips_extract_band(t[2], &t[4], t[2]->Bands - 1, "n", 1, NULL) ||
+        vips_linear1(t[4], &t[4], o->Opacity / 255.0, 0.0, NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
 
-	g_object_unref(base);
-	return 0;
+    //Apply alpha to other sub bands to remove unwanted pixels
+    if (vips_multiply(t[3], t[4], &t[3], NULL)) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //Get in bands without alpha
+    if (vips_extract_band(t[0], &t[5], 0, "n", t[0]->Bands - 1, NULL)) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //Get in alpha
+    if (
+        vips_extract_band(t[0], &t[6], t[0]->Bands - 1, "n", 1, NULL) ||
+        vips_linear1(t[6], &t[6], 1.0 / 255.0, 0.0, NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+
+    // Compute normalized output alpha channel:
+    //
+    // References:
+    // - http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
+    // - https://github.com/jcupitt/ruby-vips/issues/28#issuecomment-9014826
+    //
+    // out_a = src_a + dst_a * (1 - src_a)
+    //                         ^^^^^^^^^^^
+
+    if (
+        vips_linear1(t[4], &t[7], -1.0, 1.0, NULL) ||
+        vips_multiply(t[6], t[7], &t[8], NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    //outAlphaNormalized in t[8]
+    if (vips_add(t[4], t[8], &t[8], NULL)) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    // Compute output RGB channels:
+    //
+    // Wikipedia:
+    // out_rgb = (src_rgb * src_a + dst_rgb * dst_a * (1 - src_a)) / out_a
+    //                                                ^^^^^^^^^^^
+    //                                                    t0
+    //
+    // Omit division by `out_a` since `Compose` is supposed to output a
+    // premultiplied RGBA image as reversal of premultiplication is handled
+    // externally.
+
+    if (vips_multiply(t[5], t[7], &t[9], NULL)) {
+         g_object_unref(base);
+         return 1;
+    }
+
+    //outRGBPremultiplied in t[9]
+    if (vips_add(t[3], t[9], &t[9], NULL)) {
+         g_object_unref(base);
+         return 1;
+    }
+
+    if (
+        vips_linear1(t[8], &t[8], 255.0, 0.0, NULL) ||
+        vips_bandjoin2(t[9], t[8], out, NULL)
+    ) {
+        g_object_unref(base);
+        return 1;
+    }
+
+    g_object_unref(base);
+    return 0;
 }
