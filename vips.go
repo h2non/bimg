@@ -596,15 +596,12 @@ func max(x int) int {
 	return int(math.Max(float64(x), 0))
 }
 
-func vipsDrawWatermark(image *C.VipsImage, watermark *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {
+func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {
 	var out *C.VipsImage
 
-	if !vipsHasAlpha(image) {
-		C.vips_add_band(image, &image, C.double(255.0))
-	}
-
-	if !vipsHasAlpha(watermark) {
-		C.vips_add_band(watermark, &watermark, C.double(255.0))
+	watermark, _, e := vipsRead(o.Buf)
+	if e != nil {
+		return nil, e
 	}
 
 	opts := vipsWatermarkImageOptions{C.int(o.Left), C.int(o.Top), C.float(o.Opacity)}
