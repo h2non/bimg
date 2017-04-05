@@ -1,11 +1,12 @@
 language: go
 
-sudo: required
 dist: trusty
+sudo: false
 
 go:
   - 1.6
   - 1.7
+  - 1.8
   - tip
 
 env:
@@ -21,7 +22,10 @@ matrix:
     - env: LIBVIPS=8.2.3
     - env: LIBVIPS=8.3.3
 
-cache: apt
+cache:
+  apt:
+  directories:
+    - $HOME/libvips
 
 addons:
   apt:
@@ -62,11 +66,15 @@ before_install:
     --enable-pyvips8=no
     --without-orc
     --without-python
+    --prefix=$HOME/libvips
     $1
   - make
-  - sudo make install
-  - sudo ldconfig
+  - make install
   - cd ..
+  - export PATH=$PATH:$HOME/libvips/bin
+  - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
+  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/libvips/lib
+  - vips --vips-version
 
 before_script:
   - go get -u github.com/golang/lint/golint
