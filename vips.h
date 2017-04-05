@@ -458,7 +458,19 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 
 int
 vips_add_band(VipsImage *in, VipsImage **out, double c) {
-    return vips_bandjoin_const1(in, out, c, NULL);
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 2))
+	return vips_bandjoin_const1(in, out, c, NULL);
+#else
+	VipsImage *base = vips_image_new();
+	if (
+		vips_black(&base, in->Xsize, in->Ysize, NULL) ||
+		vips_linear1(base, &base, 1, c, NULL)) {
+			g_object_unref(base);
+			return 1;
+		}
+	g_object_unref(base);
+	return vips_bandjoin2(in, base, out, c, NULL);
+#endif
 }
 
 int
@@ -471,13 +483,13 @@ vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkIm
 	t[1] = sub;
 
   if (has_alpha_channel(in) == 0) {
-		vips_bandjoin_const1(in, &t[0], 255.0, NULL);
+		vips_add_band(in, &t[0], 255.0);
 		// in is no longer in the array and won't be unreffed, so add it at the end
 		t[8] = in;
 	}
 
 	if (has_alpha_channel(sub) == 0) {
-		vips_bandjoin_const1(sub, &t[1], 255.0, NULL);
+		vips_add_band(sub, &t[1], 255.0);
 		// sub is no longer in the array and won't be unreffed, so add it at the end
 		t[9] = sub;
 	}
