@@ -431,6 +431,15 @@ func shrinkJpegImage(buf []byte, input *C.VipsImage, factor float64, shrink int)
 }
 
 func imageCalculations(o *Options, inWidth, inHeight int) float64 {
+
+	if o.Ratio.Width > 0 && o.Ratio.Width <= 1.0 {
+		o.Width = roundFloat(float64(inWidth) * o.Ratio.Width)
+	}
+
+	if o.Ratio.Height > 0 && o.Ratio.Height <= 1.0 {
+		o.Height = roundFloat(float64(inHeight) * o.Ratio.Height)
+	}
+
 	factor := 1.0
 	xfactor := float64(inWidth) / float64(o.Width)
 	yfactor := float64(inHeight) / float64(o.Height)

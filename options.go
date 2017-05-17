@@ -181,10 +181,17 @@ type Sharpen struct {
 	M2     float64
 }
 
+// Ratio overrides width and height
+type Ratio struct {
+	Width  float64
+	Height float64
+}
+
 // Options represents the supported image transformation options.
 type Options struct {
 	Height         int
 	Width          int
+	Ratio          Ratio
 	AreaHeight     int
 	AreaWidth      int
 	Top            int
