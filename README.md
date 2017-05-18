@@ -50,7 +50,7 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 
 ## Prerequisites
 
-- [libvips](https://github.com/jcupitt/libvips) 7.42+ or 8+ (8.3+ recommended)
+- [libvips](https://github.com/jcupitt/libvips) 7.42+ or 8+ (8.5+ recommended)
 - C compatible compiler such as gcc 4.6+ or clang 3.0+
 - Go 1.3+
 
