@@ -455,6 +455,18 @@ func TestFluentInterface(t *testing.T) {
 	Write("fixtures/test_image_fluent_out.png", image.Image())
 }
 
+func TestImageAutoOrient(t *testing.T) {
+	image := initImage("exif_orientation_6.jpg")
+
+	_, err := image.AutoOrient()
+
+	if err != nil {
+		t.Fatalf("Unable to auto-orient image: %#v", err)
+	}
+
+	Write("fixtures/test_auto_orient_6.jpg", image.Image())
+}
+
 func initImage(file string) *Image {
 	buf, _ := imageBuf(file)
 	return NewImage(buf)
