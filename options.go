@@ -193,6 +193,7 @@ type Options struct {
 	Compression    int
 	Zoom           int
 	Crop           bool
+	SmartCrop      bool
 	Enlarge        bool
 	Embed          bool
 	Flip           bool

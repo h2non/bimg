@@ -456,6 +456,22 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 	return buf, nil
 }
 
+func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) {
+	var buf *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	if width > MaxSize || height > MaxSize {
+		return nil, errors.New("Maximum image size exceeded")
+	}
+
+	err := C.vips_smartcrop_bridge(image, &buf, C.int(width), C.int(height))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return buf, nil
+}
+
 func vipsShrinkJpeg(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	var image *C.VipsImage
 	var ptr = unsafe.Pointer(&buf[0])

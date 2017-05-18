@@ -303,9 +303,7 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 int
 vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 #if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
-	return vips_tiffsave_buffer(in, buf, len,
-		NULL
-	);
+	return vips_tiffsave_buffer(in, buf, len, NULL);
 #else
 	return 0;
 #endif
@@ -571,4 +569,13 @@ vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkIm
 
     g_object_unref(base);
     return 0;
+}
+
+int
+vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
+#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+	return vips_smartcrop(in, out, width, height, NULL);
+#else
+	return 0;
+#endif
 }

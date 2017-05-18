@@ -41,6 +41,17 @@ func (i *Image) ResizeAndCrop(width, height int) ([]byte, error) {
 	return i.Process(options)
 }
 
+// SmartCrop produces a thumbnail aiming at focus on the interesting part.
+func (i *Image) SmartCrop(width, height int) ([]byte, error) {
+	options := Options{
+		Width:     width,
+		Height:    height,
+		Crop:      true,
+		SmartCrop: true,
+	}
+	return i.Process(options)
+}
+
 // Extract area from the by X/Y axis in the current image.
 func (i *Image) Extract(top, left, width, height int) ([]byte, error) {
 	options := Options{
