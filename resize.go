@@ -357,13 +357,7 @@ func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.Vi
 		w.Opacity = 1.0
 	}
 
-	watermark, _, err := loadImage(w.Buf)
-
-	if err != nil {
-		return nil, err
-	}
-
-	image, err = vipsDrawWatermark(image, watermark, w)
+	image, err := vipsDrawWatermark(image, w)
 
 	if err != nil {
 		return nil, err
