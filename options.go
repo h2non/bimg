@@ -27,6 +27,8 @@ const (
 	GravitySouth
 	// GravityWest represents the west value used for image gravity orientation.
 	GravityWest
+	// GravitySmart enables libvips Smart Crop algorithm for image gravity orientation.
+	GravitySmart
 )
 
 // Interpolator represents the image interpolation value.
@@ -193,7 +195,6 @@ type Options struct {
 	Compression    int
 	Zoom           int
 	Crop           bool
-	SmartCrop      bool
 	Enlarge        bool
 	Embed          bool
 	Flip           bool

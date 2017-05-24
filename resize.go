@@ -249,7 +249,7 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	inHeight := int(image.Ysize)
 
 	switch {
-	case o.SmartCrop:
+	case o.Gravity == GravitySmart:
 		image, err = vipsSmartCrop(image, o.Width, o.Height)
 		break
 	case o.Crop:

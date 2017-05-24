@@ -44,10 +44,10 @@ func (i *Image) ResizeAndCrop(width, height int) ([]byte, error) {
 // SmartCrop produces a thumbnail aiming at focus on the interesting part.
 func (i *Image) SmartCrop(width, height int) ([]byte, error) {
 	options := Options{
-		Width:     width,
-		Height:    height,
-		Crop:      true,
-		SmartCrop: true,
+		Width:   width,
+		Height:  height,
+		Crop:    true,
+		Gravity: GravitySmart,
 	}
 	return i.Process(options)
 }
