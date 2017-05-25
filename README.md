@@ -35,7 +35,7 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 
 - Resize
 - Enlarge
-- Crop
+- Crop (including smart crop support)
 - Rotate (with auto-rotate based on EXIF orientation)
 - Flip (with auto-flip based on EXIF metadata)
 - Flop
