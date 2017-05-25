@@ -1,4 +1,14 @@
 
+## v1.0.9 / 2017-05-25
+
+  * Merge pull request #156 from Dynom/SmartCropToGravity
+  * Adding a test, verifying both ways of enabling SmartCrop work
+  * Merge pull request #149 from waldophotos/master
+  * Replacing SmartCrop with a Gravity option
+  * refactor(docs): v8.4
+  * Change for older LIBVIPS versions. `vips_bandjoin_const1` is added in libvips 8.2.
+  * Second try, watermarking memory issue fix
+
 ## v1.0.8 / 2017-05-18
 
   * Merge pull request #145 from greut/smartcrop
