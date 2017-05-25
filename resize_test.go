@@ -2,6 +2,7 @@ package bimg
 
 import (
 	"bytes"
+	"crypto/md5"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
@@ -390,6 +391,51 @@ func TestResizePngWithTransparency(t *testing.T) {
 	}
 
 	Write("fixtures/transparent_out.png", newImg)
+}
+
+func TestIfBothSmartCropOptionsAreIdentical(t *testing.T) {
+	if !(VipsMajorVersion >= 8 && VipsMinorVersion > 4) {
+		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s > 8.4", VipsVersion)
+	}
+
+	benchmarkOptions := Options{Width: 100, Height: 100, Crop: true}
+	smartCropOptions := Options{Width: 100, Height: 100, Crop: true, SmartCrop: true}
+	gravityOptions := Options{Width: 100, Height: 100, Crop: true, Gravity: GravitySmart}
+
+	testImg, err := os.Open("fixtures/northern_cardinal_bird.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer testImg.Close()
+
+	testImgByte, err := ioutil.ReadAll(testImg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	scImg, err := Resize(testImgByte, smartCropOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gImg, err := Resize(testImgByte, gravityOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	benchmarkImg, err := Resize(testImgByte, benchmarkOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	sch, gh, bh := md5.Sum(scImg), md5.Sum(gImg), md5.Sum(benchmarkImg)
+	if gh == bh || sch == bh {
+		t.Error("Expected both options produce a different result from a standard crop.")
+	}
+
+	if sch != gh {
+		t.Errorf("Expected both options to result in the same output, %x != %x", sch, gh)
+	}
 }
 
 func runBenchmarkResize(file string, o Options, b *testing.B) {
