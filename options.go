@@ -195,6 +195,7 @@ type Options struct {
 	Compression    int
 	Zoom           int
 	Crop           bool
+	SmartCrop      bool // Deprecated
 	Enlarge        bool
 	Embed          bool
 	Flip           bool
