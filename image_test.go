@@ -475,6 +475,27 @@ func TestImageSmartCrop(t *testing.T) {
 	Write("fixtures/test_smart_crop.jpg", buf)
 }
 
+func TestOutOfBounds(t *testing.T) {
+	image := initImage("test.jpg")
+	options := Options{
+		Type:       JPEG,
+		Top:        -8192,
+		Left:       -8192,
+		AreaWidth:  8192,
+		AreaHeight: 8192,
+		Width:      256,
+		Height:     256,
+	}
+	buf, err := image.Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	err = assertSize(buf, 256, 256)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 func initImage(file string) *Image {
 	buf, _ := imageBuf(file)
 	return NewImage(buf)
