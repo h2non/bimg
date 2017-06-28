@@ -15,7 +15,7 @@ import (
 // Resize is used to transform a given image as byte buffer
 // with the passed options.
 func Resize(buf []byte, o Options) ([]byte, error) {
-	defer C.vips_thread_shutdown()
+  defer C.vips_thread_shutdown()
   defer runtime.KeepAlive(buf)
 
 	image, imageType, err := loadImage(buf)
