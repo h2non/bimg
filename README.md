@@ -132,7 +132,7 @@ if err != nil {
 }
 
 size, err := bimg.NewImage(newImage).Size()
-if size.Width == 400 && size.Height == 300 {
+if size.Width == 800 && size.Height == 600 {
   fmt.Println("The image size is valid")
 }
 
