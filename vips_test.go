@@ -144,6 +144,13 @@ func TestVipsImageType(t *testing.T) {
 	}
 }
 
+func TestVipsImageTypeInvalid(t *testing.T) {
+	imgType := vipsImageType([]byte("vip"))
+	if imgType != UNKNOWN {
+		t.Fatal("Invalid image type")
+	}
+}
+
 func TestVipsMemory(t *testing.T) {
 	mem := VipsMemory()
 
