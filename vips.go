@@ -55,6 +55,7 @@ type vipsSaveOptions struct {
 	Type           ImageType
 	Interlace      bool
 	NoProfile      bool
+	OutputICC      string // Absolute path to the output ICC profile
 	Interpretation Interpretation
 }
 
@@ -362,6 +363,7 @@ func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, 
 }
 
 func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
+	var outImage *C.VipsImage
 	// Remove ICC profile metadata
 	if o.NoProfile {
 		C.remove_profile(image)
@@ -374,9 +376,20 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 	interpretation := C.VipsInterpretation(o.Interpretation)
 
 	// Apply the proper colour space
-	var outImage *C.VipsImage
 	if vipsColourspaceIsSupported(image) {
 		err := C.vips_colourspace_bridge(image, &outImage, interpretation)
+		if int(err) != 0 {
+			return nil, catchVipsError()
+		}
+		image = outImage
+	}
+
+	if o.OutputICC != "" && vipsHasProfile(image) {
+		debug("Embedded ICC profile found, trying to convert to %s", o.OutputICC)
+		outputIccPath := C.CString(o.OutputICC)
+		defer C.free(unsafe.Pointer(outputIccPath))
+
+		err := C.vips_icc_transform_bridge(image, &outImage, outputIccPath)
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}

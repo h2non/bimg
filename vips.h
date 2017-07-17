@@ -261,6 +261,12 @@ vips_colourspace_bridge(VipsImage *in, VipsImage **out, VipsInterpretation space
 }
 
 int
+vips_icc_transform_bridge (VipsImage *in, VipsImage **out, const char *output_icc_profile) {
+	// `output_icc_profile` represents the absolute path to the output ICC profile file
+	return vips_icc_transform(in, out, output_icc_profile, "embedded", TRUE, NULL);
+}
+
+int
 vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace) {
 	return vips_jpegsave_buffer(in, buf, len,
 		"strip", strip,
