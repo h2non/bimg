@@ -562,28 +562,28 @@ func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator
 }
 
 func vipsImageType(buf []byte) ImageType {
-	if len(buf) == 0 {
+	if len(buf) < 12 {
 		return UNKNOWN
-	}
-	if buf[0] == 0x89 && buf[1] == 0x50 && buf[2] == 0x4E && buf[3] == 0x47 {
-		return PNG
 	}
 	if buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
 		return JPEG
 	}
-	if IsTypeSupported(WEBP) && buf[8] == 0x57 && buf[9] == 0x45 && buf[10] == 0x42 && buf[11] == 0x50 {
-		return WEBP
+	if IsTypeSupported(GIF) && buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 {
+		return GIF
+	}
+	if buf[0] == 0x89 && buf[1] == 0x50 && buf[2] == 0x4E && buf[3] == 0x47 {
+		return PNG
 	}
 	if IsTypeSupported(TIFF) &&
 		((buf[0] == 0x49 && buf[1] == 0x49 && buf[2] == 0x2A && buf[3] == 0x0) ||
 			(buf[0] == 0x4D && buf[1] == 0x4D && buf[2] == 0x0 && buf[3] == 0x2A)) {
 		return TIFF
 	}
-	if IsTypeSupported(GIF) && buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 {
-		return GIF
-	}
 	if IsTypeSupported(PDF) && buf[0] == 0x25 && buf[1] == 0x50 && buf[2] == 0x44 && buf[3] == 0x46 {
 		return PDF
+	}
+	if IsTypeSupported(WEBP) && buf[8] == 0x57 && buf[9] == 0x45 && buf[10] == 0x42 && buf[11] == 0x50 {
+		return WEBP
 	}
 	if IsTypeSupported(SVG) && IsSVGImage(buf) {
 		return SVG
@@ -591,6 +591,7 @@ func vipsImageType(buf []byte) ImageType {
 	if IsTypeSupported(MAGICK) && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
 		return MAGICK
 	}
+
 	return UNKNOWN
 }
 
