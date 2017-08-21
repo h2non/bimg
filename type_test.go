@@ -26,8 +26,9 @@ func TestDeterminateImageType(t *testing.T) {
 		buf, _ := ioutil.ReadAll(img)
 		defer img.Close()
 
-		if DetermineImageType(buf) != file.expected {
-			t.Fatal("Image type is not valid")
+		actual := DetermineImageType(buf)
+		if actual != file.expected {
+			t.Fatalf("Image type %#v does not equal the expected %#v", actual, file.expected)
 		}
 	}
 }
@@ -51,8 +52,9 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		buf, _ := ioutil.ReadAll(img)
 		defer img.Close()
 
-		if DetermineImageTypeName(buf) != file.expected {
-			t.Fatal("Image type is not valid")
+		actual := DetermineImageTypeName(buf)
+		if actual != file.expected {
+			t.Fatalf("Image type %#v does not equal the expected %#v", actual, file.expected)
 		}
 	}
 }

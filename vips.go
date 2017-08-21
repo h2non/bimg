@@ -244,6 +244,18 @@ func vipsRotate(image *C.VipsImage, angle Angle) (*C.VipsImage, error) {
 	return out, nil
 }
 
+func vipsAutoRotate(image *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_autorotate(image, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
 func vipsFlip(image *C.VipsImage, direction Direction) (*C.VipsImage, error) {
 	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))

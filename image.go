@@ -154,6 +154,17 @@ func (i *Image) Rotate(a Angle) ([]byte, error) {
 	return i.Process(options)
 }
 
+// AutoRotate the image to be 'up' by default (setting Orientation=1) with vips.
+func (i *Image) AutoRotate() ([]byte, error) {
+	options := Options{AutoRotate: true}
+	image, err := AutoRotate(i.buffer, options)
+	if err != nil {
+		return nil, err
+	}
+	i.buffer = image
+	return image, nil
+}
+
 // Flip flips the image about the vertical Y axis.
 func (i *Image) Flip() ([]byte, error) {
 	options := Options{Flip: true}
