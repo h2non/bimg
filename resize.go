@@ -518,7 +518,7 @@ func calculateRotationAndFlip(image *C.VipsImage, angle Angle) (Angle, bool) {
 		break // flip 1
 	case 7:
 		flip = true
-		rotate = D90
+		rotate = D270
 		break // flip 6
 	case 4:
 		flip = true
@@ -526,7 +526,7 @@ func calculateRotationAndFlip(image *C.VipsImage, angle Angle) (Angle, bool) {
 		break // flip 3
 	case 5:
 		flip = true
-		rotate = D270
+		rotate = D90
 		break // flip 8
 	}
 
