@@ -188,7 +188,7 @@ func (i *Image) AutoOrient() ([]byte, error) {
 		options.Rotate = 90
 		break
 	case 6:
-		options.Rotate = 90
+		options.Rotate = -90
 		break
 	case 7:
 		options.Flop = true
