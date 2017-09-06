@@ -200,6 +200,11 @@ vips_rotate(VipsImage *in, VipsImage **out, int angle) {
 }
 
 int
+vips_autorotate(VipsImage *in, VipsImage **out) {
+  return vips_autorot(in, out, NULL);
+}
+
+int
 vips_exif_orientation(VipsImage *image) {
 	int orientation = 0;
 	const char *exif;
