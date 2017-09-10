@@ -6,5 +6,5 @@ package bimg
 // with the passed options.
 // Used as proxy to resizer() only in Go <= 1.6 versions
 func Resize(buf []byte, o Options) ([]byte, error) {
-  return resizer(buf, o)
+	return resizer(buf, o)
 }
