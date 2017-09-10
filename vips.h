@@ -123,6 +123,11 @@ vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrin
 }
 
 int
+vips_reduce_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink) {
+	return vips_reduce(in, out, xshrink, yshrink, NULL);
+}
+
+int
 vips_type_find_bridge(int t) {
 	if (t == GIF) {
 		return vips_type_find("VipsOperation", "gifload");
