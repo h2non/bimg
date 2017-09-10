@@ -269,7 +269,7 @@ vips_icc_transform_bridge (VipsImage *in, VipsImage **out, const char *output_ic
 int
 vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace) {
 	return vips_jpegsave_buffer(in, buf, len,
-		"strip", strip,
+		"strip", strip == 1 ? TRUE : FALSE,
 		"Q", quality,
 		"optimize_coding", TRUE,
 		"interlace", with_interlace(interlace),
@@ -281,7 +281,7 @@ int
 vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace) {
 #if (VIPS_MAJOR_VERSION >= 8 || (VIPS_MAJOR_VERSION >= 7 && VIPS_MINOR_VERSION >= 42))
 	return vips_pngsave_buffer(in, buf, len,
-		"strip", FALSE,
+		"strip", strip == 1 ? TRUE : FALSE,
 		"compression", compression,
 		"interlace", with_interlace(interlace),
 		"filter", VIPS_FOREIGN_PNG_FILTER_NONE,
@@ -289,7 +289,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 	);
 #else
 	return vips_pngsave_buffer(in, buf, len,
-		"strip", FALSE,
+		"strip", strip == 1 ? TRUE : FALSE,
 		"compression", compression,
 		"interlace", with_interlace(interlace),
 		NULL
@@ -300,7 +300,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 int
 vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality) {
 	return vips_webpsave_buffer(in, buf, len,
-		"strip", strip,
+		"strip", strip == 1 ? TRUE : FALSE,
 		"Q", quality,
 		NULL
 	);

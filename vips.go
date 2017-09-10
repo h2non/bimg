@@ -55,6 +55,7 @@ type vipsSaveOptions struct {
 	Type           ImageType
 	Interlace      bool
 	NoProfile      bool
+	StripMetadata  bool
 	OutputICC      string // Absolute path to the output ICC profile
 	Interpretation Interpretation
 }
@@ -420,6 +421,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	saveErr := C.int(0)
 	interlace := C.int(boolToInt(o.Interlace))
 	quality := C.int(o.Quality)
+	strip := C.int(boolToInt(o.Interlace))
 
 	if o.Type != 0 && !IsTypeSupportedSave(o.Type) {
 		return nil, fmt.Errorf("VIPS cannot save to %#v", ImageTypes[o.Type])
@@ -427,13 +429,13 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	var ptr unsafe.Pointer
 	switch o.Type {
 	case WEBP:
-		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, 1, quality)
+		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, strip, quality)
 	case PNG:
-		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, 1, C.int(o.Compression), quality, interlace)
+		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
 	default:
-		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, 1, quality, interlace)
+		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, strip, quality, interlace)
 	}
 
 	if int(saveErr) != 0 {
