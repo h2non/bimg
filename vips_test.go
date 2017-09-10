@@ -33,7 +33,7 @@ func TestVipsSave(t *testing.T) {
 
 	for _, typ := range types {
 		image, _, _ := vipsRead(readImage("test.jpg"))
-		options := vipsSaveOptions{Quality: 95, Type: typ}
+		options := vipsSaveOptions{Quality: 95, Type: typ, StripMetadata: true}
 
 		buf, err := vipsSave(image, options)
 		if err != nil {

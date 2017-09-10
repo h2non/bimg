@@ -161,6 +161,7 @@ func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
 		NoProfile:      o.NoProfile,
 		Interpretation: o.Interpretation,
 		OutputICC:      o.OutputICC,
+		StripMetadata:  o.StripMetadata,
 	}
 	// Finally get the resultant buffer
 	return vipsSave(image, saveOptions)

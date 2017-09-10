@@ -204,6 +204,7 @@ type Options struct {
 	NoAutoRotate   bool
 	NoProfile      bool
 	Interlace      bool
+	StripMetadata  bool
 	Extend         Extend
 	Rotate         Angle
 	Background     Color
