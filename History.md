@@ -1,4 +1,30 @@
 
+## v1.0.11 / 2017-09-10
+
+  * feat(#189): allow strip image metadata via bimg.Options.StripMetadata = bool
+  * fix(resize): code format issue
+  * refactor(resize): add Go version comment
+  * refactor(tests): fix minor code formatting issues
+  * fix(#162): garbage collection fix. split Resize() implementation for Go runtime specific
+  * feat(travis): add go 1.9
+  * Merge pull request #183 from greut/autorotate
+  * Proper handling of the EXIF cases.
+  * Merge pull request #184 from greut/libvips858
+  * Merge branch 'master' into libvips858
+  * Merge pull request #185 from greut/libvips860
+  * Add libvips 8.6 pre-release
+  * Update to libvips 8.5.8
+  * fix(resize): runtime.KeepAlive is only Go
+  * fix(#159): prevent buf to be freed by the GC before resize function exits
+  * Merge pull request #171 from greut/fix-170
+  * Check the length before jumping into buffer.
+  * Merge pull request #168 from Traum-Ferienwohnungen/icc_transform
+  * Add option to convert embedded ICC profiles
+  * Merge pull request #166 from danjou-a/patch-1
+  * Fix Resize verification value
+  * Merge pull request #165 from greut/libvips846
+  * Testing using libvips8.4.6 from Github.
+
 ## v1.0.10 / 2017-06-25
 
   * Merge pull request #164 from greut/length
