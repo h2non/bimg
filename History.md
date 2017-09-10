@@ -1,4 +1,10 @@
 
+## v1.0.12 / 2017-09-10
+
+  * Merge branch '99designs-vips-reduce'
+  * fix(reduce): resolve conflicts with master
+  * Use vips reduce when downscaling
+
 ## v1.0.11 / 2017-09-10
 
   * feat(#189): allow strip image metadata via bimg.Options.StripMetadata = bool
