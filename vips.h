@@ -20,6 +20,9 @@
 
 #define EXIF_IFD0_ORIENTATION "exif-ifd0-Orientation"
 
+#define INT_TO_GBOOLEAN(bool) (bool > 0 ? TRUE : FALSE)
+
+
 enum types {
 	UNKNOWN = 0,
 	JPEG,
@@ -60,11 +63,6 @@ has_profile_embed(VipsImage *image) {
 static void
 remove_profile(VipsImage *image) {
 	vips_image_remove(image, VIPS_META_ICC_NAME);
-}
-
-static gboolean
-with_interlace(int interlace) {
-	return interlace > 0 ? TRUE : FALSE;
 }
 
 static int
@@ -274,10 +272,10 @@ vips_icc_transform_bridge (VipsImage *in, VipsImage **out, const char *output_ic
 int
 vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace) {
 	return vips_jpegsave_buffer(in, buf, len,
-		"strip", strip == 1 ? TRUE : FALSE,
+		"strip", INT_TO_GBOOLEAN(strip),
 		"Q", quality,
 		"optimize_coding", TRUE,
-		"interlace", with_interlace(interlace),
+		"interlace", INT_TO_GBOOLEAN(interlace),
 		NULL
 	);
 }
@@ -286,17 +284,17 @@ int
 vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace) {
 #if (VIPS_MAJOR_VERSION >= 8 || (VIPS_MAJOR_VERSION >= 7 && VIPS_MINOR_VERSION >= 42))
 	return vips_pngsave_buffer(in, buf, len,
-		"strip", strip == 1 ? TRUE : FALSE,
+		"strip", INT_TO_GBOOLEAN(strip),
 		"compression", compression,
-		"interlace", with_interlace(interlace),
+		"interlace", INT_TO_GBOOLEAN(interlace),
 		"filter", VIPS_FOREIGN_PNG_FILTER_NONE,
 		NULL
 	);
 #else
 	return vips_pngsave_buffer(in, buf, len,
-		"strip", strip == 1 ? TRUE : FALSE,
+		"strip", INT_TO_GBOOLEAN(strip),
 		"compression", compression,
-		"interlace", with_interlace(interlace),
+		"interlace", INT_TO_GBOOLEAN(interlace),
 		NULL
 	);
 #endif
@@ -305,7 +303,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 int
 vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality) {
 	return vips_webpsave_buffer(in, buf, len,
-		"strip", strip == 1 ? TRUE : FALSE,
+		"strip", INT_TO_GBOOLEAN(strip),
 		"Q", quality,
 		NULL
 	);
