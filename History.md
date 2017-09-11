@@ -1,4 +1,9 @@
 
+## v1.0.13 / 2017-09-11
+
+  * Merge pull request #190 from greut/typos
+  * Fix typo and small cleanup.
+
 ## v1.0.12 / 2017-09-10
 
   * Merge branch '99designs-vips-reduce'
