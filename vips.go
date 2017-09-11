@@ -421,7 +421,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	saveErr := C.int(0)
 	interlace := C.int(boolToInt(o.Interlace))
 	quality := C.int(o.Quality)
-	strip := C.int(boolToInt(o.Interlace))
+	strip := C.int(boolToInt(o.StripMetadata))
 
 	if o.Type != 0 && !IsTypeSupportedSave(o.Type) {
 		return nil, fmt.Errorf("VIPS cannot save to %#v", ImageTypes[o.Type])
