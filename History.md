@@ -1,4 +1,11 @@
 
+## v1.0.14 / 2017-09-12
+
+  * Merge pull request #192 from greut/trim
+  * Adding trim operation.
+  * Merge pull request #191 from greut/alpha4
+  * Update 8.6 to alpha4.
+
 ## v1.0.13 / 2017-09-11
 
   * Merge pull request #190 from greut/typos
