@@ -539,3 +539,11 @@ vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
 	return 0;
 #endif
 }
+
+int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *height) {
+#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 6)
+	return vips_find_trim(in, top, left, width, height, NULL);
+#else
+	return 0;
+#endif
+}

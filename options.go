@@ -205,6 +205,7 @@ type Options struct {
 	NoProfile      bool
 	Interlace      bool
 	StripMetadata  bool
+	Trim           bool
 	Extend         Extend
 	Rotate         Angle
 	Background     Color
