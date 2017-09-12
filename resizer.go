@@ -175,7 +175,8 @@ func normalizeOperation(o *Options, inWidth, inHeight int) {
 
 func shouldTransformImage(o Options, inWidth, inHeight int) bool {
 	return o.Force || (o.Width > 0 && o.Width != inWidth) ||
-		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0
+		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0 ||
+		o.Trim
 }
 
 func shouldApplyEffects(o Options) bool {
@@ -268,7 +269,12 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend, o.Background)
 		break
-
+	case o.Trim:
+		left, top, width, height, err := vipsTrim(image)
+		if err == nil {
+			image, err = vipsExtract(image, left, top, width, height)
+		}
+		break
 	case o.Top != 0 || o.Left != 0 || o.AreaWidth != 0 || o.AreaHeight != 0:
 		if o.AreaWidth == 0 {
 			o.AreaHeight = o.Width

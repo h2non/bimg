@@ -503,6 +503,22 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 	return buf, nil
 }
 
+func vipsTrim(image *C.VipsImage) (int, int, int, int, error) {
+	defer C.g_object_unref(C.gpointer(image))
+
+	top := C.int(0)
+	left := C.int(0)
+	width := C.int(0)
+	height := C.int(0)
+
+	err := C.vips_find_trim_bridge(image, &top, &left, &width, &height)
+	if err != 0 {
+		return 0, 0, 0, 0, catchVipsError()
+	}
+
+	return int(top), int(left), int(width), int(height), nil
+}
+
 func vipsShrinkJpeg(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	var image *C.VipsImage
 	var ptr = unsafe.Pointer(&buf[0])
