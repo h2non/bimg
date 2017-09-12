@@ -16,7 +16,7 @@ env:
   - LIBVIPS=8.3.3
   - LIBVIPS=8.4.6
   - LIBVIPS=8.5.8
-  - LIBVIPS=8.6.0-alpha1
+  - LIBVIPS=8.6.0-alpha4
   - LIBVIPS=master
 
 matrix:
@@ -24,7 +24,7 @@ matrix:
     - env: LIBVIPS=7.42.3
     - env: LIBVIPS=8.2.3
     - env: LIBVIPS=8.3.3
-    - env: LIBVIPS=8.6.0-alpha1
+    - env: LIBVIPS=8.6.0-alpha4
 
 cache:
   apt:
@@ -56,10 +56,10 @@ before_install:
         || echo ":-)"
   - >
     test "$LIBVIPS" != "master" -a "$LIBVIPS" \> "8.4" \
-        && wget https://github.com/jcupitt/libvips/releases/download/v${LIBVIPS}/vips-${LIBVIPS/-alpha*/}.tar.gz -O vips.tgz \
+        && wget https://github.com/jcupitt/libvips/archive/v${LIBVIPS}.tar.gz -O vips.tgz \
         || echo ":-)"
   - >
-    test $LIBVIPS == "master"\
+    test $LIBVIPS == "master" \
         && wget https://github.com/jcupitt/libvips/archive/${LIBVIPS}.tar.gz -O vips.tgz \
         || echo ":-)"
   - mkdir libvips
