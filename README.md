@@ -16,7 +16,9 @@ bimg was heavily inspired in [sharp](https://github.com/lovell/sharp), its homol
 **v1 notice**: `bimg` introduces some minor breaking changes in `v1` release.
 If you're using `gopkg.in`, you can still rely in the `v0` without worrying about API breaking changes.
 
-`bimg` is currently maintained by [Kirill Danshin](https://github.com/kirillDanshin).
+<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/1MpD3pzt63uUeG43NP4tDHPY/h2non/bimg'>
+  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/1MpD3pzt63uUeG43NP4tDHPY/h2non/bimg.svg' />
+</a>
 
 ## Contents
 
