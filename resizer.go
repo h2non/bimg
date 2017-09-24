@@ -68,7 +68,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Try to use libjpeg shrink-on-load
-	if imageType == JPEG && shrink >= 2 {
+	if imageType == JPEG && shrink >= 2 && o.StripMetadata {
 		tmpImage, factor, err := shrinkJpegImage(buf, image, factor, shrink)
 		if err != nil {
 			return nil, err
