@@ -453,6 +453,38 @@ func TestRotationAndFlip(t *testing.T) {
 	}
 }
 
+func TestKeepMetadata(t *testing.T) {
+	buf, _ := Read("fixtures/exif/Landscape_5.jpg")
+	metadata, err := Metadata(buf)
+	if err != nil {
+		t.Errorf("Cannot read the metadata: %#v", err)
+	}
+	orientation := metadata.Orientation
+
+	tests := []Options{
+		{StripMetadata: false},
+		{Width: 400, Crop: true, StripMetadata: false},
+		{Width: 800, Crop: false, StripMetadata: false},
+		{Width: 400, Crop: false, StripMetadata: false},
+	}
+
+	for _, options := range tests {
+		newImg, err := Resize(buf, options)
+		if err != nil {
+			t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+		}
+
+		metadata, err = Metadata(newImg)
+		if err != nil {
+			t.Errorf("Cannot read the metadata: %#v", err)
+		}
+
+		if metadata.Orientation != orientation {
+			t.Errorf("Metadata got stripped %#v", options)
+		}
+	}
+}
+
 func TestIfBothSmartCropOptionsAreIdentical(t *testing.T) {
 	if !(VipsMajorVersion >= 8 && VipsMinorVersion > 4) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s > 8.4", VipsVersion)
