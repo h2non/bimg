@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"strconv"
 	"testing"
 )
 
@@ -35,84 +34,129 @@ func TestResize(t *testing.T) {
 }
 
 func TestResizeVerticalImage(t *testing.T) {
-	tests := []struct {
-		format  ImageType
-		options Options
-	}{
-		{JPEG, Options{Width: 800, Height: 600}},
-		{JPEG, Options{Width: 1000, Height: 1000}},
-		{JPEG, Options{Width: 1000, Height: 1500}},
-		{JPEG, Options{Width: 1000}},
-		{JPEG, Options{Height: 1500}},
-		{JPEG, Options{Width: 100, Height: 50}},
-		{JPEG, Options{Width: 2000, Height: 2000}},
-		{JPEG, Options{Width: 500, Height: 1000}},
-		{JPEG, Options{Width: 500}},
-		{JPEG, Options{Height: 500}},
-		{JPEG, Options{Crop: true, Width: 500, Height: 1000}},
-		{JPEG, Options{Crop: true, Enlarge: true, Width: 2000, Height: 1400}},
-		{JPEG, Options{Enlarge: true, Force: true, Width: 2000, Height: 2000}},
-		{JPEG, Options{Force: true, Width: 2000, Height: 2000}},
+	tests := []Options{
+		{Width: 800, Height: 600},
+		{Width: 1000, Height: 1000},
+		{Width: 1000, Height: 1500},
+		{Width: 1000},
+		{Height: 1500},
+		{Width: 100, Height: 50},
+		{Width: 2000, Height: 2000},
+		{Width: 500, Height: 1000},
+		{Width: 500},
+		{Height: 500},
+		{Crop: true, Width: 500, Height: 1000},
+		{Crop: true, Enlarge: true, Width: 2000, Height: 1400},
+		{Enlarge: true, Force: true, Width: 2000, Height: 2000},
+		{Force: true, Width: 2000, Height: 2000},
 	}
 
-	buf, _ := Read("fixtures/vertical.jpg")
-	for _, test := range tests {
-		image, err := Resize(buf, test.options)
-		if err != nil {
-			t.Errorf("Resize(imgData, %#v) error: %#v", test.options, err)
-		}
+	bufJpeg, err := Read("fixtures/vertical.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bufWebp, err := Read("fixtures/vertical.webp")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if DetermineImageType(image) != test.format {
-			t.Fatalf("Image format is invalid. Expected: %#v", test.format)
-		}
+	images := []struct {
+		format ImageType
+		buf    []byte
+	}{
+		{JPEG, bufJpeg},
+		{WEBP, bufWebp},
+	}
 
-		size, _ := Size(image)
-		if test.options.Height > 0 && size.Height != test.options.Height {
-			t.Fatalf("Invalid height: %d", size.Height)
-		}
-		if test.options.Width > 0 && size.Width != test.options.Width {
-			t.Fatalf("Invalid width: %d", size.Width)
-		}
+	for _, source := range images {
+		for _, options := range tests {
+			image, err := Resize(source.buf, options)
+			if err != nil {
+				t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+			}
 
-		Write("fixtures/test_vertical_"+strconv.Itoa(test.options.Width)+"x"+strconv.Itoa(test.options.Height)+"_out.jpg", image)
+			format := DetermineImageType(image)
+			if format != source.format {
+				t.Fatalf("Image format is invalid. Expected: %#v got %v", ImageTypeName(source.format), ImageTypeName(format))
+			}
+
+			size, _ := Size(image)
+			if options.Height > 0 && size.Height != options.Height {
+				t.Fatalf("Invalid height: %d", size.Height)
+			}
+			if options.Width > 0 && size.Width != options.Width {
+				t.Fatalf("Invalid width: %d", size.Width)
+			}
+
+			Write(
+				fmt.Sprintf(
+					"fixtures/test_vertical_%dx%d_out.%s",
+					options.Width,
+					options.Height,
+					ImageTypeName(source.format)),
+				image)
+		}
 	}
 }
 
 func TestResizeCustomSizes(t *testing.T) {
-	tests := []struct {
-		format  ImageType
-		options Options
-	}{
-		{JPEG, Options{Width: 800, Height: 600}},
-		{JPEG, Options{Width: 1000, Height: 1000}},
-		{JPEG, Options{Width: 100, Height: 50}},
-		{JPEG, Options{Width: 2000, Height: 2000}},
-		{JPEG, Options{Width: 500, Height: 1000}},
-		{JPEG, Options{Width: 500}},
-		{JPEG, Options{Height: 500}},
-		{JPEG, Options{Crop: true, Width: 500, Height: 1000}},
-		{JPEG, Options{Crop: true, Enlarge: true, Width: 2000, Height: 1400}},
-		{JPEG, Options{Enlarge: true, Force: true, Width: 2000, Height: 2000}},
-		{JPEG, Options{Force: true, Width: 2000, Height: 2000}},
+	tests := []Options{
+		{Width: 800, Height: 600},
+		{Width: 1000, Height: 1000},
+		{Width: 100, Height: 50},
+		{Width: 2000, Height: 2000},
+		{Width: 500, Height: 1000},
+		{Width: 500},
+		{Height: 500},
+		{Crop: true, Width: 500, Height: 1000},
+		{Crop: true, Enlarge: true, Width: 2000, Height: 1400},
+		{Enlarge: true, Force: true, Width: 2000, Height: 2000},
+		{Force: true, Width: 2000, Height: 2000},
 	}
 
-	buf, _ := Read("fixtures/test.jpg")
-	for _, test := range tests {
-		image, err := Resize(buf, test.options)
-		if err != nil {
-			t.Errorf("Resize(imgData, %#v) error: %#v", test.options, err)
-		}
+	bufJpeg, err := Read("fixtures/test.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	bufWebp, err := Read("fixtures/test.webp")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if DetermineImageType(image) != test.format {
-			t.Fatalf("Image format is invalid. Expected: %#v", test.format)
-		}
+	images := []struct {
+		format ImageType
+		buf    []byte
+	}{
+		{JPEG, bufJpeg},
+		{WEBP, bufWebp},
+	}
 
-		size, _ := Size(image)
-		if test.options.Height > 0 && size.Height != test.options.Height {
-			t.Fatalf("Invalid height: %d", size.Height)
-		}
-		if test.options.Width > 0 && size.Width != test.options.Width {
-			t.Fatalf("Invalid width: %d", size.Width)
+	for _, source := range images {
+		for _, options := range tests {
+			image, err := Resize(source.buf, options)
+			if err != nil {
+				t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+			}
+
+			if DetermineImageType(image) != source.format {
+				t.Fatalf("Image format is invalid. Expected: %#v", source.format)
+			}
+
+			size, _ := Size(image)
+
+			invalidHeight := options.Height > 0 && size.Height != options.Height
+			if !options.Crop && invalidHeight {
+				t.Fatalf("Invalid height: %d, expected %d", size.Height, options.Height)
+			}
+
+			invalidWidth := options.Width > 0 && size.Width != options.Width
+			if !options.Crop && invalidWidth {
+				t.Fatalf("Invalid width: %d, expected %d", size.Width, options.Width)
+			}
+
+			if options.Crop && invalidHeight && invalidWidth {
+				t.Fatalf("Invalid width or height: %dx%d, expected %dx%d (crop)", size.Width, size.Height, options.Width, options.Height)
+			}
 		}
 	}
 }

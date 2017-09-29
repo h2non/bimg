@@ -532,6 +532,19 @@ func vipsShrinkJpeg(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, e
 	return image, nil
 }
 
+func vipsShrinkWebp(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
+	var image *C.VipsImage
+	var ptr = unsafe.Pointer(&buf[0])
+	defer C.g_object_unref(C.gpointer(input))
+
+	err := C.vips_webpload_buffer_shrink(ptr, C.size_t(len(buf)), &image, C.int(shrink))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
 func vipsShrink(input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
