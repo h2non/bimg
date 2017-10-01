@@ -527,7 +527,7 @@ func BenchmarkResizePng(b *testing.B) {
 	runBenchmarkResize("test.png", options, b)
 }
 
-func BenchmarkResizeWebP(b *testing.B) {
+func BenchmarkResizeWebp(b *testing.B) {
 	options := Options{
 		Width:  200,
 		Height: 200,
@@ -566,7 +566,7 @@ func BenchmarkCropPng(b *testing.B) {
 	runBenchmarkResize("test.png", options, b)
 }
 
-func BenchmarkCropWebP(b *testing.B) {
+func BenchmarkCropWebp(b *testing.B) {
 	options := Options{
 		Width:  800,
 		Height: 600,
@@ -634,7 +634,7 @@ func BenchmarkWatermarkJpeg(b *testing.B) {
 	runBenchmarkResize("test.jpg", options, b)
 }
 
-func BenchmarkWatermarPng(b *testing.B) {
+func BenchmarkWatermarkPng(b *testing.B) {
 	options := Options{
 		Watermark: Watermark{
 			Text:       "Chuck Norris (c) 2315",
@@ -649,7 +649,7 @@ func BenchmarkWatermarPng(b *testing.B) {
 	runBenchmarkResize("test.png", options, b)
 }
 
-func BenchmarkWatermarWebp(b *testing.B) {
+func BenchmarkWatermarkWebp(b *testing.B) {
 	options := Options{
 		Watermark: Watermark{
 			Text:       "Chuck Norris (c) 2315",
@@ -677,7 +677,7 @@ func BenchmarkWatermarkImageJpeg(b *testing.B) {
 	runBenchmarkResize("test.jpg", options, b)
 }
 
-func BenchmarkWatermarImagePng(b *testing.B) {
+func BenchmarkWatermarkImagePng(b *testing.B) {
 	watermark := readFile("transparent.png")
 	options := Options{
 		WatermarkImage: WatermarkImage{
@@ -690,7 +690,7 @@ func BenchmarkWatermarImagePng(b *testing.B) {
 	runBenchmarkResize("test.png", options, b)
 }
 
-func BenchmarkWatermarImageWebp(b *testing.B) {
+func BenchmarkWatermarkImageWebp(b *testing.B) {
 	watermark := readFile("transparent.png")
 	options := Options{
 		WatermarkImage: WatermarkImage{
