@@ -111,6 +111,11 @@ vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) 
 }
 
 int
+vips_webpload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
+	return vips_webpload_buffer(buf, len, out, "shrink", shrink, NULL);
+}
+
+int
 vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
 	return vips_flip(in, out, direction, NULL);
 }

@@ -8,6 +8,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
@@ -67,9 +68,11 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
-	// Try to use libjpeg shrink-on-load
-	if imageType == JPEG && shrink >= 2 {
-		tmpImage, factor, err := shrinkJpegImage(buf, image, factor, shrink)
+	// Try to use libjpeg/libwebp shrink-on-load
+	supportsShrinkOnLoad := imageType == WEBP && VipsMajorVersion >= 8 && VipsMinorVersion >= 3
+	supportsShrinkOnLoad = supportsShrinkOnLoad || imageType == JPEG
+	if supportsShrinkOnLoad && shrink >= 2 {
+		tmpImage, factor, err := shrinkOnLoad(buf, image, imageType, factor, shrink)
 		if err != nil {
 			return nil, err
 		}
@@ -412,27 +415,31 @@ func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*
 	return image, residual, nil
 }
 
-func shrinkJpegImage(buf []byte, input *C.VipsImage, factor float64, shrink int) (*C.VipsImage, float64, error) {
+func shrinkOnLoad(buf []byte, input *C.VipsImage, imageType ImageType, factor float64, shrink int) (*C.VipsImage, float64, error) {
 	var image *C.VipsImage
 	var err error
-	shrinkOnLoad := 1
-
-	// Recalculate integral shrink and double residual
-	switch {
-	case shrink >= 8:
-		factor = factor / 8
-		shrinkOnLoad = 8
-	case shrink >= 4:
-		factor = factor / 4
-		shrinkOnLoad = 4
-	case shrink >= 2:
-		factor = factor / 2
-		shrinkOnLoad = 2
-	}
 
 	// Reload input using shrink-on-load
-	if shrinkOnLoad > 1 {
+	if imageType == JPEG && shrink >= 2 {
+		shrinkOnLoad := 1
+		// Recalculate integral shrink and double residual
+		switch {
+		case shrink >= 8:
+			factor = factor / 8
+			shrinkOnLoad = 8
+		case shrink >= 4:
+			factor = factor / 4
+			shrinkOnLoad = 4
+		case shrink >= 2:
+			factor = factor / 2
+			shrinkOnLoad = 2
+		}
+
 		image, err = vipsShrinkJpeg(buf, input, shrinkOnLoad)
+	} else if imageType == WEBP {
+		image, err = vipsShrinkWebp(buf, input, shrink)
+	} else {
+		return nil, 0, fmt.Errorf("%v doesn't support shrink on load", ImageTypeName(imageType))
 	}
 
 	return image, factor, err
@@ -446,11 +453,7 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	switch {
 	// Fixed width and height
 	case o.Width > 0 && o.Height > 0:
-		if o.Crop {
-			factor = math.Min(xfactor, yfactor)
-		} else {
-			factor = math.Max(xfactor, yfactor)
-		}
+		factor = math.Min(xfactor, yfactor)
 	// Fixed width, auto height
 	case o.Width > 0:
 		if o.Crop {
