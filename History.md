@@ -1,4 +1,12 @@
 
+## v1.0.15 / 2017-10-05
+
+  * Merge pull request #198 from greut/webpload
+  * Add shrink-on-load for webp.
+  * Merge pull request #197 from greut/typos
+  * Small typo.
+  * feat(docs): add codesponsor
+
 ## v1.0.14 / 2017-09-12
 
   * Merge pull request #192 from greut/trim
