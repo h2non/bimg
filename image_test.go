@@ -213,33 +213,45 @@ func TestImageThumbnail(t *testing.T) {
 }
 
 func TestImageWatermark(t *testing.T) {
-	image := initImage("test.jpg")
-	_, err := image.Crop(800, 600, GravityNorth)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+	files := []struct {
+		Name string
+		Type ImageType
+	}{
+		{"test.jpg", JPEG},
+		{"test.png", PNG},
 	}
 
-	buf, err := image.Watermark(Watermark{
-		Text:       "Copy me if you can",
-		Opacity:    0.5,
-		Width:      200,
-		DPI:        100,
-		Background: Color{255, 255, 255},
-	})
-	if err != nil {
-		t.Error(err)
-	}
+	for _, file := range files {
+		image := initImage(file.Name)
+		_, err := image.Crop(800, 600, GravityNorth)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+			continue
+		}
 
-	err = assertSize(buf, 800, 600)
-	if err != nil {
-		t.Error(err)
-	}
+		buf, err := image.Watermark(Watermark{
+			Text:       "Copy me if you can",
+			Opacity:    0.5,
+			Width:      200,
+			DPI:        100,
+			Background: Color{255, 255, 255},
+		})
+		if err != nil {
+			t.Errorf("Watermark failure: %s", err)
+			continue
+		}
 
-	if DetermineImageType(buf) != JPEG {
-		t.Fatal("Image is not jpeg")
-	}
+		err = assertSize(buf, 800, 600)
+		if err != nil {
+			t.Error(err)
+			continue
+		}
 
-	Write("fixtures/test_watermark_text_out.jpg", buf)
+		tp := DetermineImageType(buf)
+		if tp != file.Type {
+			t.Errorf("Image is not %v, got %v", ImageTypeName(file.Type), ImageTypeName(tp))
+		}
+	}
 }
 
 func TestImageWatermarkWithImage(t *testing.T) {
