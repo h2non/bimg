@@ -78,6 +78,177 @@ func TestResizeVerticalImage(t *testing.T) {
 	}
 }
 
+func TestResizeSyntheticImages(t *testing.T) {
+	type DifferingExpectations struct {
+		Width  int
+		Height int
+	}
+	tests := []struct {
+		imagePath             string
+		options               Options
+		differingExpectations DifferingExpectations
+	}{
+		{"synthetic_vertical.jpg",
+			Options{Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Width: 200, Height: 150},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Width: 2000, Height: 2000},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Width: 500},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Crop: true, Width: 500, Height: 1000},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Width: 200, Height: 150, Enlarge: true},
+			DifferingExpectations{Width: 3}},
+		{"synthetic_vertical.jpg",
+			Options{Crop: true, Enlarge: true, Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Enlarge: true, Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_vertical.jpg",
+			Options{Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+
+		{"synthetic_horizontal.jpg",
+			Options{Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Width: 200, Height: 150},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Width: 2000, Height: 2000},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Width: 500},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Crop: true, Width: 500, Height: 1000},
+			DifferingExpectations{}}, // unclear why this is 500 x 1000 when
+		{"synthetic_horizontal.jpg",
+			Options{Width: 200, Height: 150, Enlarge: true},
+			DifferingExpectations{Height: 4}},
+		{"synthetic_horizontal.jpg",
+			Options{Crop: true, Enlarge: true, Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Enlarge: true, Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_horizontal.jpg",
+			Options{Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+
+		{"synthetic_big.jpg",
+			Options{Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Width: 200, Height: 150},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Width: 2000, Height: 2000},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Width: 500},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Crop: true, Width: 500, Height: 1000},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Width: 200, Height: 150, Enlarge: true},
+			DifferingExpectations{Width: 200, Height: 133}},
+		{"synthetic_big.jpg",
+			Options{Crop: true, Enlarge: true, Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Enlarge: true, Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_big.jpg",
+			Options{Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+
+		{"synthetic_small.jpg",
+			Options{Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Width: 200, Height: 150},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Width: 2000, Height: 2000},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Width: 500},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Crop: true, Width: 500, Height: 1000},
+			DifferingExpectations{Height: 20, Width: 30}},
+		{"synthetic_small.jpg",
+			Options{Width: 200, Height: 150, Enlarge: true},
+			DifferingExpectations{Height: 133}},
+		{"synthetic_small.jpg",
+			Options{Crop: true, Enlarge: true, Width: 800, Height: 600},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Enlarge: true, Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+		{"synthetic_small.jpg",
+			Options{Force: true, Width: 500, Height: 500},
+			DifferingExpectations{}},
+
+	}
+	for i, test := range tests {
+		buf, _ := Read(path.Join("fixtures", test.imagePath))
+		image, err := Resize(buf, test.options)
+		if err != nil {
+			t.Errorf("Test %#v failed: Resize(imgData, %#v) error: %#v", test, test.options, err)
+		}
+
+		if DetermineImageType(image) != JPEG {
+			t.Fatalf("Test %#v failed: Image format is invalid. Expected: JPEG got %#v", test, DetermineImageType(image))
+		}
+
+		var expectedHeight, expectedWidth int
+		if test.differingExpectations.Height > 0 {
+			expectedHeight = test.differingExpectations.Height
+		} else {
+			expectedHeight = test.options.Height
+		}
+		if test.differingExpectations.Width > 0 {
+			expectedWidth = test.differingExpectations.Width
+		} else {
+			expectedWidth = test.options.Width
+		}
+
+		size, _ := Size(image)
+		if expectedHeight > 0 && size.Height != expectedHeight {
+			t.Fatalf("Test %#v failed: Invalid height: %d, expected height: %d", test, size.Height, expectedHeight)
+		}
+		if expectedWidth > 0 && size.Width != expectedWidth {
+			t.Fatalf("Test %#v failed: Invalid width: %d, expected width: %d", test, size.Width, expectedWidth)
+		}
+
+		Write(fmt.Sprintf("fixtures/%s_%d_out.jpg", test.imagePath, i), image)
+	}
+
+}
+
 func TestResizeCustomSizes(t *testing.T) {
 	tests := []struct {
 		format  ImageType
