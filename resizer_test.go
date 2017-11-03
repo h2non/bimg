@@ -136,7 +136,7 @@ func TestResizeSyntheticImages(t *testing.T) {
 			DifferingExpectations{}},
 		{"synthetic_horizontal.jpg",
 			Options{Crop: true, Width: 500, Height: 1000},
-			DifferingExpectations{}}, // unclear why this is 500 x 1000 when
+			DifferingExpectations{}}, // unclear why this is not 500 x 20 but vips-thumbnail does the same
 		{"synthetic_horizontal.jpg",
 			Options{Width: 200, Height: 150, Enlarge: true},
 			DifferingExpectations{Height: 4}},
