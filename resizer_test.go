@@ -238,10 +238,10 @@ func TestResizeSyntheticImages(t *testing.T) {
 
 		size, _ := Size(image)
 		if expectedHeight > 0 && size.Height != expectedHeight {
-			t.Fatalf("Test %#v failed: Invalid height: %d, expected height: %d", test, size.Height, expectedHeight)
+			t.Errorf("Test %#v failed: Invalid height: %d, expected height: %d", test, size.Height, expectedHeight)
 		}
 		if expectedWidth > 0 && size.Width != expectedWidth {
-			t.Fatalf("Test %#v failed: Invalid width: %d, expected width: %d", test, size.Width, expectedWidth)
+			t.Errorf("Test %#v failed: Invalid width: %d, expected width: %d", test, size.Width, expectedWidth)
 		}
 
 		Write(fmt.Sprintf("fixtures/%s_%d_out.jpg", test.imagePath, i), image)
