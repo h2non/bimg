@@ -455,6 +455,8 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	case o.Width > 0 && o.Height > 0:
 		// Use minimum factor for croping or downscaling
 		// use maximum factor for upscaling
+		// Maybe this should be:
+		// if o.Crop || (o.Width <= inWidth || o.Height <= inHeight) {
 		if o.Crop || (o.Width < inWidth || o.Height < inHeight) {
 			factor = math.Min(xfactor, yfactor)
 		} else {
