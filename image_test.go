@@ -129,12 +129,14 @@ func TestImageExtractZero(t *testing.T) {
 }
 
 func TestImageEnlarge(t *testing.T) {
+	// test.png is 400x300
 	tests := []struct {
 		input    []int
 		expected []int
 	}{
 		{[]int{500, 375}, []int{500, 375}},
 		{[]int{577, 1250}, []int{577, 433}},
+		{[]int{412, 3460}, []int{412, 309}},
 	}
 
 	for c, test := range tests {
