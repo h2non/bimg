@@ -211,7 +211,6 @@ func TestResizeSyntheticImages(t *testing.T) {
 		{"synthetic_small.jpg",
 			Options{Force: true, Width: 500, Height: 500},
 			differingExpectations{}},
-
 	}
 	for i, test := range tests {
 		buf, _ := Read(path.Join("fixtures", test.imagePath))
