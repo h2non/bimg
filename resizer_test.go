@@ -88,6 +88,37 @@ func TestResizeSyntheticImages(t *testing.T) {
 		options               Options
 		differingExpectations differingExpectations
 	}{
+		{"synthetic_square.jpg",
+			Options{Width: 800, Height: 600},
+			differingExpectations{}},
+		{"synthetic_square.jpg",
+			Options{Width: 800, Height: 600, Crop: true},
+			differingExpectations{}},  // expecting a 800x600 cropped and non deformed picture
+		{"synthetic_square.jpg",
+			Options{Width: 800},
+			differingExpectations{Width:800, Height: 800}},// expecting a 800x800 distorted picture
+		{"synthetic_square.jpg",
+			Options{Height: 800},
+			differingExpectations{Width:800, Height: 800}}, // expecting a 800x800 distorted picture
+		{"synthetic_square.jpg",
+			Options{Width: 2000, Height: 1500},
+			differingExpectations{Width: 1000, Height: 1000}},  //expecting the original picture, because enlarge is not set
+		{"synthetic_square.jpg",
+			Options{Width: 1024, Height: 768},
+			differingExpectations{Width: 1000, Height: 768}},
+		{"synthetic_square.jpg",
+			Options{Width: 1024, Height: 768},
+			differingExpectations{Width: 1024, Height: 768}},
+		{"synthetic_square.jpg",
+			Options{Width: 2000, Height: 1500, Enlarge: true},
+			differingExpectations{}},
+		{"synthetic_square.jpg",
+			Options{Width: 2000, Height: 1500, Enlarge: true, Crop: true},
+			differingExpectations{}},
+		{"synthetic_square.jpg",
+			Options{Width: 2000, Enlarge: true },
+			differingExpectations{Width: 2000, Height: 2000}},
+
 		{"synthetic_vertical.jpg",
 			Options{Width: 800, Height: 600},
 			differingExpectations{}},
