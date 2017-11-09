@@ -517,7 +517,7 @@ func TestImageTrimParameters(t *testing.T) {
 		t.Errorf("The image wasn't trimmed.")
 	}
 
-	Write("testdata/transparent_trim.png", buf)
+	Write("testdata/parameter_trim.png", buf)
 }
 
 func TestImageLength(t *testing.T) {
