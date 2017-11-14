@@ -90,6 +90,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Transform image, if necessary
+	fmt.Printf("should transform: %#v", shouldTransformImage(o, inWidth, inHeight))
 	if shouldTransformImage(o, inWidth, inHeight) {
 		image, err = transformImage(image, o, shrink, residual)
 		if err != nil {
