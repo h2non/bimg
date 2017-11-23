@@ -220,5 +220,6 @@ type Options struct {
 	Interpretation Interpretation
 	GaussianBlur   GaussianBlur
 	Sharpen        Sharpen
+	Threshold      float32
 	OutputICC      string
 }
