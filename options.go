@@ -209,6 +209,7 @@ type Options struct {
 	Interlace      bool
 	StripMetadata  bool
 	Trim           bool
+	Lossless       bool
 	Extend         Extend
 	Rotate         Angle
 	Background     Color

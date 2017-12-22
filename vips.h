@@ -306,10 +306,11 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 }
 
 int
-vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality) {
+vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
 	return vips_webpsave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
 		"Q", quality,
+		"lossless", INT_TO_GBOOLEAN(lossless),
 		NULL
 	);
 }
