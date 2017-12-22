@@ -15,12 +15,7 @@ import (
 	"strings"
 	"sync"
 	"unsafe"
-
-	d "github.com/tj/go-debug"
 )
-
-// debug is internally used to
-var debug = d.Debug("bimg")
 
 // VipsVersion exposes the current libvips semantic version
 const VipsVersion = string(C.VIPS_VERSION)
@@ -386,7 +381,6 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 	}
 
 	if o.OutputICC != "" && vipsHasProfile(image) {
-		debug("Embedded ICC profile found, trying to convert to %s", o.OutputICC)
 		outputIccPath := C.CString(o.OutputICC)
 		defer C.free(unsafe.Pointer(outputIccPath))
 
