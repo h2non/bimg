@@ -188,39 +188,40 @@ type Sharpen struct {
 
 // Options represents the supported image transformation options.
 type Options struct {
-	Height         int
-	Width          int
-	AreaHeight     int
-	AreaWidth      int
-	Top            int
-	Left           int
-	Quality        int
-	Compression    int
-	Zoom           int
-	Crop           bool
-	SmartCrop      bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
-	Enlarge        bool
-	Embed          bool
-	Flip           bool
-	Flop           bool
-	Force          bool
-	NoAutoRotate   bool
-	NoProfile      bool
-	Interlace      bool
-	StripMetadata  bool
-	Trim           bool
-	Lossless       bool
-	Extend         Extend
-	Rotate         Angle
-	Background     Color
-	Gravity        Gravity
-	Watermark      Watermark
-	WatermarkImage WatermarkImage
-	Type           ImageType
-	Interpolator   Interpolator
-	Interpretation Interpretation
-	GaussianBlur   GaussianBlur
-	Sharpen        Sharpen
-	Threshold      float64
-	OutputICC      string
+	Height             int
+	Width              int
+	AreaHeight         int
+	AreaWidth          int
+	Top                int
+	Left               int
+	Quality            int
+	Compression        int
+	Zoom               int
+	Crop               bool
+	SmartCrop          bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
+	Enlarge            bool
+	Embed              bool
+	Flip               bool
+	Flop               bool
+	Force              bool
+	NoAutoRotate       bool
+	NoProfile          bool
+	Interlace          bool
+	StripMetadata      bool
+	Trim               bool
+	Lossless           bool
+	Extend             Extend
+	Rotate             Angle
+	Background         Color
+	Gravity            Gravity
+	Watermark          Watermark
+	WatermarkImage     WatermarkImage
+	Type               ImageType
+	Interpolator       Interpolator
+	Interpretation     Interpretation
+	GaussianBlur       GaussianBlur
+	Sharpen            Sharpen
+	Threshold          float64
+	OutputICC          string
+	IgnoreShrinkOnLoad bool
 }
