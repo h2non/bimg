@@ -291,7 +291,6 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, error) {
 	var err error
 	var rotated bool
-	var direction Direction = -1
 
 	if o.NoAutoRotate == false {
 		rotation, flip := calculateRotationAndFlip(image, o.Rotate)
@@ -309,16 +308,14 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, erro
 	}
 
 	if o.Flip {
-		direction = Horizontal
-	} else if o.Flop {
-		direction = Vertical
-	}
-
-	if direction != -1 {
 		rotated = true
-		image, err = vipsFlip(image, direction)
+		image, err = vipsFlip(image, Vertical)
 	}
 
+	if o.Flop {
+		rotated = true
+		image, err = vipsFlip(image, Horizontal)
+	}
 	return image, rotated, err
 }
 
