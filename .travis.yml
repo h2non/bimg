@@ -4,11 +4,12 @@ dist: trusty
 sudo: false
 
 go:
-  - 1.6
-  - 1.7
-  - 1.8
-  - 1.9
-  - tip
+  - "1.6"
+  - "1.7"
+  - "1.8"
+  - "1.9"
+  - "1.10"
+  - "tip"
 
 env:
   - LIBVIPS=7.42.3
@@ -16,7 +17,7 @@ env:
   - LIBVIPS=8.3.3
   - LIBVIPS=8.4.6
   - LIBVIPS=8.5.8
-  - LIBVIPS=8.6.0-alpha4
+  - LIBVIPS=8.6.2
   - LIBVIPS=master
 
 matrix:
@@ -24,7 +25,6 @@ matrix:
     - env: LIBVIPS=7.42.3
     - env: LIBVIPS=8.2.3
     - env: LIBVIPS=8.3.3
-    - env: LIBVIPS=8.6.0-alpha4
 
 cache:
   apt:
