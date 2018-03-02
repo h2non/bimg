@@ -531,6 +531,29 @@ func TestImageLength(t *testing.T) {
 	}
 }
 
+func TestImageBytes(t *testing.T) {
+	i := initImage("test.jpg")
+
+	bytes, err := i.ToBytes()
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	imgSize, err := i.Size()
+	if err != nil {
+		t.Errorf("Cannot get image size: %#v", err)
+	}
+	metadata, err := i.Metadata()
+	if err != nil {
+		t.Errorf("Cannot get image metadata: %#v", err)
+	}
+	expected := imgSize.Height * imgSize.Width * metadata.Channels
+	fmt.Printf("expected: %d actual: %d\n", expected, len(bytes))
+
+	if expected != len(bytes) {
+		t.Errorf("Size in Bytes of the image doesn't correspond. %d != %d", expected, len(bytes))
+	}
+}
+
 func initImage(file string) *Image {
 	buf, _ := imageBuf(file)
 	return NewImage(buf)

@@ -467,6 +467,23 @@ func getImageBuffer(image *C.VipsImage) ([]byte, error) {
 	return C.GoBytes(ptr, C.int(length)), nil
 }
 
+func vipsToBytes(imgBuf []byte) ([]byte, error) {
+	image, _, err := vipsRead(imgBuf)
+	if err != nil {
+		return nil, err
+	}
+	var length C.size_t
+	buf := C.vips_image_write_to_memory(image, &length)
+	if buf == nil {
+		return nil, errors.New("Failed to write image to memory buffer")
+	}
+
+	defer C.free(buf)
+	defer C.vips_error_clear()
+
+	return C.GoBytes(unsafe.Pointer(buf), C.int(length)), nil
+}
+
 func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage, error) {
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))

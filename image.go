@@ -229,6 +229,11 @@ func (i *Image) Image() []byte {
 	return i.buffer
 }
 
+// ToBytes returns image bytes using vips_image_write_to_memory
+func (i *Image) ToBytes() ([]byte, error) {
+	return vipsToBytes(i.buffer)
+}
+
 // Length returns the size in bytes of the image buffer.
 func (i *Image) Length() int {
 	return len(i.buffer)
