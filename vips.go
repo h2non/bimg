@@ -685,15 +685,10 @@ func max(x int) int {
 	return int(math.Max(float64(x), 0))
 }
 
-func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {
+func vipsDrawWatermark(image, watermark *C.VipsImage, left, top int, opacity float32) (*C.VipsImage, error) {
 	var out *C.VipsImage
 
-	watermark, _, e := vipsRead(o.Buf)
-	if e != nil {
-		return nil, e
-	}
-
-	opts := vipsWatermarkImageOptions{C.int(o.Left), C.int(o.Top), C.float(o.Opacity)}
+	opts := vipsWatermarkImageOptions{C.int(left), C.int(top), C.float(opacity)}
 
 	err := C.vips_watermark_image(image, watermark, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
 
