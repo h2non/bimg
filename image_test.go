@@ -1,7 +1,11 @@
 package bimg
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"path"
 	"testing"
 )
@@ -267,6 +271,104 @@ func TestImageWatermarkWithImage(t *testing.T) {
 	}
 
 	Write("testdata/test_watermark_image_out.jpg", buf)
+}
+
+func TestImageWatermarkWithImageGravity(t *testing.T) {
+	tests := []struct {
+		name         string
+		wm           WatermarkImage
+		validateFunc func(buf []byte)
+	}{
+		{"1nw", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravityNorthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 0, 0, 29, 19) }},
+		{"2n", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravityNorth}, func(buf []byte) { validateWatermarkArea(t, buf, 45, 0, 74, 19) }},
+		{"3ne", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravityNorthEast}, func(buf []byte) { validateWatermarkArea(t, buf, 90, 0, 119, 19) }},
+		{"4w", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravityWest}, func(buf []byte) { validateWatermarkArea(t, buf, 0, 40, 29, 59) }},
+		{"5c", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravityCentre}, func(buf []byte) { validateWatermarkArea(t, buf, 45, 40, 74, 59) }},
+		{"6e", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravityEast}, func(buf []byte) { validateWatermarkArea(t, buf, 90, 40, 119, 59) }},
+		{"7sw", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravitySouthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 0, 80, 29, 99) }},
+		{"8s", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravitySouth}, func(buf []byte) { validateWatermarkArea(t, buf, 45, 80, 74, 99) }},
+		{"9se", WatermarkImage{X: 0, Y: 0, Gravity: WatermarkGravitySouthEast}, func(buf []byte) { validateWatermarkArea(t, buf, 90, 80, 119, 99) }},
+		{"10off10nw", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravityNorthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 10, 10, 39, 29) }},
+		{"11off10n", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravityNorth}, func(buf []byte) { validateWatermarkArea(t, buf, 55, 10, 84, 29) }},
+		{"12off10ne", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravityNorthEast}, func(buf []byte) { validateWatermarkArea(t, buf, 80, 10, 109, 29) }},
+		{"13off10w", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravityWest}, func(buf []byte) { validateWatermarkArea(t, buf, 10, 50, 39, 69) }},
+		{"14off10c", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravityCentre}, func(buf []byte) { validateWatermarkArea(t, buf, 55, 50, 84, 69) }},
+		{"15off10e", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravityEast}, func(buf []byte) { validateWatermarkArea(t, buf, 80, 50, 109, 69) }},
+		{"16off10sw", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravitySouthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 10, 70, 39, 89) }},
+		{"17off10s", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravitySouth}, func(buf []byte) { validateWatermarkArea(t, buf, 55, 70, 84, 89) }},
+		{"18off10se", WatermarkImage{X: 10, Y: 10, Gravity: WatermarkGravitySouthEast}, func(buf []byte) { validateWatermarkArea(t, buf, 80, 70, 109, 89) }},
+		{"19off10cminus", WatermarkImage{X: -10, Y: -10, Gravity: WatermarkGravityCentre}, func(buf []byte) { validateWatermarkArea(t, buf, 35, 30, 64, 49) }},
+		{"20pnt10nw", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravityNorthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 12, 10, 41, 29) }},
+		{"21pnt10n", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravityNorth}, func(buf []byte) { validateWatermarkArea(t, buf, 57, 10, 86, 29) }},
+		{"22pnt10ne", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravityNorthEast}, func(buf []byte) { validateWatermarkArea(t, buf, 78, 10, 107, 29) }},
+		{"23pnt10w", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravityWest}, func(buf []byte) { validateWatermarkArea(t, buf, 12, 50, 41, 69) }},
+		{"24pnt10c", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravityCentre}, func(buf []byte) { validateWatermarkArea(t, buf, 57, 50, 86, 69) }},
+		{"25pnt10e", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravityEast}, func(buf []byte) { validateWatermarkArea(t, buf, 79, 50, 107, 69) }},
+		{"26pnt10sw", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravitySouthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 12, 70, 41, 89) }},
+		{"27pnt10s", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravitySouth}, func(buf []byte) { validateWatermarkArea(t, buf, 57, 70, 86, 89) }},
+		{"28pnt10se", WatermarkImage{XRate: 0.1, YRate: 0.1, Gravity: WatermarkGravitySouthEast}, func(buf []byte) { validateWatermarkArea(t, buf, 78, 70, 107, 89) }},
+		{"29pnt10cminus", WatermarkImage{XRate: -0.1, YRate: -0.1, Gravity: WatermarkGravityCentre}, func(buf []byte) { validateWatermarkArea(t, buf, 33, 30, 62, 49) }},
+		{"50protruded1", WatermarkImage{X: -10000, Y: -10000, Gravity: WatermarkGravityNorthWest}, func(buf []byte) { validateWatermarkArea(t, buf, 0, 0, 29, 19) }},
+		{"51protruded2", WatermarkImage{X: 10000, Y: 10000, Gravity: WatermarkGravityCentre}, func(buf []byte) { validateWatermarkArea(t, buf, 90, 80, 119, 99) }},
+		{"60oldway", WatermarkImage{Left: 10, Top: 10}, func(buf []byte) { validateWatermarkArea(t, buf, 10, 10, 39, 29) }},
+		{"61none", WatermarkImage{}, func(buf []byte) { validateWatermarkArea(t, buf, 0, 0, 29, 19) }},
+	}
+
+	for _, test := range tests {
+		image := initImage("white_1000x1000.png")
+		watermark, _ := imageBuf("black_30x20.png")
+
+		_, err := image.Crop(120, 100, GravityNorth)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		test.wm.Buf = watermark
+		_, err = image.WatermarkImage(test.wm)
+		if err != nil {
+			t.Error(err)
+		}
+
+		buf, err := image.Colourspace(InterpretationBW)
+		if err != nil {
+			t.Error(err)
+		}
+
+		test.validateFunc(buf)
+
+		Write("testdata/test_watermark_image_gravity_"+test.name+"_out.png", buf)
+	}
+}
+
+func validateWatermarkArea(t *testing.T, buf []byte, x0, y0, x1, y1 int) {
+	imgResult, err := png.Decode(bytes.NewReader(buf))
+	if err != nil {
+		t.Error(err)
+	}
+
+	imgWidth := imgResult.Bounds().Max.X
+	imgHeight := imgResult.Bounds().Max.Y
+	assertPixelColor(t, imgResult, x0, y0, color.Black)
+	assertPixelColor(t, imgResult, x1, y0, color.Black)
+	assertPixelColor(t, imgResult, x1, y1, color.Black)
+	assertPixelColor(t, imgResult, x0, y1, color.Black)
+
+	perimeterNW := image.Pt(x0-1, y0-1)
+	if perimeterNW.X >= 0 && perimeterNW.Y >= 0 {
+		assertPixelColor(t, imgResult, perimeterNW.X, perimeterNW.Y, color.White)
+	}
+	perimeterNE := image.Pt(x1+1, y0-1)
+	if perimeterNE.X < imgWidth && perimeterNE.Y >= 0 {
+		assertPixelColor(t, imgResult, perimeterNE.X, perimeterNE.Y, color.White)
+	}
+	perimeterSW := image.Pt(x1+1, y1+1)
+	if perimeterSW.X < imgWidth && perimeterSW.Y < imgHeight {
+		assertPixelColor(t, imgResult, perimeterSW.X, perimeterSW.Y, color.White)
+	}
+	perimeterSE := image.Pt(x0-1, y1+1)
+	if perimeterSE.X >= 0 && perimeterSE.Y < imgHeight {
+		assertPixelColor(t, imgResult, perimeterSE.X, perimeterSE.Y, color.White)
+	}
 }
 
 func TestImageWatermarkNoReplicate(t *testing.T) {
@@ -549,4 +651,12 @@ func assertSize(buf []byte, width, height int) error {
 		return fmt.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 	return nil
+}
+
+func assertPixelColor(t *testing.T, imgResult image.Image, x, y int, colorExpect color.Color) {
+	ceR, ceG, ceB, ceA := colorExpect.RGBA()
+	caR, caG, caB, caA := imgResult.At(x, y).RGBA()
+	if ceR != caR || ceG != caG || ceB != caB || ceA != caA {
+		t.Error(fmt.Errorf("Expected pixel color (%02X%02X%02X%02X), but actual (%02X%02X%02X%02X) at (%d, %d)", uint8(ceR), uint8(ceG), uint8(ceB), uint8(ceA), uint8(caR), uint8(caG), uint8(caB), uint8(caA), x, y))
+	}
 }

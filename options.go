@@ -31,6 +31,30 @@ const (
 	GravitySmart
 )
 
+// WatermarkGravity represents the image gravity value for watermark.
+type WatermarkGravity int
+
+const (
+	// WatermarkGravityNorthWest represents the north west value used for image gravity orientation.
+	WatermarkGravityNorthWest WatermarkGravity = iota
+	// WatermarkGravityNorth represents the north value used for image gravity orientation.
+	WatermarkGravityNorth
+	// WatermarkGravityNorthEast represents the south east value used for image gravity orientation.
+	WatermarkGravityNorthEast
+	// WatermarkGravityWest represents the west value used for image gravity orientation.
+	WatermarkGravityWest
+	// WatermarkGravityCentre represents the centre value used for image gravity orientation.
+	WatermarkGravityCentre
+	// WatermarkGravityEast represents the east value used for image gravity orientation.
+	WatermarkGravityEast
+	// WatermarkGravitySouthWest represents the south west value used for image gravity orientation.
+	WatermarkGravitySouthWest
+	// WatermarkGravitySouth represents the south value used for image gravity orientation.
+	WatermarkGravitySouth
+	// WatermarkGravitySouthEast represents the south east value used for image gravity orientation.
+	WatermarkGravitySouthEast
+)
+
 // Interpolator represents the image interpolation value.
 type Interpolator int
 
@@ -164,9 +188,14 @@ type Watermark struct {
 
 // WatermarkImage represents the image-based watermark supported options.
 type WatermarkImage struct {
-	Left    int
-	Top     int
 	Buf     []byte
+	Left    int // Deprecated, use: X
+	Top     int // Deprecated, use: Y
+	X       int
+	Y       int
+	XRate   float32
+	YRate   float32
+	Gravity WatermarkGravity
 	Opacity float32
 }
 
