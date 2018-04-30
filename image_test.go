@@ -341,8 +341,6 @@ func TestImageWatermarkWithImageGravity(t *testing.T) {
 }
 
 func validateWatermarkArea(t *testing.T, buf []byte, x0, y0, x1, y1 int) {
-	t.Helper()
-
 	imgResult, err := png.Decode(bytes.NewReader(buf))
 	if err != nil {
 		t.Error(err)
@@ -656,7 +654,6 @@ func assertSize(buf []byte, width, height int) error {
 }
 
 func assertPixelColor(t *testing.T, imgResult image.Image, x, y int, colorExpect color.Color) {
-	t.Helper()
 	ceR, ceG, ceB, ceA := colorExpect.RGBA()
 	caR, caG, caB, caA := imgResult.At(x, y).RGBA()
 	if ceR != caR || ceG != caG || ceB != caB || ceA != caA {
