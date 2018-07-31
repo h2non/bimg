@@ -273,7 +273,7 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		break
 	case o.Top != 0 || o.Left != 0 || o.AreaWidth != 0 || o.AreaHeight != 0:
 		if o.AreaWidth == 0 {
-			o.AreaHeight = o.Width
+			o.AreaWidth = o.Width
 		}
 		if o.AreaHeight == 0 {
 			o.AreaHeight = o.Height
