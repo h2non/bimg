@@ -2,7 +2,7 @@ package bimg
 
 /*
 #cgo pkg-config: vips
-#include "vips/vips.h"
+#include "vips.h"
 */
 import "C"
 
@@ -83,6 +83,11 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 
 	// Zoom image, if necessary
 	image, err = zoomImage(image, o.Zoom)
+	if err != nil {
+		return nil, err
+	}
+
+	image, err = compositeImage(image, o.CompositeLayers, o.BlendMode)
 	if err != nil {
 		return nil, err
 	}
@@ -383,6 +388,23 @@ func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
 		return image, nil
 	}
 	return vipsZoom(image, zoom+1)
+}
+
+func compositeImage(image *C.VipsImage, layers []*Image, mode BlendMode) (*C.VipsImage, error) {
+	if mode == 0 {
+		return image, nil
+	}
+
+	inputs := make([]*C.VipsImage, 0, len(layers)+1)
+	inputs = append(inputs, image)
+	for _, l := range layers {
+		layer, _, err := loadImage(l.buffer)
+		if err != nil {
+			return nil, err
+		}
+		inputs = append(inputs, layer)
+	}
+	return vipsComposite(inputs, mode)
 }
 
 func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*C.VipsImage, float64, error) {

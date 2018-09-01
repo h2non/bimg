@@ -2,7 +2,7 @@ package bimg
 
 /*
 #cgo pkg-config: vips
-#include "vips/vips.h"
+#include "vips.h"
 */
 import "C"
 

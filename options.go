@@ -2,7 +2,7 @@ package bimg
 
 /*
 #cgo pkg-config: vips
-#include "vips/vips.h"
+#include "vips.h"
 */
 import "C"
 
@@ -139,6 +139,63 @@ const (
 	ExtendLast Extend = C.VIPS_EXTEND_LAST
 )
 
+// BlendMode represents the blend mode used when compositing.
+// See: https://jcupitt.github.io/libvips/API/current/libvips-conversion.html#VipsBlendMode
+type BlendMode int
+
+const (
+	// BlendModeClear where the second object is drawn, the first is removed
+	BlendModeClear BlendMode = C.VIPS_BLEND_MODE_CLEAR
+	// BlendModeSource the second object is drawn as if nothing were below
+	BlendModeSource BlendMode = C.VIPS_BLEND_MODE_SOURCE
+	// BlendModeOver the image shows what you would expect if you held two semi-transparent slides on top of each other
+	BlendModeOver BlendMode = C.VIPS_BLEND_MODE_OVER
+	// BlendModeIn the first object is removed completely, the second is only drawn where the first was
+	BlendModeIn BlendMode = C.VIPS_BLEND_MODE_IN
+	// BlendModeOut the second is drawn only where the first isn't
+	BlendModeOut BlendMode = C.VIPS_BLEND_MODE_OUT
+	// BlendModeAtop this leaves the first object mostly intact, but mixes both objects in the overlapping area
+	BlendModeAtop BlendMode = C.VIPS_BLEND_MODE_ATOP
+	// BlendModeDest leaves the first object untouched, the second is discarded completely
+	BlendModeDest BlendMode = C.VIPS_BLEND_MODE_DEST
+	// BlendModeDestOver like OVER, but swaps the arguments
+	BlendModeDestOver BlendMode = C.VIPS_BLEND_MODE_DEST_OVER
+	// BlendModeDestIn like IN, but swaps the arguments
+	BlendModeDestIn BlendMode = C.VIPS_BLEND_MODE_DEST_IN
+	// BlendModeDestOut like OUT, but swaps the arguments
+	BlendModeDestOut BlendMode = C.VIPS_BLEND_MODE_DEST_OUT
+	// BlendModeDestAtop like ATOP, but swaps the arguments
+	BlendModeDestAtop BlendMode = C.VIPS_BLEND_MODE_DEST_ATOP
+	// BlendModeXOR something like a difference operator
+	BlendModeXOR BlendMode = C.VIPS_BLEND_MODE_XOR
+	// BlendModeAdd a bit like adding the two images
+	BlendModeAdd BlendMode = C.VIPS_BLEND_MODE_ADD
+	// BlendModeSaturate a bit like the darker of the two
+	BlendModeSaturate BlendMode = C.VIPS_BLEND_MODE_SATURATE
+	// BlendModeMultiply at least as dark as the darker of the two inputs
+	BlendModeMultiply BlendMode = C.VIPS_BLEND_MODE_MULTIPLY
+	// BlendModeScreen at least as light as the lighter of the inputs
+	BlendModeScreen BlendMode = C.VIPS_BLEND_MODE_SCREEN
+	// BlendModeOverlay multiplies or screens colors, depending on the lightness
+	BlendModeOverlay BlendMode = C.VIPS_BLEND_MODE_OVERLAY
+	// BlendModeDarken the darker of each component
+	BlendModeDarken BlendMode = C.VIPS_BLEND_MODE_DARKEN
+	// BlendModeLighten the lighter of each component
+	BlendModeLighten BlendMode = C.VIPS_BLEND_MODE_LIGHTEN
+	// BlendModeColorDodge brighten first by a factor second
+	BlendModeColorDodge BlendMode = C.VIPS_BLEND_MODE_COLOUR_DODGE
+	// BlendModeColorBurn darken first by a factor of second
+	BlendModeColorBurn BlendMode = C.VIPS_BLEND_MODE_COLOUR_BURN
+	// BlendModeHardLight multiply or screen, depending on lightness
+	BlendModeHardLight BlendMode = C.VIPS_BLEND_MODE_HARD_LIGHT
+	// BlendModeSoftLight darken or lighten, depending on lightness
+	BlendModeSoftLight BlendMode = C.VIPS_BLEND_MODE_SOFT_LIGHT
+	// BlendModeDifference difference of the two
+	BlendModeDifference BlendMode = C.VIPS_BLEND_MODE_DIFFERENCE
+	// BlendModeExclusion somewhat like DIFFERENCE, but lower-contrast
+	BlendModeExclusion BlendMode = C.VIPS_BLEND_MODE_EXCLUSION
+)
+
 // WatermarkFont defines the default watermark font to be used.
 var WatermarkFont = "sans 10"
 
@@ -188,39 +245,42 @@ type Sharpen struct {
 
 // Options represents the supported image transformation options.
 type Options struct {
-	Height         int
-	Width          int
-	AreaHeight     int
-	AreaWidth      int
-	Top            int
-	Left           int
-	Quality        int
-	Compression    int
-	Zoom           int
-	Crop           bool
-	SmartCrop      bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
-	Enlarge        bool
-	Embed          bool
-	Flip           bool
-	Flop           bool
-	Force          bool
-	NoAutoRotate   bool
-	NoProfile      bool
-	Interlace      bool
-	StripMetadata  bool
-	Trim           bool
-	Lossless       bool
-	Extend         Extend
-	Rotate         Angle
-	Background     Color
-	Gravity        Gravity
-	Watermark      Watermark
-	WatermarkImage WatermarkImage
-	Type           ImageType
-	Interpolator   Interpolator
-	Interpretation Interpretation
-	GaussianBlur   GaussianBlur
-	Sharpen        Sharpen
-	Threshold      float64
-	OutputICC      string
+	Height          int
+	Width           int
+	AreaHeight      int
+	AreaWidth       int
+	Top             int
+	Left            int
+	Quality         int
+	Compression     int
+	Zoom            int
+	Crop            bool
+	SmartCrop       bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
+	Enlarge         bool
+	Embed           bool
+	Flip            bool
+	Flop            bool
+	Force           bool
+	NoAutoRotate    bool
+	NoProfile       bool
+	Interlace       bool
+	StripMetadata   bool
+	Trim            bool
+	Lossless        bool
+	Composite       bool
+	Extend          Extend
+	Rotate          Angle
+	Background      Color
+	Gravity         Gravity
+	Watermark       Watermark
+	WatermarkImage  WatermarkImage
+	Type            ImageType
+	Interpolator    Interpolator
+	Interpretation  Interpretation
+	GaussianBlur    GaussianBlur
+	Sharpen         Sharpen
+	BlendMode       BlendMode
+	Threshold       float64
+	OutputICC       string
+	CompositeLayers []*Image
 }
