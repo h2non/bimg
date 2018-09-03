@@ -46,6 +46,7 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 - Format conversion (with additional quality/compression settings)
 - EXIF metadata (size, alpha channel, profile, orientation...)
 - Trim (libvips 8.6+)
+- Composite (libvips 8.6+)
 
 ## Prerequisites
 

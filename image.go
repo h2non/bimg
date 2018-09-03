@@ -185,6 +185,13 @@ func (i *Image) Trim() ([]byte, error) {
 	return i.Process(options)
 }
 
+// Composite blends two images together working from the bottom upwards, with
+// the blend mode at each step being set by the corresponding BlendMode
+func (i *Image) Composite(l *Image, mode BlendMode) ([]byte, error) {
+	options := Options{Composite: true, BlendMode: mode, CompositeLayers: []*Image{l}}
+	return i.Process(options)
+}
+
 // Process processes the image based on the given transformation options,
 // talking with libvips bindings accordingly and returning the resultant
 // image buffer.

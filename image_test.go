@@ -520,6 +520,19 @@ func TestImageTrimParameters(t *testing.T) {
 	Write("testdata/parameter_trim.png", buf)
 }
 
+func TestImageComposite(t *testing.T) {
+	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
+	}
+
+	overlay := initImage("transparent.png")
+	buf, err := initImage("test.jpg").Composite(overlay, BlendModeAdd)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+	Write("testdata/test_composite_out.jpg", buf)
+}
+
 func TestImageLength(t *testing.T) {
 	i := initImage("test.jpg")
 

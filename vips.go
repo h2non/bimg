@@ -569,6 +569,17 @@ func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64) (*C.VipsIm
 	return image, nil
 }
 
+func vipsComposite(inputs []*C.VipsImage, mode BlendMode) (*C.VipsImage, error) {
+	var image *C.VipsImage
+
+	err := C.vips_composite_bridge(&inputs[0], &image, C.int(len(inputs)), C.int(mode))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
 func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, background Color) (*C.VipsImage, error) {
 	var image *C.VipsImage
 
