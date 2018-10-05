@@ -487,51 +487,151 @@ vips_add_band(VipsImage *in, VipsImage **out, double c) {
 }
 
 int
-vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkImageOptions *o) {
+vips_watermark_image(VipsImage *in, VipsImage *watermark, VipsImage **out, WatermarkImageOptions *o) {
+	// Inspired by https://gist.github.com/jcupitt/abacc012e2991f332e8b
+
 	VipsImage *base = vips_image_new();
-	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
+	// These images will all be unreffed when context is unreffed.
+	VipsImage **t = (VipsImage**) vips_object_local_array(VIPS_OBJECT(base), 18);
 
-  // add in and sub for unreffing and later use
-	t[0] = in;
-	t[1] = sub;
-
-  if (has_alpha_channel(in) == 0) {
+	if (has_alpha_channel(in) == 0) {
 		vips_add_band(in, &t[0], 255.0);
-		// in is no longer in the array and won't be unreffed, so add it at the end
-		t[8] = in;
+		// Add at the end to unref input image when done.
+		t[17] = in;
+	} else {
+		t[0] = in;
 	}
 
-	if (has_alpha_channel(sub) == 0) {
-		vips_add_band(sub, &t[1], 255.0);
-		// sub is no longer in the array and won't be unreffed, so add it at the end
-		t[9] = sub;
+	if (has_alpha_channel(watermark) == 0) {
+		vips_add_band(watermark, &t[1], 255.0);
+		// Add at the end to unref input image when done.
+		t[18] = watermark;
+	} else {
+		t[1] = watermark;
 	}
 
 	// Place watermark image in the right place and size it to the size of the
-	// image that should be watermarked
-	if (
-		vips_embed(t[1], &t[2], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, NULL)) {
-			g_object_unref(base);
-		return 1;
-	}
+	// image that should be watermarked. Necessary for following operations because
+	// libvips enlarges images that are smaller than the other operand-image with
+	// zero-pixels. This is especially bad for multiplications as we effectively get
+	// a mask cutting out everything that's outside the smaller image.
+	if( vips_embed(t[1], &t[2], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, NULL)) {
 
-	// Create a mask image based on the alpha band from the watermark image
-	// and place it in the right position
-	if (
-		vips_extract_band(t[1], &t[3], t[1]->Bands - 1, "n", 1, NULL) ||
-		vips_linear1(t[3], &t[4], o->Opacity, 0.0, NULL) ||
-		vips_cast(t[4], &t[5], VIPS_FORMAT_UCHAR, NULL) ||
-		vips_copy(t[5], &t[6], "interpretation", t[0]->Type, NULL) ||
-		vips_embed(t[6], &t[7], o->Left, o->Top, t[0]->Xsize, t[0]->Ysize, NULL))	{
-			g_object_unref(base);
-		return 1;
-	}
-
-	// Blend the mask and watermark image and write to output.
-	if (vips_ifthenelse(t[7], t[2], t[0], out, "blend", TRUE, NULL)) {
 		g_object_unref(base);
 		return 1;
 	}
+
+	// dst = in
+	// src = watermark
+
+	// Extract the alpha channels.
+	//
+	// dst_a255, src_a255
+	//
+	// ^^^^^^^^  ^^^^^^^^
+	//    t3        t4
+	if( vips_extract_band(t[0], &t[3], 3, NULL) ||
+		vips_extract_band(t[2], &t[4], 3, NULL)) {
+
+		g_object_unref(base);
+		return 1;
+	}
+
+	// Extract the RGB bands.
+	//
+	// dst_rgb, src_rgb
+	//
+	// ^^^^^^^  ^^^^^^^
+	//   t5       t6
+	if( vips_extract_band(t[0], &t[5], 0, "n", 3, NULL ) ||
+		vips_extract_band(t[2], &t[6], 0, "n", 3, NULL)) {
+
+		g_object_unref(base);
+		return 1;
+	}
+
+	// Compute normalized input alpha channels.
+	//
+	// dst_a = dst_a255 / 255, src_a = src_a255 / 255
+	//
+	// ^^^^^                   ^^^^^
+	//  t7                      t8
+	if( vips_linear1(t[3], &t[7], 1.0 / 255.0, 0.0, NULL) ||
+		vips_linear1(t[4], &t[8], 1.0 / 255.0, 0.0, NULL)) {
+
+		g_object_unref(base);
+		return 1;
+	}
+
+	// Compute normalized output alpha channel:
+	//
+	// References:
+	// - http://en.wikipedia.org/wiki/Alpha_compositing#Alpha_blending
+	// - https://github.com/jcupitt/ruby-vips/issues/28#issuecomment-9014826
+	//
+	// out_a = src_a + dst_a * (1 - src_a)
+	//
+	//         ^^^^^   ^^^^^        ^^^^^
+	//          t8      t7           t8
+	//                         ^^^^^^^^^^^
+	//                             t9
+	// ^^^^^           ^^^^^^^^^^^^^^^^^^^
+	//  t11                    t10
+
+	if( vips_linear1(t[8], &t[9], -1.0, 1.0, NULL) ||
+		vips_multiply(t[7], t[9], &t[10], NULL) ||
+		vips_add(t[8], t[10], &t[11], NULL)) {
+
+		g_object_unref(base);
+		return 1;
+	}
+
+	// Compute output RGB channels:
+	//
+	// Wikipedia:
+	//
+	// out_rgb = (src_rgb * src_a + dst_rgb * dst_a * (1 - src_a)) / out_a
+	//
+	// ^^^^^^^    ^^^^^^^   ^^^^^   ^^^^^^^   ^^^^^        ^^^^^     ^^^^^
+	//   t13        t6       t8       t5       t7           t8        t11
+	//                              ^^^^^^^^^^^^^^^
+	//                                    t12
+	//
+	// `vips_ifthenelse` with `blend=TRUE`:
+	// https://jcupitt.github.io/libvips/API/current/libvips-conversion.html#vips-ifthenelse
+	//
+	// out = (cond / 255) * in1 + (1 - cond / 255) * in2
+	//
+	//        ^^^^                     ^^^^
+	//          └───  src_a255 = t4  ───┘
+	//
+	// Substitutions:
+	//
+	//     cond --> src_a255 = t4
+	//     in1 --> src_rgb = t6
+	//     in2 --> dst_rgb * dst_a = t5 * t7 (premultiplied destination RGB)
+	//
+	// Division by `out_a` is not required as `vips_ifthenelse` doesn’t require
+	// normalized inputs.
+
+	if( vips_multiply(t[5], t[7], &t[12], NULL) ||
+		vips_ifthenelse(t[4], t[6], t[12], &t[13], "blend", TRUE, NULL)) {
+
+		g_object_unref(base);
+		return 1;
+	}
+
+	// unnormalise the alpha, reattach
+	if( vips_linear1(t[11], &t[14], 255.0, 0.0, "uchar", TRUE, NULL) ||
+		vips_bandjoin2(t[13], t[14], &t[15], NULL)) {
+
+		g_object_unref(base);
+		return 1;
+	}
+
+	// Return a reference to the output image.
+	g_object_ref(t[15]);
+	*out = t[15];
 
 	g_object_unref(base);
 	return 0;
