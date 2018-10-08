@@ -161,6 +161,36 @@ func TestResizeCustomSizes(t *testing.T) {
 	}
 }
 
+func TestResizeFit(t *testing.T) {
+	// see https://github.com/h2non/bimg/issues/257
+	buf, _ := Read("testdata/test_fit.png")
+	forceOptions := []bool{true, false}
+
+	for _, forceOpt := range forceOptions {
+		opts := Options{Width: 1000, Height: 20, Fit: true, Force: forceOpt}
+		newImg, err := Resize(buf, opts)
+		if err != nil {
+			t.Fatalf("Resize(imgData, %#v) error: %#v", opts, err)
+		}
+
+		size, _ := Size(newImg)
+		if !forceOpt && size.Width != 115 {
+			t.Fatalf("Invalid width (Force=false): %d, expected 115", size.Width)
+		}
+		if forceOpt && size.Width != 1000 {
+			t.Fatalf("Invalid width  (Force=true): %d, expected 1000", size.Width)
+		}
+		if size.Height != 20 {
+			t.Fatalf("Invalid width: %d, expected 20", size.Width)
+		}
+
+		Write(fmt.Sprintf(
+			"testdata/test_fit_%v_out.png",
+			forceOpt,
+		), newImg)
+	}
+}
+
 func TestResizePrecision(t *testing.T) {
 	// see https://github.com/h2non/bimg/issues/99
 	img := image.NewGray16(image.Rect(0, 0, 1920, 1080))

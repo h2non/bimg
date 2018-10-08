@@ -170,7 +170,7 @@ func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
 }
 
 func normalizeOperation(o *Options, inWidth, inHeight int) {
-	if !o.Force && !o.Crop && !o.Embed && !o.Enlarge && o.Rotate == 0 && (o.Width > 0 || o.Height > 0) {
+	if !o.Force && !o.Fit && !o.Crop && !o.Embed && !o.Enlarge && o.Rotate == 0 && (o.Width > 0 || o.Height > 0) {
 		o.Force = true
 	}
 }
@@ -443,7 +443,11 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	switch {
 	// Fixed width and height
 	case o.Width > 0 && o.Height > 0:
-		factor = math.Min(xfactor, yfactor)
+		if o.Crop {
+			factor = math.Min(xfactor, yfactor)
+		} else {
+			factor = math.Max(xfactor, yfactor)
+		}
 	// Fixed width, auto height
 	case o.Width > 0:
 		if o.Crop {
