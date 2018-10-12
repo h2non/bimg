@@ -57,12 +57,16 @@ type vipsSaveOptions struct {
 }
 
 type vipsWatermarkOptions struct {
-	Width       C.int
-	DPI         C.int
-	Margin      C.int
-	NoReplicate C.int
-	Opacity     C.float
-	Background  [3]C.double
+	WatermarkType *C.char
+	Left          C.int
+	Top           C.int
+	Width         C.int
+	height        C.int
+	DPI           C.int
+	Margin        C.int
+	NoReplicate   C.int
+	Opacity       C.float
+	Background    [3]C.double
 }
 
 type vipsWatermarkImageOptions struct {
@@ -241,6 +245,16 @@ func vipsRotate(image *C.VipsImage, angle Angle) (*C.VipsImage, error) {
 	return out, nil
 }
 
+func vipsAutoRotate(image *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+	err := C.vips_autorotate(image, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
 func vipsFlip(image *C.VipsImage, direction Direction) (*C.VipsImage, error) {
 	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
@@ -274,12 +288,14 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 		noReplicate = 1
 	}
 
+	watermarkType := C.CString(w.WatermarkType)
+
 	text := C.CString(w.Text)
 	font := C.CString(w.Font)
 	background := [3]C.double{C.double(w.Background.R), C.double(w.Background.G), C.double(w.Background.B)}
 
 	textOpts := vipsWatermarkTextOptions{text, font}
-	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
+	opts := vipsWatermarkOptions{watermarkType, C.int(w.Left), C.int(w.Top), C.int(w.Width), C.int(w.Height), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
 
 	defer C.free(unsafe.Pointer(text))
 	defer C.free(unsafe.Pointer(font))

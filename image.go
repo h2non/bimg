@@ -233,3 +233,14 @@ func (i *Image) Image() []byte {
 func (i *Image) Length() int {
 	return len(i.buffer)
 }
+
+// AutoRotate the image to be 'up' by default (setting Orientation=1) with vips.
+func (i *Image) AutoRotate() ([]byte, error) {
+	options := Options{AutoRotate: true}
+	image, err := AutoRotate(i.buffer, options)
+	if err != nil {
+		return nil, err
+	}
+	i.buffer = image
+	return image, nil
+}

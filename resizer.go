@@ -291,6 +291,7 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, error) {
 	var err error
 	var rotated bool
+	var direction Direction = -1
 
 	if o.NoAutoRotate == false {
 		rotation, flip := calculateRotationAndFlip(image, o.Rotate)
@@ -304,18 +305,20 @@ func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, erro
 
 	if o.Rotate > 0 {
 		rotated = true
-		image, err = vipsRotate(image, getAngle(o.Rotate))
+		image, err = vipsRotate(image, o.Rotate)
 	}
 
 	if o.Flip {
-		rotated = true
-		image, err = vipsFlip(image, Vertical)
+		direction = Horizontal
+	} else if o.Flop {
+		direction = Vertical
 	}
 
-	if o.Flop {
+	if direction != -1 {
 		rotated = true
-		image, err = vipsFlip(image, Horizontal)
+		image, err = vipsFlip(image, direction)
 	}
+
 	return image, rotated, err
 }
 
@@ -330,6 +333,9 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 	}
 	if w.Width == 0 {
 		w.Width = int(math.Floor(float64(image.Xsize / 6)))
+	}
+	if w.Height == 0 {
+		w.Height = int(math.Floor(float64(image.Ysize / 6)))
 	}
 	if w.DPI == 0 {
 		w.DPI = 150
@@ -443,7 +449,11 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	switch {
 	// Fixed width and height
 	case o.Width > 0 && o.Height > 0:
-		factor = math.Min(xfactor, yfactor)
+		if o.Crop {
+			factor = math.Min(xfactor, yfactor)
+		} else {
+			factor = math.Max(xfactor, yfactor)
+		}
 	// Fixed width, auto height
 	case o.Width > 0:
 		if o.Crop {
