@@ -152,14 +152,18 @@ var ColorBlack = Color{0, 0, 0}
 
 // Watermark represents the text-based watermark supported options.
 type Watermark struct {
-	Width       int
-	DPI         int
-	Margin      int
-	Opacity     float32
-	NoReplicate bool
-	Text        string
-	Font        string
-	Background  Color
+	WatermarkType string
+	Left          int
+	Top           int
+	Width         int
+	Height        int
+	DPI           int
+	Margin        int
+	Opacity       float32
+	NoReplicate   bool
+	Text          string
+	Font          string
+	Background    Color
 }
 
 // WatermarkImage represents the image-based watermark supported options.
@@ -207,6 +211,7 @@ type Options struct {
 	NoAutoRotate   bool
 	NoProfile      bool
 	Interlace      bool
+	AutoRotate     bool
 	StripMetadata  bool
 	Trim           bool
 	Lossless       bool

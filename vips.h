@@ -41,7 +41,11 @@ typedef struct {
 } WatermarkTextOptions;
 
 typedef struct {
+	const char   *WatermarkType;
+	int    Left;
+	int    Top;
 	int    Width;
+	int    Height;
 	int    DPI;
 	int    Margin;
 	int    NoReplicate;
@@ -178,33 +182,16 @@ vips_type_find_save_bridge(int t) {
 
 int
 vips_rotate(VipsImage *in, VipsImage **out, int angle) {
-	int rotate = VIPS_ANGLE_D0;
-
 	angle %= 360;
 
-	if (angle == 45) {
-		rotate = VIPS_ANGLE45_D45;
-	} else if (angle == 90) {
-		rotate = VIPS_ANGLE_D90;
-	} else if (angle == 135) {
-		rotate = VIPS_ANGLE45_D135;
-	} else if (angle == 180) {
-		rotate = VIPS_ANGLE_D180;
-	} else if (angle == 225) {
-		rotate = VIPS_ANGLE45_D225;
-	} else if (angle == 270) {
-		rotate = VIPS_ANGLE_D270;
-	} else if (angle == 315) {
-		rotate = VIPS_ANGLE45_D315;
-	} else {
-		angle = 0;
-	}
+	vips_addalpha(in, out, NULL);
+	in = *out;
+	return vips_similarity(in, out, "angle", (float)angle, NULL);
+}
 
-	if (angle > 0 && angle % 90 != 0) {
-		return vips_rot45(in, out, "angle", rotate, NULL);
-	} else {
-		return vips_rot(in, out, rotate, NULL);
-	}
+int
+vips_autorotate(VipsImage *in, VipsImage **out) {
+  return vips_autorot(in, out, NULL);
 }
 
 int
@@ -402,20 +389,59 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
 	t[0] = in;
 
-	// Make the mask.
-	if (
-		vips_text(&t[1], to->Text,
-			"width", o->Width,
-			"dpi", o->DPI,
-			"font", to->Font,
-			NULL) ||
-		vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
-		vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
-		vips_embed(t[3], &t[4], 100, 100, t[3]->Xsize + o->Margin, t[3]->Ysize + o->Margin, NULL)
-		) {
-		g_object_unref(base);
-		return 1;
+	// Make the mask depending on if watermarktype is banner, rating or default
+	if (strncmp(o->WatermarkType,"Banner", 7) == 0) {
+		int banner_width = vips_image_get_width(t[0]);
+		int banner_height = vips_image_get_height(t[0]);
+		
+		if (
+			vips_text(&t[1], to->Text,
+				"width", o->Width,
+				"height", o->Height,
+				"font", to->Font,
+				"align", VIPS_ALIGN_CENTRE,
+				NULL) ||
+			vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
+			vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
+			vips_embed(t[3], &t[4], (banner_width - vips_image_get_width(t[1]))/2, (banner_height - vips_image_get_height(t[1]))/2, banner_width, banner_height,  NULL)
+			) {
+			g_object_unref(base);
+			return 1;
+		}
+	} else if (strncmp(o->WatermarkType,"Rating", 6) == 0) {
+		int img_width = vips_image_get_width(t[0]);
+		int img_height = vips_image_get_height(t[0]);
+
+		if (
+			vips_text(&t[1], to->Text,
+				"width", o->Width,
+				"height", o->Height,
+				"font", to->Font,
+				NULL) ||
+			vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
+			vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
+			vips_embed(t[3], &t[4], img_width - vips_image_get_width(t[1]), img_height-vips_image_get_height(t[1]), img_width, img_height, NULL)
+			) {
+			g_object_unref(base);
+			return 1;
+		}
+	} else {
+		if (
+			vips_text(&t[1], to->Text,
+				"width", o->Width,
+				"height", o->Height,
+				"font", to->Font,
+				"align", VIPS_ALIGN_CENTRE,
+				NULL) ||
+			vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
+			vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
+			vips_embed(t[3], &t[4], o->Left, o->Top, t[3]->Xsize + o->Left, t[3]->Ysize + o->Top, NULL)
+			) {
+			g_object_unref(base);
+			return 1;
+		}
 	}
+	
 
 	// Replicate if necessary
 	if (o->NoReplicate != 1) {
@@ -561,3 +587,4 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 	return 0;
 #endif
 }
+
