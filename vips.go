@@ -233,7 +233,7 @@ func vipsRotate(image *C.VipsImage, angle Angle) (*C.VipsImage, error) {
 	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_rotate(image, &out, C.int(angle))
+	err := C.vips_rotate_bimg(image, &out, C.int(angle))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
