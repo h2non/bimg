@@ -89,7 +89,7 @@ before_install:
   - vips --vips-version
 
 install:
-  - go get -u github.com/golang/lint/golint
+  - go get -u golang.org/x/lint/golint
 
 script:
   - diff -u <(echo -n) <(gofmt -s -d ./)
