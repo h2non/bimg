@@ -9,7 +9,7 @@ openslide_version_minimum=3.4.0
 openslide_version_latest_major_minor=3.4
 openslide_version_latest_patch=1
 
-tarbal_url="https://github.com/jcupitt/libvips/releases/download/v$vips_version_full/vips-$vips_version_full.tar.gz"
+tarbal_url="https://github.com/libvips/libvips/releases/download/v$vips_version_full/vips-$vips_version_full.tar.gz"
 
 install_libvips_from_source() {
   # Download tarball
@@ -156,7 +156,7 @@ if [ $enable_openslide -eq 1 ] && [ -z $vips_with_openslide ] && [ $openslide_ex
         # RHEL/CentOS 7
         echo "Installing libopenslide dependencies via yum"
         yum groupinstall -y "Development Tools"
-        yum install -y tar curl libpng-devel libjpeg-devel libxml2-devel zlib-devel openjpeg-devel libtiff-devel gdk-pixbuf2-devel sqlite-devel cairo-devel glib2-devel
+        yum install -y tar curl libpng-devel libjpeg-devel libxml2-devel zlib-devel openjpeg-devel libtiff-devel gdk-pixbuf2-devel sqlite-devel cairo-devel glib2-devel expat-devel
         install_libopenslide_from_source "--prefix=/usr"
         ;;
       "Red Hat Enterprise Linux release 6."*|"CentOS release 6."*|"Scientific Linux release 6."*)
