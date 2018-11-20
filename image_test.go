@@ -129,17 +129,29 @@ func TestImageExtractZero(t *testing.T) {
 }
 
 func TestImageEnlarge(t *testing.T) {
-	buf, err := initImage("test.png").Enlarge(500, 375)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
+	// test.png is 400x300
+	tests := []struct {
+		input    []int
+		expected []int
+	}{
+		{[]int{500, 375}, []int{500, 375}},
+		{[]int{577, 1250}, []int{577, 433}},
+		{[]int{412, 3460}, []int{412, 309}},
 	}
 
-	err = assertSize(buf, 500, 375)
-	if err != nil {
-		t.Error(err)
-	}
+	for c, test := range tests {
+		buf, err := initImage("test.png").Enlarge(test.input[0], test.input[1])
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
 
-	Write("testdata/test_enlarge_out.jpg", buf)
+		err = assertSize(buf, test.expected[0], test.expected[1])
+		if err != nil {
+			t.Error(err)
+		}
+
+		Write(fmt.Sprintf("testdata/test_enlarge_out_%d.jpg", c), buf)
+	}
 }
 
 func TestImageEnlargeAndCrop(t *testing.T) {

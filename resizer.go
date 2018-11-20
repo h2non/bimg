@@ -443,7 +443,15 @@ func imageCalculations(o *Options, inWidth, inHeight int) float64 {
 	switch {
 	// Fixed width and height
 	case o.Width > 0 && o.Height > 0:
-		factor = math.Min(xfactor, yfactor)
+		// Use minimum factor for croping or downscaling
+		// use maximum factor for upscaling
+		// Maybe this should be:
+		// if o.Crop || (o.Width <= inWidth || o.Height <= inHeight) {
+		if o.Crop || (o.Width < inWidth || o.Height < inHeight) {
+			factor = math.Min(xfactor, yfactor)
+		} else {
+			factor = math.Max(xfactor, yfactor)
+		}
 	// Fixed width, auto height
 	case o.Width > 0:
 		if o.Crop {
