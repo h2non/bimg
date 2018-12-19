@@ -12,6 +12,10 @@ import (
 	"math"
 )
 
+var (
+	ErrExtractAreaParamsRequired = errors.New("extract area width/height params are required")
+)
+
 // resizer is used to transform a given image as byte buffer
 // with the passed options.
 func resizer(buf []byte, o Options) ([]byte, error) {
