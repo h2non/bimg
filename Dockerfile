@@ -21,7 +21,7 @@ RUN cd /tmp && \
   curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
   tar zvxf vips-${LIBVIPS_VERSION}.tar.gz && \
   cd /tmp/vips-${LIBVIPS_VERSION} && \
-	CFLAGS="-g -Wall" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -Wall" \
+	CFLAGS="-g -O3 -Wall" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3 -Wall" \
     ./configure \
     --disable-debug \
     --disable-dependency-tracking \
@@ -66,12 +66,11 @@ RUN dep ensure
 RUN GO111MODULE=off gometalinter github.com/h2non/bimg
 
 # Compile the binary, to verify compile-time correctness. The build should fail if this step fails.
-RUN GO111MODULE=off go build -a \
-    -ldflags="-h -X bimg.Version=${BIMG_VERSION}" \
-    github.com/h2non/bimg
+RUN GO111MODULE=off go build -a github.com/h2non/bimg
 
 # Clean up
-RUN DEBIAN_FRONTEND=noninteractive apt-get remove -y automake build-essential && \
+RUN DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y automake build-essential && \
+  apt-get remove --purge -y $(apt-cache pkgnames | grep -- '-dev$') && \
   apt-get autoremove -y && \
   apt-get autoclean && \
   apt-get clean && \
@@ -82,11 +81,6 @@ FROM ubuntu:16.04
 ARG GO_VERSION
 ARG LIBVIPS_VERSION
 ARG BIMG_VERSION
-
-# Exposing version information in parent images
-ONBUILD ENV GO_VERSION ${GO_VERSION}
-ONBUILD ENV LIBVIPS_VERSION ${LIBVIPS_VERSION}
-ONBUILD ENV BIMG_VERSION ${BIMG_VERSION}
 
 ENV GOPATH /go
 ENV PATH ${GOPATH}/bin:/usr/local/go/bin:${PATH}
