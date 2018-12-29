@@ -13,3 +13,6 @@ trim_trailing_whitespace = false
 
 [*.yml]
 indent_style = space
+
+[*.json]
+indent_style = space

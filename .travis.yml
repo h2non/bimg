@@ -15,7 +15,7 @@ go:
 
 env:
   global:
-    - DCMD="docker run --rm -i -v ${TRAVIS_BUILD_DIR}:/go/src/github/h2non/bimg h2non/bimg:ci"
+    - DCMD="docker run --rm -i -v ${TRAVIS_BUILD_DIR}:/go/src/github/h2non/bimg -w /go/src/github/h2non/bimg h2non/bimg:ci"
   matrix:
 #    - LIBVIPS=7.42.3
 #    - LIBVIPS=8.2.3
@@ -39,11 +39,8 @@ install:
   - true
 
 script:
-  - echo "executing ${DCMD}"
   - echo "go test -test.v -test.race -test.covermode=atomic -test.coverprofile=coverage.out" | ${DCMD}
-  #- diff -u <(echo -n) <(go vet ./)
-  #- diff -u <(echo -n) <(gometalinter --disable-all -E golint ./)
-  #- go test -test.v -test.race -test.covermode=atomic -test.coverprofile=coverage.out
+  - echo "gometalinter --errors --disable-all -E golint -E vet -E megacheck ./..." | ${DCMD}
 
 after_success:
   - goveralls -coverprofile=coverage.out -service=travis-ci

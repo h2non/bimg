@@ -4,8 +4,9 @@
   "Vendor": true,
   "Test": true,
   "EnableAll": false,
-  "Checkstyle": true,
-  "Errors": true,
+  "Checkstyle": false,
+  "Errors": false,
+  "EnableGC": true,
   "Enable": [
     "deadcode",
     "dupl",
@@ -32,7 +33,7 @@
     "gotype",
     "errcheck",
     "gosec disabled for now",
-    "gosec_"
+    "gosec"
   ],
   "Exclude": [
     "Errors unhandled",
