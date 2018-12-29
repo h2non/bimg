@@ -10,17 +10,18 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
   apt-get install --no-install-recommends -y \
   ca-certificates curl \
   automake build-essential gcc git libc6-dev make \
-  gobject-introspection gtk-doc-tools libglib2.0-dev libjpeg-turbo8-dev libpng12-dev \
-  libwebp-dev libtiff5-dev libgif-dev libexif-dev libxml2-dev libpoppler-glib-dev \
-  swig libmagickwand-dev libpango1.0-dev libmatio-dev libopenslide-dev libcfitsio-dev \
-  libgsf-1-dev fftw3-dev liborc-0.4-dev librsvg2-dev
+  libglib2.0-dev libexpat1-dev \
+  libjpeg-turbo8-dev libpng12-dev libwebp-dev libtiff5-dev libgif-dev libgsf-1-dev \
+  libexif-dev libpoppler-glib-dev librsvg2-dev libopenslide-dev \
+  libmagickwand-dev libpango1.0-dev libmatio-dev libcfitsio-dev \
+  fftw3-dev liborc-0.4-dev liblcms2-dev
 
 # Build libvips
 RUN cd /tmp && \
   curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
   tar zvxf vips-${LIBVIPS_VERSION}.tar.gz && \
   cd /tmp/vips-${LIBVIPS_VERSION} && \
-	CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0 \
+	CFLAGS="-g -Wall" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -Wall" \
     ./configure \
     --disable-debug \
     --disable-dependency-tracking \
@@ -29,7 +30,6 @@ RUN cd /tmp && \
     --enable-gtk-doc-html=no \
     --enable-gtk-doc=no \
     --enable-pyvips8=no \
-    --without-orc \
     --without-python && \
   make && \
   make install && \
