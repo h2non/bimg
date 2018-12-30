@@ -45,8 +45,10 @@ WORKDIR /tmp
 RUN curl -fsSL https://git.io/vp6lP -o instgm.sh && chmod u+x instgm.sh && ./instgm.sh -b "${GOPATH}/bin"
 
 # Setup our Go environment
+# GOROOT is needed for certain tools (e.g.: staticcheck)
 ENV GOPATH /go
-ENV PATH ${GOPATH}/bin:/usr/local/go/bin:${PATH}
+ENV GOROOT /usr/local/go
+ENV PATH ${GOPATH}/bin:${GOROOT}/bin:${PATH}
 
 
 WORKDIR /go/src/github.com/h2non/bimg/
@@ -68,7 +70,6 @@ RUN GO111MODULE=off go build -a github.com/h2non/bimg
 
 # Clean up
 RUN DEBIAN_FRONTEND=noninteractive apt-get remove --purge -y automake build-essential && \
-  apt-get remove --purge -y $(apt-cache pkgnames | grep -- '-dev$') && \
   apt-get autoremove -y && \
   apt-get autoclean && \
   apt-get clean && \
@@ -81,7 +82,8 @@ ARG LIBVIPS_VERSION
 ARG BIMG_VERSION
 
 ENV GOPATH /go
-ENV PATH ${GOPATH}/bin:/usr/local/go/bin:${PATH}
+ENV GOROOT /usr/local/go
+ENV PATH ${GOPATH}/bin:${GOROOT}/bin:${PATH}
 
 # @todo optimise a bit so that resulting image is smaller.
 # Squashing the result into a single layer
