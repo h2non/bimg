@@ -76,6 +76,10 @@ type vipsWatermarkTextOptions struct {
 	Font *C.char
 }
 
+type vipsOptions struct {
+	NumOfPages C.int
+}
+
 func init() {
 	Initialize()
 }
@@ -293,6 +297,10 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 }
 
 func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
+	return vipsReadWithOptions(buf, Options{})
+}
+
+func vipsReadWithOptions(buf []byte, o Options) (*C.VipsImage, ImageType, error) {
 	var image *C.VipsImage
 	imageType := vipsImageType(buf)
 
@@ -303,7 +311,14 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
 	length := C.size_t(len(buf))
 	imageBuf := unsafe.Pointer(&buf[0])
 
-	err := C.vips_init_image(imageBuf, length, C.int(imageType), &image)
+	// NumOfPages option is used to select the number of pages while converting multi-page files like PDF, GIF and TIF to image.
+	// Setting NumOfPages default to -1, which means include all the pages until the end of the document
+	if C.int(o.NumOfPages) == 0 {
+		o.NumOfPages = -1
+	}
+
+	opts := vipsOptions{NumOfPages: C.int(o.NumOfPages)}
+	err := C.vips_init_image(imageBuf, length, C.int(imageType), &image, (*C.Options)(unsafe.Pointer(&opts)))
 	if err != 0 {
 		return nil, UNKNOWN, catchVipsError()
 	}
