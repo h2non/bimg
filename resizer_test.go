@@ -30,7 +30,7 @@ func TestResize(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_out.jpg", newImg)
 }
 
 func TestResizeVerticalImage(t *testing.T) {
@@ -55,17 +55,12 @@ func TestResizeVerticalImage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bufWebp, err := Read("testdata/vertical.webp")
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	images := []struct {
 		format ImageType
 		buf    []byte
 	}{
 		{JPEG, bufJpeg},
-		{WEBP, bufWebp},
 	}
 
 	for _, source := range images {
@@ -74,7 +69,6 @@ func TestResizeVerticalImage(t *testing.T) {
 			if err != nil {
 				t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
 			}
-
 			format := DetermineImageType(image)
 			if format != source.format {
 				t.Fatalf("Image format is invalid. Expected: %#v got %v", ImageTypeName(source.format), ImageTypeName(format))
@@ -88,7 +82,7 @@ func TestResizeVerticalImage(t *testing.T) {
 				t.Fatalf("Invalid width: %d", size.Width)
 			}
 
-			Write(
+			WriteToFileAndCleanup(t,
 				fmt.Sprintf(
 					"testdata/test_vertical_%dx%d_out.%s",
 					options.Width,
@@ -197,7 +191,7 @@ func TestRotate(t *testing.T) {
 		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_rotate_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_rotate_out.jpg", newImg)
 }
 
 func TestInvalidRotateDegrees(t *testing.T) {
@@ -218,7 +212,7 @@ func TestInvalidRotateDegrees(t *testing.T) {
 		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_rotate_invalid_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_rotate_invalid_out.jpg", newImg)
 }
 
 func TestCorruptedImage(t *testing.T) {
@@ -239,7 +233,7 @@ func TestCorruptedImage(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_corrupt_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_corrupt_out.jpg", newImg)
 }
 
 func TestNoColorProfile(t *testing.T) {
@@ -276,7 +270,7 @@ func TestEmbedExtendColor(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extend_white_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_extend_white_out.jpg", newImg)
 }
 
 func TestEmbedExtendWithCustomColor(t *testing.T) {
@@ -293,7 +287,7 @@ func TestEmbedExtendWithCustomColor(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extend_background_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_extend_background_out.jpg", newImg)
 }
 
 func TestGaussianBlur(t *testing.T) {
@@ -310,7 +304,7 @@ func TestGaussianBlur(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_gaussian_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_gaussian_out.jpg", newImg)
 }
 
 func TestSharpen(t *testing.T) {
@@ -327,7 +321,7 @@ func TestSharpen(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_sharpen_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_sharpen_out.jpg", newImg)
 }
 
 func TestExtractWithDefaultAxis(t *testing.T) {
@@ -344,7 +338,7 @@ func TestExtractWithDefaultAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extract_defaults_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_extract_defaults_out.jpg", newImg)
 }
 
 func TestExtractCustomAxis(t *testing.T) {
@@ -361,7 +355,7 @@ func TestExtractCustomAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extract_custom_axis_out.jpg", newImg)
+	WriteToFileAndCleanup(t, "testdata/test_extract_custom_axis_out.jpg", newImg)
 }
 
 func TestConvert(t *testing.T) {
@@ -435,7 +429,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	Write("testdata/transparent_out.png", newImg)
+	WriteToFileAndCleanup(t, "testdata/transparent_out.png", newImg)
 }
 
 func TestRotationAndFlip(t *testing.T) {
@@ -493,7 +487,7 @@ func TestRotationAndFlip(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+		WriteToFileAndCleanup(t, fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
 	}
 }
 
@@ -745,4 +739,11 @@ func BenchmarkWatermarkImageWebp(b *testing.B) {
 		},
 	}
 	runBenchmarkResize("test.webp", options, b)
+}
+
+func WriteToFileAndCleanup(t *testing.T, filePath string, newImg []byte) {
+	if err := Write(filePath, newImg); err != nil {
+		t.Errorf("Failed to write the processed image to the output file %v", filePath)
+	}
+	os.Remove(filePath)
 }
