@@ -590,6 +590,76 @@ func TestIfBothSmartCropOptionsAreIdentical(t *testing.T) {
 	}
 }
 
+func TestSkipCropIfTooSmall(t *testing.T) {
+	testCases := [] struct {
+		name string
+		options Options
+	} {
+			{
+				name: "smart crop",
+				options: 	Options{
+					Width:   140,
+					Height:  140,
+					Crop:    true,
+					Gravity: GravitySmart,
+				},
+			},
+		{
+			name: "centre crop",
+			options: 	Options{
+				Width:   140,
+				Height:  140,
+				Crop:    true,
+				Gravity: GravityCentre,
+			},
+		},
+		{
+			name: "embed",
+			options: 	Options{
+				Width:   140,
+				Height:  140,
+				Embed:  true,
+			},
+		},
+		{
+			name: "extract",
+			options: 	Options{
+				Top: 0,
+				Left: 0,
+				AreaWidth:   140,
+				AreaHeight:  140,
+			},
+		},
+	}
+
+	testImg, err := os.Open("testdata/test_bad_extract_area.jpg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer testImg.Close()
+
+	testImgByte, err := ioutil.ReadAll(testImg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+
+			croppedImage, err := Resize(testImgByte, tc.options)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			size, _ := Size(croppedImage)
+			if tc.options.Height-size.Height > 1 || tc.options.Width-size.Width > 1 {
+				t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
+			}
+			t.Logf("size for %s is %dx%d", tc.name, size.Width, size.Height)
+		})
+	}
+}
+
 func runBenchmarkResize(file string, o Options, b *testing.B) {
 	buf, _ := Read(path.Join("testdata", file))
 
