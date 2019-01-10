@@ -364,6 +364,54 @@ func TestExtractCustomAxis(t *testing.T) {
 	Write("testdata/test_extract_custom_axis_out.jpg", newImg)
 }
 
+func TestExtractOrEmbedImage(t *testing.T) {
+	buf, _ := Read("testdata/test.jpg")
+	input, _, err := loadImage(buf)
+	if err != nil {
+		t.Fatalf("Unable to load image %s", err)
+	}
+
+	o := Options{
+		Top:    10,
+		Left:   10,
+		Width:  100,
+		Height: 200,
+
+		// Fields to test
+		AreaHeight: 0,
+		AreaWidth:  0,
+
+		Quality: 100, /* Needs a value to satisfy libvips */
+	}
+
+	result, err := extractOrEmbedImage(input, o)
+	if err != nil {
+		if err == ErrExtractAreaParamsRequired {
+			t.Fatalf("Expecting AreaWidth and AreaHeight to have been defined")
+		}
+
+		t.Fatalf("Unknown error occurred %s", err)
+	}
+
+	image, err := saveImage(result, o)
+	if err != nil {
+		t.Fatalf("Failed saving image %s", err)
+	}
+
+	test, err := Size(image)
+	if err != nil {
+		t.Fatalf("Failed fetching the size %s", err)
+	}
+
+	if test.Height != o.Height {
+		t.Errorf("Extract failed, resulting Height %d doesn't match %d", test.Height, o.Height)
+	}
+
+	if test.Width != o.Width {
+		t.Errorf("Extract failed, resulting Width %d doesn't match %d", test.Width, o.Width)
+	}
+}
+
 func TestConvert(t *testing.T) {
 	width, height := 300, 240
 	formats := [3]ImageType{PNG, WEBP, JPEG}
