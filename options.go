@@ -223,4 +223,5 @@ type Options struct {
 	Sharpen        Sharpen
 	Threshold      float64
 	OutputICC      string
+	NumOfPages     int
 }
