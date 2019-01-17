@@ -265,6 +265,13 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		left, top = int(math.Max(float64(left), 0)), int(math.Max(float64(top), 0))
 		image, err = vipsExtract(image, left, top, width, height)
 		break
+	// Order of case o.EmbedWithoutExtension and o.Embed is important
+	// For EmbedWithoutExtension to work both the options are set to true
+	// EmbedWithoutExtension embeds the image without the background extension to maintain the aspect ratio
+	case o.EmbedWithoutExtension:
+		image, err = vipsEmbed(image, 0, 0, inWidth, inHeight, o.Extend, o.Background)
+		break
+	// Embed embeds the image with the background extension to maintain the aspect ratio
 	case o.Embed:
 		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend, o.Background)
