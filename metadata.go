@@ -30,7 +30,12 @@ func Size(buf []byte) (ImageSize, error) {
 	if err != nil {
 		return ImageSize{}, err
 	}
-
+	if metadata.Orientation%2 == 0 {
+		return ImageSize{
+			Height: int(metadata.Size.Height),
+			Width:  int(metadata.Size.Width),
+		}, nil
+	}
 	return ImageSize{
 		Width:  int(metadata.Size.Width),
 		Height: int(metadata.Size.Height),
