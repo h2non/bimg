@@ -125,7 +125,7 @@ if [ $enable_openslide -eq 1 ] && [ -z $vips_with_openslide ] && [ $openslide_ex
     DISTRO=$(lsb_release -c -s)
     echo "Detected Debian Linux '$DISTRO'"
     case "$DISTRO" in
-      jessie|vivid|wily|xenial|stretch)
+      jessie|vivid|wily|xenial|stretch|loki)
         # Debian 9, Debian 8, Ubuntu 15
         echo "Installing libopenslide via apt-get"
         apt-get install -y libopenslide-dev
@@ -209,7 +209,7 @@ if [ -f /etc/debian_version ]; then
   DISTRO=$(lsb_release -c -s)
   echo "Detected Debian Linux '$DISTRO'"
   case "$DISTRO" in
-    jessie|trusty|utopic|vivid|wily|xenial|qiana|rebecca|rafaela|freya|rosa|sarah|serena)
+    jessie|trusty|utopic|vivid|wily|xenial|qiana|rebecca|rafaela|freya|rosa|sarah|serena|loki)
       # Debian 8, Ubuntu 14.04+, Mint 17+
       echo "Installing libvips dependencies via apt-get"
       apt-get install -y automake build-essential gobject-introspection gtk-doc-tools libglib2.0-dev libjpeg-dev libpng12-dev libwebp-dev libtiff5-dev libexif-dev libgsf-1-dev liblcms2-dev libxml2-dev swig libmagickcore-dev curl
