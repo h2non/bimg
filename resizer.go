@@ -125,6 +125,12 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Apply Gamma filter, if necessary
+	image, err = applyGamma(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	return saveImage(image, o)
 }
 
@@ -380,6 +386,17 @@ func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsIm
 		return image, nil
 	}
 	return vipsFlattenBackground(image, o.Background)
+}
+
+func applyGamma(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+	var err error
+	if o.Gamma > 0 {
+		image, err = vipsGamma(image, o.Gamma)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return image, nil
 }
 
 func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
