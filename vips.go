@@ -714,3 +714,15 @@ func vipsAutoLevel(image *C.VipsImage) (*C.VipsImage, error) {
 	}
 	return out, nil
 }
+
+func vipsModulation(image *C.VipsImage, brightness float64, saturation float64, hue float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	var outHsv *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_modulation_bridge(image, &out, &outHsv, C.double(brightness), C.double(saturation), C.double(hue))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}

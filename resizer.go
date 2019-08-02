@@ -131,6 +131,12 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Apply modulation, if necessary
+	image, err = applyModulation(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	return saveImage(image, o)
 }
 
@@ -583,6 +589,17 @@ func applyAutoLevel(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	if o.AutoLevel {
 		fmt.Println("applyAutoLevel")
 		image, err = vipsAutoLevel(image)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return image, nil
+}
+
+func applyModulation(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+	var err error
+	if o.BshBrightness != 0 || o.BshSaturation != 0 || o.BshHue != 0 {
+		image, err = vipsModulation(image, o.BshBrightness, o.BshSaturation, o.BshHue)
 		if err != nil {
 			return nil, err
 		}

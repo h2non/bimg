@@ -565,3 +565,17 @@ func TestAutolevel(t *testing.T) {
 		t.Errorf("Write failed: %#v", err)
 	}
 }
+
+func TestImageModulation(t *testing.T) {
+	buf, err := Read("./testdata/northern_cardinal_bird.jpg")
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	buf, err = NewImage(buf).ModulateImage(-10, 10, 10)
+	if err != nil {
+		t.Errorf("ModulateImage failed: %#v", err)
+	}
+
+	Write("testdata/northern_cardinal_bird_modulation.png", buf)
+}
