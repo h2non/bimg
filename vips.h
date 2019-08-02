@@ -566,3 +566,56 @@ int vips_autolevel_bridge(VipsImage *in, VipsImage **out)
 {
   return vips_scale(in, out, NULL);
 }
+
+int vips_modulation_bridge(VipsImage *in, VipsImage **out, VipsImage **outHsv, double brightness, double saturation, double hue)
+{
+  double param[3];
+  param[0] = hue;
+  param[1] = saturation;
+  param[2] = brightness;
+  for (int i = 0; i < 3; i++)
+  {
+    param[i] = 255.0 * (param[i] / 100.0);
+    if (param[i] > 255.0)
+    {
+      param[i] = 255.0;
+    }
+    else if (param[i] < -255.0)
+    {
+      param[i] = -255.0;
+    }
+  }
+
+  double a[] = {1.0, 1.0, 1.0};
+  double b[] = {param[0], param[1], param[2]};
+
+  VipsImage *base = vips_image_new();
+  if (has_alpha_channel(in))
+  {
+    VipsImage **t = (VipsImage **)vips_object_local_array(VIPS_OBJECT(base), 4);
+    if (
+        vips_extract_band(in, &t[0], in->Bands - 1, "n", 1, NULL) ||
+        vips_extract_band(in, &t[1], 0, "n", in->Bands - 1, NULL) ||
+        vips_colourspace(t[1], &t[2], VIPS_INTERPRETATION_HSV, NULL) ||
+        vips_linear(t[2], &t[3], a, b, 3, NULL) ||
+        vips_bandjoin2(t[3], t[0], out, NULL))
+    {
+      g_object_unref(base);
+      return 1;
+    }
+  }
+  else
+  {
+    VipsImage **t = (VipsImage **)vips_object_local_array(VIPS_OBJECT(base), 1);
+    if (
+        vips_colourspace(in, &t[0], VIPS_INTERPRETATION_HSV, NULL) ||
+        vips_linear(t[0], out, a, b, 3, NULL))
+    {
+      g_object_unref(base);
+      return 1;
+    }
+  }
+
+  g_object_unref(base);
+  return 0;
+}
