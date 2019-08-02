@@ -566,6 +566,20 @@ func TestAutolevel(t *testing.T) {
 	}
 }
 
+func TestBrightnessContrast(t *testing.T) {
+	buf, err := Read("./testdata/northern_cardinal_bird.jpg")
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	buf, err = NewImage(buf).BrightnessContrastImage(0, 30)
+	if err != nil {
+		t.Errorf("BrightnessContrastImage failed: %#v", err)
+	}
+
+	Write("testdata/northern_cardinal_bird_brightness_contrast.png", buf)
+}
+
 func TestImageModulation(t *testing.T) {
 	buf, err := Read("./testdata/northern_cardinal_bird.jpg")
 	if err != nil {

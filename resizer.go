@@ -131,6 +131,12 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Change brightness and contrast, if necessary
+	image, err = alterBrightnessContrast(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	// Apply modulation, if necessary
 	image, err = applyModulation(image, o)
 	if err != nil {
@@ -589,6 +595,18 @@ func applyAutoLevel(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	if o.AutoLevel {
 		fmt.Println("applyAutoLevel")
 		image, err = vipsAutoLevel(image)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return image, nil
+}
+
+func alterBrightnessContrast(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+	var err error
+
+	if o.BcBrightness != 0 || o.BcContrast != 0 {
+		image, err = vipsBrightnessContrast(image, o.BcBrightness, o.BcContrast)
 		if err != nil {
 			return nil, err
 		}
