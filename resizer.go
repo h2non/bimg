@@ -125,6 +125,12 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Apply Gamma filter, if necessary
+	image, err = applyGamma(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	// Apply autolevel, if necessary
 	image, err = applyAutoLevel(image, o)
 	if err != nil {
@@ -588,6 +594,17 @@ func getAngle(angle Angle) Angle {
 		angle = angle - divisor
 	}
 	return Angle(math.Min(float64(angle), 270))
+}
+
+func applyGamma(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+	var err error
+	if o.Gamma > 0 {
+		image, err = vipsGamma(image, o.Gamma)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return image, nil
 }
 
 func applyAutoLevel(image *C.VipsImage, o Options) (*C.VipsImage, error) {
