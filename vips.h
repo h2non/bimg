@@ -561,3 +561,8 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 	return 0;
 #endif
 }
+
+int vips_autolevel_bridge(VipsImage *in, VipsImage **out)
+{
+  return vips_scale(in, out, NULL);
+}

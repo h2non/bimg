@@ -550,3 +550,18 @@ func assertSize(buf []byte, width, height int) error {
 	}
 	return nil
 }
+
+func TestAutolevel(t *testing.T) {
+	buf, err := Read("./testdata/cells.png")
+	if err != nil {
+		t.Errorf("Cannot read the image: %#v", err)
+	}
+	buf, err = NewImage(buf).AutoLevel()
+	if err != nil {
+		t.Errorf("AutoLevel failed: %#v", err)
+	}
+	err = Write("./testdata/cells_autolevel.png", buf)
+	if err != nil {
+		t.Errorf("Write failed: %#v", err)
+	}
+}

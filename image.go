@@ -185,6 +185,12 @@ func (i *Image) Trim() ([]byte, error) {
 	return i.Process(options)
 }
 
+// AutoLevel applies gamma correction on the given image.
+func (i *Image) AutoLevel() ([]byte, error) {
+	options := Options{AutoLevel: true}
+	return i.Process(options)
+}
+
 // Process processes the image based on the given transformation options,
 // talking with libvips bindings accordingly and returning the resultant
 // image buffer.
