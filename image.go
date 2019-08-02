@@ -191,6 +191,12 @@ func (i *Image) AutoLevel() ([]byte, error) {
 	return i.Process(options)
 }
 
+// BrightnessContrastImage changes brightness and contrast of the given image.
+func (i *Image) BrightnessContrastImage(brightness float64, contrast float64) ([]byte, error) {
+	options := Options{BcBrightness: brightness, BcContrast: contrast}
+	return i.Process(options)
+}
+
 // ModulateImage changes brightness and contrast of the given image.
 func (i *Image) ModulateImage(brightness float64, saturation float64, hue float64) ([]byte, error) {
 	options := Options{BshBrightness: brightness, BshSaturation: saturation, BshHue: hue}

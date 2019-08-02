@@ -4,6 +4,8 @@
 #include <vips/foreign.h>
 #include <vips/vips7compat.h>
 
+#define PI 3.141592653589793
+
 /**
  * Starting libvips 7.41, VIPS_ANGLE_x has been renamed to VIPS_ANGLE_Dx
  * "to help python". So we provide the macro to correctly build for versions
@@ -565,6 +567,48 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 int vips_autolevel_bridge(VipsImage *in, VipsImage **out)
 {
   return vips_scale(in, out, NULL);
+}
+
+int vips_brightnesscontrast_bridge(VipsImage *in, VipsImage **out, double brightness, double contrast)
+{
+  double slope;
+  double intercept;
+
+  slope = tan(PI * (contrast / 100.0 + 1.0) / 4.0);
+  if (slope < 0.0)
+    slope = 0.0;
+  intercept = 255.0 * (brightness / 100.0);
+  if (intercept > 255.0)
+  {
+    intercept = 255.0;
+  }
+  else if (intercept < -255.0)
+  {
+    intercept = -255.0;
+  }
+
+  if (has_alpha_channel(in))
+  {
+    VipsImage *base = vips_image_new();
+    VipsImage **t = (VipsImage **)vips_object_local_array(VIPS_OBJECT(base), 3);
+
+    if (
+        vips_extract_band(in, &t[0], in->Bands - 1, "n", 1, NULL) ||
+        vips_extract_band(in, &t[1], 0, "n", in->Bands - 1, NULL) ||
+        vips_linear(t[1], &t[2], &slope, &intercept, 1, NULL) ||
+        vips_bandjoin2(t[2], t[0], out, NULL))
+    {
+      g_object_unref(base);
+      return 1;
+    }
+
+    g_object_unref(base);
+    return 0;
+  }
+  else
+  {
+    return vips_linear(in, out, &slope, &intercept, 1, NULL);
+  }
 }
 
 int vips_modulation_bridge(VipsImage *in, VipsImage **out, VipsImage **outHsv, double brightness, double saturation, double hue)

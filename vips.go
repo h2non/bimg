@@ -715,6 +715,17 @@ func vipsAutoLevel(image *C.VipsImage) (*C.VipsImage, error) {
 	return out, nil
 }
 
+func vipsBrightnessContrast(image *C.VipsImage, brightness float64, contrast float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_brightnesscontrast_bridge(image, &out, C.double(brightness), C.double(contrast))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
 func vipsModulation(image *C.VipsImage, brightness float64, saturation float64, hue float64) (*C.VipsImage, error) {
 	var out *C.VipsImage
 	var outHsv *C.VipsImage
