@@ -551,6 +551,21 @@ func assertSize(buf []byte, width, height int) error {
 	return nil
 }
 
+func TestGamma(t *testing.T) {
+	buf, err := Read("./testdata/vertical.jpg")
+	if err != nil {
+		t.Errorf("Cannot read the image: %#v", err)
+	}
+	buf, err = NewImage(buf).Gamma(0.4)
+	if err != nil {
+		t.Errorf("Gamma failed: %#v", err)
+	}
+	err = Write("./testdata/vertical_gamma.png", buf)
+	if err != nil {
+		t.Errorf("Write failed: %#v", err)
+	}
+}
+
 func TestAutolevel(t *testing.T) {
 	buf, err := Read("./testdata/cells.png")
 	if err != nil {

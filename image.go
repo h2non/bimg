@@ -185,6 +185,12 @@ func (i *Image) Trim() ([]byte, error) {
 	return i.Process(options)
 }
 
+// Gamma returns the gamma filtered image buffer.
+func (i *Image) Gamma(exponent float64) ([]byte, error) {
+	options := Options{Gamma: exponent}
+	return i.Process(options)
+}
+
 // AutoLevel applies gamma correction on the given image.
 func (i *Image) AutoLevel() ([]byte, error) {
 	options := Options{AutoLevel: true}
