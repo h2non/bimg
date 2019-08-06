@@ -191,7 +191,7 @@ func (i *Image) Gamma(exponent float64) ([]byte, error) {
 	return i.Process(options)
 }
 
-// AutoLevel applies gamma correction on the given image.
+// AutoLevel equalize the colors of the given image.
 func (i *Image) AutoLevel() ([]byte, error) {
 	options := Options{AutoLevel: true}
 	return i.Process(options)
