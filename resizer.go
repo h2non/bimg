@@ -233,9 +233,9 @@ func shouldApplyEffects(o Options) bool {
 	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 || o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0
 }
 
-	func shouldReadSpecificImage(o Options) bool {
-		return o.PageNumber > 1
-	}
+func shouldReadSpecificImage(o Options) bool {
+	return o.PageNumber > 1
+}
 
 func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
 	var err error
