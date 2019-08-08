@@ -209,6 +209,12 @@ func (i *Image) ModulateImage(brightness float64, saturation float64, hue float6
 	return i.Process(options)
 }
 
+// PickupPage returns the specific page specified by a number.
+func (i *Image) PickupPage(num int) ([]byte, error) {
+	options := Options{PageNumber: num}
+	return i.Process(options)
+}
+
 // Process processes the image based on the given transformation options,
 // talking with libvips bindings accordingly and returning the resultant
 // image buffer.

@@ -651,3 +651,14 @@ func TestProcessAnimatedImage(t *testing.T) {
 
 	Write("testdata/test_animated_image_out.gif", oBuffer)
 }
+
+func TestPickupPage(t *testing.T) {
+	buf, err := Read("testdata/giphy.gif")
+	if err != nil {
+		t.Errorf("Cannot read the image: %#v", err)
+	}
+
+	buf, err = NewImage(buf).PickupPage(3)
+
+	Write("testdata/giphy_out.gif", buf)
+}
