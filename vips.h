@@ -317,6 +317,15 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 	);
 }
 
+int vips_gifsave_bridge(VipsImage *in, void **buf, size_t *len)
+{
+  #if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 8)
+    return vips_magicksave_buffer(in, buf, len, "format", "gif", NULL);
+  #else
+    return 0;
+  #endif
+}
+
 int
 vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 #if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
@@ -365,6 +374,35 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 #if (VIPS_MINOR_VERSION >= 3)
 	} else if (imageType == GIF) {
 		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+	} else if (imageType == PDF) {
+		code = vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+	} else if (imageType == SVG) {
+		code = vips_svgload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
+	} else if (imageType == MAGICK) {
+		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
+	}
+
+	return code;
+}
+
+int
+vips_init_specific_image (void *buf, size_t len, int num, int imageType, VipsImage **out) {
+	int code = 1;
+
+	if (imageType == JPEG) {
+		code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+	} else if (imageType == PNG) {
+		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+	} else if (imageType == WEBP) {
+		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "page", num, NULL);
+	} else if (imageType == TIFF) {
+		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "page", num, NULL);
+#if (VIPS_MAJOR_VERSION >= 8)
+#if (VIPS_MINOR_VERSION >= 3)
+	} else if (imageType == GIF) {
+		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "page", num, NULL);
 	} else if (imageType == PDF) {
 		code = vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == SVG) {
@@ -667,4 +705,17 @@ int vips_modulation_bridge(VipsImage *in, VipsImage **out, VipsImage **outHsv, d
 
   g_object_unref(base);
   return 0;
+}
+
+int vips_joinimages_bridge(VipsImage *left, VipsImage *right, VipsImage **out)
+{
+  return vips_join(left, right, out, VIPS_DIRECTION_VERTICAL, NULL);
+}
+
+VipsImage *
+vips_setimageheight_bridge(VipsImage *in, int height)
+{
+  vips_image_set_int(in, VIPS_META_PAGE_HEIGHT, height);
+
+  return in;
 }

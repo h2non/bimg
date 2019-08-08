@@ -311,6 +311,26 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
 	return image, imageType, nil
 }
 
+func vipsReadSpecificImage(buf []byte, n int) (*C.VipsImage, ImageType, error) {
+	var image *C.VipsImage
+	imageType := vipsImageType(buf)
+
+	if imageType == UNKNOWN {
+		return nil, UNKNOWN, errors.New("Unsupported image format")
+	}
+
+	length := C.size_t(len(buf))
+	imageBuf := unsafe.Pointer(&buf[0])
+	num := C.int(n)
+
+	err := C.vips_init_specific_image(imageBuf, length, num, C.int(imageType), &image)
+	if err != 0 {
+		return nil, UNKNOWN, catchVipsError()
+	}
+
+	return image, imageType, nil
+}
+
 func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	image, _, err := vipsRead(buf)
 	if err != nil {
@@ -420,7 +440,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	strip := C.int(boolToInt(o.StripMetadata))
 	lossless := C.int(boolToInt(o.Lossless))
 
-	if o.Type != 0 && !IsTypeSupportedSave(o.Type) {
+	if o.Type != 0 && !IsTypeSupportedSave(o.Type) && o.Type != GIF {
 		return nil, fmt.Errorf("VIPS cannot save to %#v", ImageTypes[o.Type])
 	}
 	var ptr unsafe.Pointer
@@ -431,6 +451,8 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
+	case GIF:
+		saveErr = C.vips_gifsave_bridge(tmpImage, &ptr, &length)
 	default:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, strip, quality, interlace)
 	}
@@ -747,4 +769,25 @@ func vipsModulation(image *C.VipsImage, brightness float64, saturation float64, 
 		return nil, catchVipsError()
 	}
 	return out, nil
+}
+
+func vipsJoinImages(left *C.VipsImage, right *C.VipsImage) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(left))
+	defer C.g_object_unref(C.gpointer(right))
+
+	err := C.vips_joinimages_bridge(left, right, &out)
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
+func vipsSetImageHeight(image *C.VipsImage, h int, o Options) ([]byte, error) {
+	defer C.g_object_unref(C.gpointer(image))
+
+	img := C.vips_setimageheight_bridge(image, C.int(h))
+
+	return saveImage(img, o)
 }
