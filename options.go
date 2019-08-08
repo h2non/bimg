@@ -197,6 +197,7 @@ type Options struct {
 	Quality        int
 	Compression    int
 	Zoom           int
+	PageNumber     int
 	Crop           bool
 	SmartCrop      bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
 	Enlarge        bool

@@ -552,7 +552,7 @@ func assertSize(buf []byte, width, height int) error {
 }
 
 func TestGamma(t *testing.T) {
-	buf, err := Read("./testdata/vertical.jpg")
+	buf, err := Read("testdata/vertical.jpg")
 	if err != nil {
 		t.Errorf("Cannot read the image: %#v", err)
 	}
@@ -560,14 +560,14 @@ func TestGamma(t *testing.T) {
 	if err != nil {
 		t.Errorf("Gamma failed: %#v", err)
 	}
-	err = Write("./testdata/vertical_gamma.png", buf)
+	err = Write("testdata/vertical_gamma.png", buf)
 	if err != nil {
 		t.Errorf("Write failed: %#v", err)
 	}
 }
 
 func TestAutolevel(t *testing.T) {
-	buf, err := Read("./testdata/cells.png")
+	buf, err := Read("testdata/skying.png")
 	if err != nil {
 		t.Errorf("Cannot read the image: %#v", err)
 	}
@@ -575,14 +575,14 @@ func TestAutolevel(t *testing.T) {
 	if err != nil {
 		t.Errorf("AutoLevel failed: %#v", err)
 	}
-	err = Write("./testdata/cells_autolevel.png", buf)
+	err = Write("testdata/skying_autolevel.png", buf)
 	if err != nil {
 		t.Errorf("Write failed: %#v", err)
 	}
 }
 
 func TestBrightnessContrast(t *testing.T) {
-	buf, err := Read("./testdata/northern_cardinal_bird.jpg")
+	buf, err := Read("testdata/northern_cardinal_bird.jpg")
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
@@ -596,7 +596,7 @@ func TestBrightnessContrast(t *testing.T) {
 }
 
 func TestImageModulation(t *testing.T) {
-	buf, err := Read("./testdata/northern_cardinal_bird.jpg")
+	buf, err := Read("testdata/northern_cardinal_bird.jpg")
 	if err != nil {
 		t.Errorf("Cannot process the image: %#v", err)
 	}
@@ -607,4 +607,47 @@ func TestImageModulation(t *testing.T) {
 	}
 
 	Write("testdata/northern_cardinal_bird_modulation.png", buf)
+}
+
+func TestProcessAnimatedImage(t *testing.T) {
+	buf, err := Read("testdata/test.gif")
+	if err != nil {
+		t.Errorf("Cannot read the image: %#v", err)
+	}
+
+	pageNum, err := NewImage(buf).Npages()
+	if err != nil {
+		t.Errorf("Cannot get the number of image: %#v", err)
+	}
+
+	var oBuffer []byte
+	for i := 1; i <= pageNum; i++ {
+		options := Options{
+			PageNumber: i,
+			Width:  100,
+		}
+		buf, err := NewImage(buf).Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		if i == 1 {
+			oBuffer = buf
+		} else {
+			oBuffer, err = NewImage(oBuffer).JoinImages(NewImage(buf))
+			if err != nil {
+				t.Errorf("Cannot join the two images: %#v", err)
+			}
+		}
+
+		if pageNum != 1 && i == pageNum {
+			h, err := NewImage(buf).GetPageHeight()
+			if err != nil {
+				t.Errorf("Cannot get the image height: %#v", err)
+			}
+			oBuffer = NewImage(oBuffer).SetImageHeight(h)
+		}
+	}
+
+	Write("testdata/test_animated_image_out.gif", oBuffer)
 }

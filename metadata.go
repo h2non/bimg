@@ -75,3 +75,44 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 
 	return metadata, nil
 }
+
+// Npages returns the number of the given image.
+func Npages(buf []byte) (int, error) {
+	image, _, err := loadImage(buf)
+	if err != nil {
+		return -1, err
+	}
+	defer C.g_object_unref(C.gpointer(image))
+
+	return int(C.vips_image_get_n_pages(image)), nil
+}
+
+// GetPageHeight returns height of the given image.
+func GetPageHeight(buf []byte) (int, error) {
+	image, _, err := loadImage(buf)
+	if err != nil {
+		return -1, err
+	}
+	defer C.g_object_unref(C.gpointer(image))
+
+	return int(C.vips_image_get_page_height(image)), nil
+}
+
+// SetImageHeight returns ...
+func SetImageHeight(buf []byte, h int) []byte {
+	defer C.vips_thread_shutdown()
+
+	img, imageType, err := loadImage(buf)
+	if err != nil {
+		return nil
+	}
+
+	o := applyDefaults(Options{}, imageType)
+
+	buffer, err := vipsSetImageHeight(img, h, o)
+	if err != nil {
+		return nil
+	}
+
+	return buffer
+}

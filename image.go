@@ -257,3 +257,23 @@ func (i *Image) Image() []byte {
 func (i *Image) Length() int {
 	return len(i.buffer)
 }
+
+// Npages returns the number of the given image.
+func (i *Image) Npages() (int, error) {
+	return Npages(i.buffer)
+}
+
+// JoinImages returns the animated image created from the given two images.
+func (i *Image) JoinImages(img *Image) ([]byte, error) {
+	return JoinImages(i.buffer, img.buffer)
+}
+
+// GetPageHeight returns height of the given image.
+func (i *Image) GetPageHeight() (int, error) {
+	return GetPageHeight(i.buffer)
+}
+
+// SetImageHeight returns ...
+func (i *Image) SetImageHeight(h int) []byte {
+	return SetImageHeight(i.buffer, h)
+}
