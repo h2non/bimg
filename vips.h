@@ -34,7 +34,8 @@ enum types {
 	GIF,
 	PDF,
 	SVG,
-	MAGICK
+	MAGICK,
+	JP2,
 };
 
 typedef struct {
@@ -158,6 +159,10 @@ vips_type_find_bridge(int t) {
 	if (t == MAGICK) {
 		return vips_type_find("VipsOperation", "magickload");
 	}
+	if (t == JP2) {
+		//return vips_type_find("VipsOperation", "jp2load");
+		return vips_type_find("VipsOperation", "magickload");
+	}
 	return 0;
 }
 
@@ -174,6 +179,10 @@ vips_type_find_save_bridge(int t) {
 	}
 	if (t == JPEG) {
 		return vips_type_find("VipsOperation", "jpegsave_buffer");
+	}
+	if (t == JP2) {
+		//return vips_type_find("VipsOperation", "jp2save_buffer");
+		return vips_type_find("VipsOperation", "magicksave_buffer");
 	}
 	return 0;
 }
@@ -333,6 +342,16 @@ vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 #else
 	return 0;
 #endif
+}
+
+int
+vips_jp2save_bridge(VipsImage *in, void **buf, size_t *len)
+{
+  #if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 8)
+    return vips_magicksave_buffer(in, buf, len, "format", "jp2", NULL);
+  #else
+    return 0;
+  #endif
 }
 
 int

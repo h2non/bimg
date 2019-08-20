@@ -86,6 +86,21 @@ func TestImageSvgToJpeg(t *testing.T) {
 	}
 }
 
+func TestImageJpegToJp2(t *testing.T) {
+	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+		i := initImage("test.jpg")
+		options := Options{
+			Type: JP2,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		Write("testdata/test_jpg.jp2", buf)
+	}
+}
+
 func TestImageResizeAndCrop(t *testing.T) {
 	buf, err := initImage("test.jpg").ResizeAndCrop(300, 200)
 	if err != nil {
@@ -624,7 +639,7 @@ func TestProcessAnimatedImage(t *testing.T) {
 	for i := 1; i <= pageNum; i++ {
 		options := Options{
 			PageNumber: i,
-			Width:  100,
+			Width:      100,
 		}
 		buf, err := NewImage(buf).Process(options)
 		if err != nil {
