@@ -19,6 +19,7 @@ func TestDeterminateImageType(t *testing.T) {
 		{"test.pdf", PDF},
 		{"test.svg", SVG},
 		{"test.jp2", MAGICK},
+		{"test.heic", HEIF},
 	}
 
 	for _, file := range files {
@@ -46,6 +47,7 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		{"test.pdf", "pdf"},
 		{"test.svg", "svg"},
 		{"test.jp2", "magick"},
+		{"test.heic", "heif"},
 	}
 
 	for _, file := range files {
@@ -63,7 +65,7 @@ func TestIsTypeSupported(t *testing.T) {
 	types := []struct {
 		name ImageType
 	}{
-		{JPEG}, {PNG}, {WEBP}, {GIF}, {PDF},
+		{JPEG}, {PNG}, {WEBP}, {GIF}, {PDF}, {HEIF},
 	}
 
 	for _, n := range types {
@@ -83,6 +85,7 @@ func TestIsTypeNameSupported(t *testing.T) {
 		{"webp", true},
 		{"gif", true},
 		{"pdf", true},
+		{"heif", true},
 	}
 
 	for _, n := range types {
@@ -100,6 +103,9 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	}
 	if VipsVersion >= "8.5.0" {
 		types = append(types, struct{ name ImageType }{TIFF})
+	}
+	if VipsVersion >= "8.8.0" {
+		types = append(types, struct{ name ImageType }{HEIF})
 	}
 
 	for _, n := range types {
@@ -120,6 +126,7 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"gif", false},
 		{"pdf", false},
 		{"tiff", VipsVersion >= "8.5.0"},
+		{"heif", VipsVersion >= "8.8.0"},
 	}
 
 	for _, n := range types {
