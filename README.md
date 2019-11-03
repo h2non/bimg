@@ -41,6 +41,7 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 - Thumbnail
 - Extract area
 - Watermark (using text or image)
+- AddText (support Persian)
 - Gaussian blur effect
 - Custom output color space (RGB, grayscale...)
 - Format conversion (with additional quality/compression settings)
@@ -258,6 +259,34 @@ watermark := bimg.Watermark{
 }
 
 newImage, err := bimg.NewImage(buffer).Watermark(watermark)
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+bimg.Write("new.jpg", newImage)
+```
+
+#### AddText
+
+```go
+buffer, err := bimg.Read("image.jpg")
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+}
+
+addText := bimg.AddText{
+  Text:       "Hello | سلام",
+  Top:        50,
+  Left:       50,
+  Opacity:    0.25,
+  Width:      200,
+  DPI:        100,
+  Margin:     150,
+  Font:       "sans bold 12",
+  Background: bimg.Color{255, 255, 255},
+}
+
+newImage, err := bimg.NewImage(buffer).AddText(addText)
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
 }

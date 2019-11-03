@@ -113,6 +113,12 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Add text, if necessary
+	image, err = AddTextToImage(image, o.AddText)
+	if err != nil {
+		return nil, err
+	}
+
 	// Add watermark, if necessary
 	image, err = watermarkImageWithAnotherImage(image, o.WatermarkImage)
 	if err != nil {
@@ -348,6 +354,35 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 	}
 
 	image, err := vipsWatermark(image, w)
+	if err != nil {
+		return nil, err
+	}
+
+	return image, nil
+}
+
+func AddTextToImage(image *C.VipsImage, a AddText) (*C.VipsImage, error) {
+	if a.Text == "" {
+		return image, nil
+	}
+
+	// Defaults
+	if a.Font == "" {
+		a.Font = WatermarkFont
+	}
+	if a.Width == 0 {
+		a.Width = int(math.Floor(float64(image.Xsize / 6)))
+	}
+	if a.DPI == 0 {
+		a.DPI = 150
+	}
+	if a.Opacity == 0 {
+		a.Opacity = 0.25
+	} else if a.Opacity > 1 {
+		a.Opacity = 1
+	}
+
+	image, err := vipsAddText(image, a)
 	if err != nil {
 		return nil, err
 	}

@@ -162,6 +162,19 @@ type Watermark struct {
 	Background  Color
 }
 
+// AddText represents the add-text options.
+type AddText struct {
+	Width      int
+	Height     int
+	DPI        int
+	Top        int
+	Left       int
+	Text       string
+	Font       string
+	Background Color
+	Opacity    float32
+}
+
 // WatermarkImage represents the image-based watermark supported options.
 type WatermarkImage struct {
 	Left    int
@@ -214,6 +227,7 @@ type Options struct {
 	Rotate         Angle
 	Background     Color
 	Gravity        Gravity
+	AddText        AddText
 	Watermark      Watermark
 	WatermarkImage WatermarkImage
 	Type           ImageType

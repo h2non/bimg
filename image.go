@@ -135,6 +135,12 @@ func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	return i.Process(options)
 }
 
+// adds text on the given image.
+func (i *Image) AddText(a AddText) ([]byte, error) {
+	options := Options{AddText: a}
+	return i.Process(options)
+}
+
 // WatermarkImage adds image as watermark on the given image.
 func (i *Image) WatermarkImage(w WatermarkImage) ([]byte, error) {
 	options := Options{WatermarkImage: w}
