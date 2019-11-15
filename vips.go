@@ -501,8 +501,6 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 }
 
 func vipsTrim(image *C.VipsImage, background Color, threshold float64) (int, int, int, int, error) {
-	defer C.g_object_unref(C.gpointer(image))
-
 	top := C.int(0)
 	left := C.int(0)
 	width := C.int(0)
