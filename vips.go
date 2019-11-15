@@ -595,7 +595,11 @@ func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, 
 	return image, nil
 }
 
-func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator) (*C.VipsImage, error) {
+func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator, extend Extend) (*C.VipsImage, error) {
+	if extend > 5 {
+		extend = ExtendBackground
+	}
+
 	var image *C.VipsImage
 	cstring := C.CString(i.String())
 	interpolator := C.vips_interpolate_new(cstring)
@@ -604,7 +608,7 @@ func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator
 	defer C.g_object_unref(C.gpointer(input))
 	defer C.g_object_unref(C.gpointer(interpolator))
 
-	err := C.vips_affine_interpolator(input, &image, C.double(residualx), 0, 0, C.double(residualy), interpolator)
+	err := C.vips_affine_interpolator(input, &image, C.double(residualx), 0, 0, C.double(residualy), interpolator, C.int(extend))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

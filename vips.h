@@ -102,8 +102,8 @@ vips_enable_cache_set_trace() {
 }
 
 int
-vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator) {
-	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, NULL);
+vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator, int extend) {
+	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, "extend", extend, NULL);
 }
 
 int
