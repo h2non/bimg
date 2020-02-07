@@ -185,6 +185,9 @@ func VipsIsTypeSupported(t ImageType) bool {
 	if t == MAGICK {
 		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
 	}
+	if t == HEIF {
+		return int(C.vips_type_find_bridge(C.HEIF)) != 0
+	}
 	return false
 }
 
@@ -203,6 +206,9 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 	}
 	if t == TIFF {
 		return int(C.vips_type_find_save_bridge(C.TIFF)) != 0
+	}
+	if t == HEIF {
+		return int(C.vips_type_find_save_bridge(C.HEIF)) != 0
 	}
 	return false
 }
@@ -431,6 +437,8 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
+	case HEIF:
+		saveErr = C.vips_heifsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
 	default:
 		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, strip, quality, interlace)
 	}
@@ -633,6 +641,18 @@ func vipsImageType(buf []byte) ImageType {
 	}
 	if IsTypeSupported(MAGICK) && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
 		return MAGICK
+	}
+	// NOTE: libheif currently only supports heic sub types; see:
+	//   https://github.com/strukturag/libheif/issues/83#issuecomment-421427091
+	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
+		buf[8] == 0x68 && buf[9] == 0x65 && buf[10] == 0x69 && buf[11] == 0x63 {
+		// This is a HEIC file
+		return HEIF
+	}
+	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
+		buf[8] == 0x6d && buf[9] == 0x69 && buf[10] == 0x66 && buf[11] == 0x31 {
+		// This is a HEIF file
+		return HEIF
 	}
 
 	return UNKNOWN
