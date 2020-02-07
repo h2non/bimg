@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	// ErrExtractAreaParamsRequired defines a generic extract area error
 	ErrExtractAreaParamsRequired = errors.New("extract area width/height params are required")
 )
 
