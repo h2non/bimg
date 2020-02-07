@@ -723,3 +723,14 @@ func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, erro
 
 	return out, nil
 }
+
+func vipsGamma(image *C.VipsImage, Gamma float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_gamma_bridge(image, &out, C.double(Gamma))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}

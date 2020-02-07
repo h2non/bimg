@@ -592,3 +592,8 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 	return 0;
 #endif
 }
+
+int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
+{
+  return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+}

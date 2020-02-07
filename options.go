@@ -222,5 +222,6 @@ type Options struct {
 	GaussianBlur   GaussianBlur
 	Sharpen        Sharpen
 	Threshold      float64
+	Gamma          float64
 	OutputICC      string
 }
