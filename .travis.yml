@@ -4,10 +4,10 @@ dist: trusty
 sudo: false
 
 go:
-  - "1.8"
-  - "1.9"
   - "1.10"
   - "1.11"
+  - "1.12"
+  - "1.13"
   - "tip"
 
 env:
@@ -17,7 +17,8 @@ env:
   - LIBVIPS=8.4.6
   - LIBVIPS=8.5.8
   - LIBVIPS=8.6.2
-  - LIBVIPS=8.8.0
+  - LIBVIPS=8.8.4
+  - LIBVIPS=8.9.1
   - LIBVIPS=master
 
 matrix:
@@ -56,11 +57,11 @@ before_install:
         || echo ":-)"
   - >
     test "$LIBVIPS" != "master" -a "$LIBVIPS" \> "8.4" \
-        && wget https://github.com/jcupitt/libvips/archive/v${LIBVIPS}.tar.gz -O vips.tgz \
+        && wget https://github.com/libvips/libvips/archive/v${LIBVIPS}.tar.gz -O vips.tgz \
         || echo ":-)"
   - >
     test $LIBVIPS == "master" \
-        && wget https://github.com/jcupitt/libvips/archive/${LIBVIPS}.tar.gz -O vips.tgz \
+        && wget https://github.com/libvips/libvips/archive/${LIBVIPS}.tar.gz -O vips.tgz \
         || echo ":-)"
   - mkdir libvips
   - tar xf vips.tgz -C libvips --strip-components 1
