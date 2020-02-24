@@ -384,9 +384,6 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 	if w.DPI == 0 {
 		w.DPI = 150
 	}
-	if w.Margin == 0 {
-		w.Margin = w.Width
-	}
 	if w.Opacity == 0 {
 		w.Opacity = 0.25
 	} else if w.Opacity > 1 {
