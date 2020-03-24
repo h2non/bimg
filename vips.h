@@ -33,9 +33,7 @@ enum types {
 	PDF,
 	SVG,
 	MAGICK,
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
 	HEIF,
-#endif
 };
 
 typedef struct {
