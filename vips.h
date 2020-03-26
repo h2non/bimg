@@ -354,6 +354,22 @@ vips_is_16bit (VipsInterpretation interpretation) {
 	return interpretation == VIPS_INTERPRETATION_RGB16 || interpretation == VIPS_INTERPRETATION_GREY16;
 }
 
+int vips_thumbnail_bridge(VipsImage *in, VipsImage **out, int width, int height, int no_rotate, int crop) {
+	if (crop) {
+		return vips_thumbnail_image(in, out, width,
+			"height", height,
+			"no_rotate", INT_TO_GBOOLEAN(no_rotate),
+			"crop", VIPS_INTERESTING_CENTRE,
+			NULL
+		);
+	}
+	return vips_thumbnail_image(in, out, width,
+		"height", height,
+		"no_rotate", INT_TO_GBOOLEAN(no_rotate),
+		NULL
+	);
+}
+
 int
 vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double g, double b) {
 	if (vips_is_16bit(in->Type)) {

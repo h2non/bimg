@@ -34,20 +34,6 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, errors.New("Unsupported image output type")
 	}
 
-	// Auto rotate image based on EXIF orientation header
-	image, rotated, err := rotateAndFlipImage(image, o)
-	if err != nil {
-		return nil, err
-	}
-
-	// If JPEG or HEIF image, retrieve the buffer
-	if rotated && (imageType == JPEG || imageType == HEIF) && !o.NoAutoRotate {
-		buf, err = getImageBuffer(image)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	inWidth := int(image.Xsize)
 	inHeight := int(image.Ysize)
 
@@ -71,19 +57,9 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		}
 	}
 
-	// Try to use libjpeg/libwebp shrink-on-load
-	supportsShrinkOnLoad := imageType == WEBP && VipsMajorVersion >= 8 && VipsMinorVersion >= 3
-	supportsShrinkOnLoad = supportsShrinkOnLoad || imageType == JPEG
-	if supportsShrinkOnLoad && shrink >= 2 {
-		tmpImage, factor, err := shrinkOnLoad(buf, image, imageType, factor, shrink)
-		if err != nil {
-			return nil, err
-		}
-
-		image = tmpImage
-		factor = math.Max(factor, 1.0)
-		shrink = int(math.Floor(factor))
-		residual = float64(shrink) / factor
+	image, err = vipsThumbnail(image, inWidth, inHeight, o.NoAutoRotate, o.Crop)
+	if err != nil {
+		return nil, err
 	}
 
 	// Zoom image, if necessary

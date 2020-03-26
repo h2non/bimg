@@ -343,6 +343,24 @@ func vipsInterpretation(image *C.VipsImage) Interpretation {
 	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
 }
 
+func vipsThumbnail(image *C.VipsImage, width, height int, noRotate, crop bool) (*C.VipsImage, error) {
+	var outImage *C.VipsImage
+
+	noRotateParam := C.int(boolToInt(noRotate))
+	cropParam := C.int(boolToInt(crop))
+
+	err := C.vips_thumbnail_bridge(image, &outImage,
+		C.int(width), C.int(height), noRotateParam, cropParam,
+	)
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+	C.g_object_unref(C.gpointer(image))
+	image = outImage
+
+	return image, nil
+}
+
 func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, error) {
 	var outImage *C.VipsImage
 
