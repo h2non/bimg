@@ -317,6 +317,26 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
 	return image, imageType, nil
 }
 
+func vipsThumbnail(buf []byte, width, height int, noAutoRotate, crop bool) (*C.VipsImage, error) {
+	var image *C.VipsImage
+
+	noRotateParam := C.int(boolToInt(noAutoRotate))
+	cropParam := C.int(boolToInt(crop))
+
+	length := C.size_t(len(buf))
+	imageBuf := unsafe.Pointer(&buf[0])
+
+	err := C.vips_thumbnail_bridge(imageBuf, length, &image,
+		C.int(width), C.int(height), noRotateParam, cropParam,
+	)
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+	C.g_object_unref(C.gpointer(image))
+
+	return image, nil
+}
+
 func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	image, _, err := vipsRead(buf)
 	if err != nil {
@@ -341,24 +361,6 @@ func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 
 func vipsInterpretation(image *C.VipsImage) Interpretation {
 	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
-}
-
-func vipsThumbnail(image *C.VipsImage, width, height int, noRotate, crop bool) (*C.VipsImage, error) {
-	var outImage *C.VipsImage
-
-	noRotateParam := C.int(boolToInt(noRotate))
-	cropParam := C.int(boolToInt(crop))
-
-	err := C.vips_thumbnail_bridge(image, &outImage,
-		C.int(width), C.int(height), noRotateParam, cropParam,
-	)
-	if int(err) != 0 {
-		return nil, catchVipsError()
-	}
-	C.g_object_unref(C.gpointer(image))
-	image = outImage
-
-	return image, nil
 }
 
 func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, error) {

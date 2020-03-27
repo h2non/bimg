@@ -129,6 +129,21 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 	return i.Process(options)
 }
 
+func (i *Image) ThumbnailOptions(o Options) ([]byte, error) {
+	vipsImage, err := vipsThumbnail(i.buffer, o.Width, o.Height, o.NoAutoRotate, o.Crop)
+	if err != nil {
+		return nil, err
+	}
+
+	image, err := saveImage(vipsImage, o)
+	if err != nil {
+		return nil, err
+	}
+
+	i.buffer = image
+	return image, nil
+}
+
 // Watermark adds text as watermark on the given image.
 func (i *Image) Watermark(w Watermark) ([]byte, error) {
 	options := Options{Watermark: w}

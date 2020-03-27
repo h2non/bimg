@@ -354,16 +354,17 @@ vips_is_16bit (VipsInterpretation interpretation) {
 	return interpretation == VIPS_INTERPRETATION_RGB16 || interpretation == VIPS_INTERPRETATION_GREY16;
 }
 
-int vips_thumbnail_bridge(VipsImage *in, VipsImage **out, int width, int height, int no_rotate, int crop) {
+int
+vips_thumbnail_bridge(void *buf, size_t len, VipsImage **out, int width, int height, int no_rotate, int crop) {
 	if (crop) {
-		return vips_thumbnail_image(in, out, width,
+		return vips_thumbnail_buffer(buf, len, out, width,
 			"height", height,
 			"no_rotate", INT_TO_GBOOLEAN(no_rotate),
 			"crop", VIPS_INTERESTING_CENTRE,
 			NULL
 		);
 	}
-	return vips_thumbnail_image(in, out, width,
+	return vips_thumbnail_buffer(buf, len, out, width,
 		"height", height,
 		"no_rotate", INT_TO_GBOOLEAN(no_rotate),
 		NULL
