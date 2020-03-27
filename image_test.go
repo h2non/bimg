@@ -212,6 +212,43 @@ func TestImageThumbnail(t *testing.T) {
 	Write("testdata/test_thumbnail_out.jpg", buf)
 }
 
+func TestImageThumbnailOptions(t *testing.T) {
+	buf, err := initImage("test.jpg").ThumbnailOptions(Options{
+		Height:         100,
+		Width:          100,
+		Quality:        50,
+		Type:           JPEG,
+	})
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 100, 62)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("testdata/test_thumbnail_options_out.jpg", buf)
+
+	buf, err = initImage("test.jpg").ThumbnailOptions(Options{
+		Height:         100,
+		Width:          100,
+		Quality:        50,
+		Type:           JPEG,
+		Crop:						true,
+	})
+	if err != nil {
+		t.Errorf("Cannot process the image: %s", err)
+	}
+
+	err = assertSize(buf, 100, 100)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("testdata/test_thumbnail_options_crop_out.jpg", buf)
+}
+
 func TestImageWatermark(t *testing.T) {
 	image := initImage("test.jpg")
 	_, err := image.Crop(800, 600, GravityNorth)

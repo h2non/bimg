@@ -332,7 +332,6 @@ func vipsThumbnail(buf []byte, width, height int, noAutoRotate, crop bool) (*C.V
 	if int(err) != 0 {
 		return nil, catchVipsError()
 	}
-	C.g_object_unref(C.gpointer(image))
 
 	return image, nil
 }

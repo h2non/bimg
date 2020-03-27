@@ -130,7 +130,7 @@ func (i *Image) Thumbnail(pixels int) ([]byte, error) {
 }
 
 func (i *Image) ThumbnailOptions(o Options) ([]byte, error) {
-	vipsImage, err := vipsThumbnail(i.buffer, o.Width, o.Height, o.NoAutoRotate, o.Crop)
+	vipsImage, err := imageThumbnail(i.buffer, o.Width, o.Height, o.NoAutoRotate, o.Crop)
 	if err != nil {
 		return nil, err
 	}
