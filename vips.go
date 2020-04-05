@@ -580,7 +580,7 @@ func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64) (*C.VipsIm
 func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, background Color) (*C.VipsImage, error) {
 	var image *C.VipsImage
 
-	// Max extend value, see: https://jcupitt.github.io/libvips/API/current/libvips-conversion.html#VipsExtend
+	// Max extend value, see: https://libvips.github.io/libvips/API/current/libvips-conversion.html#VipsExtend
 	if extend > 5 {
 		extend = ExtendBackground
 	}

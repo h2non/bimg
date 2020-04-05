@@ -43,7 +43,7 @@ func ColourspaceIsSupported(buf []byte) (bool, error) {
 }
 
 // ImageInterpretation returns the image interpretation type.
-// See: https://jcupitt.github.io/libvips/API/current/VipsImage.html#VipsInterpretation
+// See: https://libvips.github.io/libvips/API/current/VipsImage.html#VipsInterpretation
 func ImageInterpretation(buf []byte) (Interpretation, error) {
 	return vipsInterpretationBuffer(buf)
 }
