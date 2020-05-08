@@ -325,7 +325,6 @@ See [godoc reference](https://godoc.org/github.com/h2non/bimg) for detailed API 
 ## Authors
 
 - [Tomás Aparicio](https://github.com/h2non) - Original author and architect.
-- [Kirill Danshin](https://github.com/kirillDanshin) - Maintainer since April 2017.
 
 ## Credits
 
