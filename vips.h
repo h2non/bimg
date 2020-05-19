@@ -102,8 +102,13 @@ vips_enable_cache_set_trace() {
 }
 
 int
-vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator) {
-	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, NULL);
+vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator, int extend, double red, double green, double blue) {
+	if (extend == VIPS_EXTEND_BACKGROUND) {
+		double background[3] = {red, green, blue};
+		VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
+		return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, "extend", extend, "background", vipsBackground, NULL);
+	}
+	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, "extend", extend, NULL);
 }
 
 int
