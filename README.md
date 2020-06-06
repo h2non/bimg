@@ -58,7 +58,7 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 ## Installation
 
 ```bash
-go get -u gopkg.in/h2non/bimg.v1
+go get -u github.com/h2non/bimg
 ```
 
 ### libvips
@@ -113,7 +113,7 @@ BenchmarkWatermarWebp-8   	      30	  49360369 ns/op
 import (
   "fmt"
   "os"
-  "gopkg.in/h2non/bimg.v1"
+  "github.com/h2non/bimg"
 )
 ```
 
