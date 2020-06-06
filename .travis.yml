@@ -17,6 +17,7 @@ env:
   # - LIBVIPS=8.8.4
   - LIBVIPS=8.9.2
   # - LIBVIPS=master
+  - PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
 
 matrix:
   allow_failures:
@@ -76,6 +77,7 @@ script:
     curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS}/vips-${LIBVIPS}.tar.gz && \
     tar zvxf vips-${LIBVIPS}.tar.gz && \
     cd /tmp/vips-${LIBVIPS} && \
+    test -f autogen.sh && ./autogen.sh || ./bootstrap.sh && \
     CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
       ./configure \
       --disable-debug \
@@ -85,7 +87,9 @@ script:
       --enable-gtk-doc-html=no \
       --enable-gtk-doc=no \
       --enable-pyvips8=no \
-      --prefix=$HOME/libvips && \
+      --without-orc \
+      --without-python \
+      --prefix=$HOME/libvips $1 && \
     make && \
     make install && \
     ldconfig
