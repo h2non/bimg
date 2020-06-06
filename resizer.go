@@ -263,9 +263,19 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 
 	switch {
 	case o.Gravity == GravitySmart, o.SmartCrop:
-		image, err = vipsSmartCrop(image, o.Width, o.Height)
+		// it's already at an appropriate size, return immediately
+		if inWidth <= o.Width && inHeight <= o.Height {
+			break
+		}
+		width := int(math.Min(float64(inWidth), float64(o.Width)))
+		height := int(math.Min(float64(inHeight), float64(o.Height)))
+		image, err = vipsSmartCrop(image, width, height)
 		break
 	case o.Crop:
+		// it's already at an appropriate size, return immediately
+		if inWidth <= o.Width && inHeight <= o.Height {
+			break
+		}
 		width := int(math.Min(float64(inWidth), float64(o.Width)))
 		height := int(math.Min(float64(inHeight), float64(o.Height)))
 		left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
