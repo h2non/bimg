@@ -224,5 +224,5 @@ type Options struct {
 	Threshold      float64
 	Gamma          float64
 	OutputICC      string
-	InputICC 	   string
+	InputICC       string
 }

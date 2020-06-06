@@ -591,22 +591,22 @@ func TestIfBothSmartCropOptionsAreIdentical(t *testing.T) {
 }
 
 func TestSkipCropIfTooSmall(t *testing.T) {
-	testCases := [] struct {
-		name string
+	testCases := []struct {
+		name    string
 		options Options
-	} {
-			{
-				name: "smart crop",
-				options: 	Options{
-					Width:   140,
-					Height:  140,
-					Crop:    true,
-					Gravity: GravitySmart,
-				},
+	}{
+		{
+			name: "smart crop",
+			options: Options{
+				Width:   140,
+				Height:  140,
+				Crop:    true,
+				Gravity: GravitySmart,
 			},
+		},
 		{
 			name: "centre crop",
-			options: 	Options{
+			options: Options{
 				Width:   140,
 				Height:  140,
 				Crop:    true,
@@ -615,19 +615,19 @@ func TestSkipCropIfTooSmall(t *testing.T) {
 		},
 		{
 			name: "embed",
-			options: 	Options{
-				Width:   140,
-				Height:  140,
+			options: Options{
+				Width:  140,
+				Height: 140,
 				Embed:  true,
 			},
 		},
 		{
 			name: "extract",
-			options: 	Options{
-				Top: 0,
-				Left: 0,
-				AreaWidth:   140,
-				AreaHeight:  140,
+			options: Options{
+				Top:        0,
+				Left:       0,
+				AreaWidth:  140,
+				AreaHeight: 140,
 			},
 		},
 	}

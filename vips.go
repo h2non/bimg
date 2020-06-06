@@ -52,7 +52,7 @@ type vipsSaveOptions struct {
 	NoProfile      bool
 	StripMetadata  bool
 	Lossless       bool
-	InputICC 	   string // Absolute path to the input ICC profile
+	InputICC       string // Absolute path to the input ICC profile
 	OutputICC      string // Absolute path to the output ICC profile
 	Interpretation Interpretation
 }
