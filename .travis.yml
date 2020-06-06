@@ -1,6 +1,6 @@
 language: go
 
-dist: trusty
+dist: xenial
 sudo: false
 
 go:
@@ -95,6 +95,7 @@ before_install:
   - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
   - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/libvips/lib
   - vips --vips-version
+  - go get -u golang.org/x/lint/golint
 
   # - >
   #   test "$LIBVIPS" != "master" -a "$LIBVIPS" \< "8.4" \
@@ -133,9 +134,6 @@ before_install:
   # - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
   # - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/libvips/lib
   # - vips --vips-version
-
-install:
-  - go get -u golang.org/x/lint/golint
 
 script:
   - diff -u <(echo -n) <(gofmt -s -d ./)
