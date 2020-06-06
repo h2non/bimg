@@ -52,6 +52,7 @@ type vipsSaveOptions struct {
 	NoProfile      bool
 	StripMetadata  bool
 	Lossless       bool
+	InputICC 	   string // Absolute path to the input ICC profile
 	OutputICC      string // Absolute path to the output ICC profile
 	Interpretation Interpretation
 }
@@ -239,8 +240,25 @@ func vipsRotate(image *C.VipsImage, angle Angle) (*C.VipsImage, error) {
 	var out *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_rotate_bimg(image, &out, C.int(angle))
+	err := C.vips_rotate_bridge(image, &out, C.int(angle))
 	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
+func vipsTransformICC(image *C.VipsImage, inputICC string, outputICC string) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	outputIccPath := C.CString(outputICC)
+	defer C.free(unsafe.Pointer(outputIccPath))
+	inputIccPath := C.CString(inputICC)
+	defer C.free(unsafe.Pointer(inputIccPath))
+	err := C.vips_icc_transform_with_default_bridge(image, &out, outputIccPath, inputIccPath)
+	//err := C.vips_icc_transform_bridge2(image, &outImage, outputIccPath, inputIccPath)
+	if int(err) != 0 {
 		return nil, catchVipsError()
 	}
 
@@ -385,6 +403,21 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 			return nil, catchVipsError()
 		}
 		image = outImage
+	}
+
+	if o.OutputICC != "" && o.InputICC != "" {
+		outputIccPath := C.CString(o.OutputICC)
+		defer C.free(unsafe.Pointer(outputIccPath))
+
+		inputIccPath := C.CString(o.InputICC)
+		defer C.free(unsafe.Pointer(inputIccPath))
+
+		err := C.vips_icc_transform_with_default_bridge(image, &outImage, outputIccPath, inputIccPath)
+		if int(err) != 0 {
+			return nil, catchVipsError()
+		}
+		C.g_object_unref(C.gpointer(image))
+		return outImage, nil
 	}
 
 	if o.OutputICC != "" && vipsHasProfile(image) {

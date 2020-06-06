@@ -188,7 +188,7 @@ vips_type_find_save_bridge(int t) {
 }
 
 int
-vips_rotate_bimg(VipsImage *in, VipsImage **out, int angle) {
+vips_rotate_bridge(VipsImage *in, VipsImage **out, int angle) {
 	int rotate = VIPS_ANGLE_D0;
 
 	angle %= 360;
@@ -288,6 +288,13 @@ int
 vips_icc_transform_bridge (VipsImage *in, VipsImage **out, const char *output_icc_profile) {
 	// `output_icc_profile` represents the absolute path to the output ICC profile file
 	return vips_icc_transform(in, out, output_icc_profile, "embedded", TRUE, NULL);
+}
+
+
+int
+vips_icc_transform_with_default_bridge (VipsImage *in, VipsImage **out, const char *output_icc_profile, const char *input_icc_profile) {
+	// `output_icc_profile` represents the absolute path to the output ICC profile file
+	return vips_icc_transform(in, out, output_icc_profile, "input_profile", input_icc_profile, "embedded", FALSE, NULL);
 }
 
 int
