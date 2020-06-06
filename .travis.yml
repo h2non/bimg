@@ -31,60 +31,107 @@ cache:
 
 addons:
   apt:
-    packages:
-      - gobject-introspection
+    update: true
+    sources: &common_sources
+      # use a more recent imagemagick instead of 6.8.9-9
+      - sourceline: 'ppa:cran/imagemagick'
+      - sourceline: 'ppa:strukturag/libheif'
+      - sourceline: 'ppa:strukturag/libde265'
+    packages: &common_packages
+      - automake
       - gtk-doc-tools
-      - libcfitsio3-dev
+      - gobject-introspection
+      - python3-pip
+      - python3-setuptools
+      - python3-wheel
       - libfftw3-dev
-      - libgif-dev
-      - libgs-dev
-      - libgsf-1-dev
-      - libmatio-dev
-      - libopenslide-dev
-      - liborc-0.4-dev
-      - libpango1.0-dev
-      - libpoppler-glib-dev
+      - libexif-dev
+      - libjpeg-turbo8-dev
+      - libpng12-dev
       - libwebp-dev
+      # missing on xenial, unfortunately
+      # - libwebpmux2
+      - libtiff5-dev
+      - libheif-dev
+      - libexpat1-dev
+      - libmagick++-dev
+      - libcfitsio3-dev
+      - libgsl0-dev
+      - libmatio-dev
+      - liborc-0.4-dev
+      - liblcms2-dev
+      - libpoppler-glib-dev
+      - librsvg2-dev
+      - libgif-dev
+      - libopenexr-dev
+      - libpango1.0-dev
+      - libgsf-1-dev
+      - libopenslide-dev
+      - libffi-dev
 
 # VIPS 8.3.3 requires Poppler 0.30 which is not released on Trusty.
 before_install:
   - >
-    test "$LIBVIPS" != "master" -a "$LIBVIPS" \< "8.4" \
-        && wget http://www.vips.ecs.soton.ac.uk/supported/${LIBVIPS%.*}/vips-${LIBVIPS}.tar.gz -O vips.tgz \
-        || echo ":-)"
-  - >
-    test "$LIBVIPS" != "master" -a "$LIBVIPS" \> "8.4" \
-        && wget https://github.com/libvips/libvips/archive/v${LIBVIPS}.tar.gz -O vips.tgz \
-        || echo ":-)"
-  - >
-    test $LIBVIPS == "master" \
-        && wget https://github.com/libvips/libvips/archive/${LIBVIPS}.tar.gz -O vips.tgz \
-        || echo ":-)"
-  - mkdir libvips
-  - tar xf vips.tgz -C libvips --strip-components 1
-  - cd libvips
-  - test -f autogen.sh && ./autogen.sh || ./bootstrap.sh
-  - >
-    CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0
-    ./configure
-    --disable-debug
-    --disable-dependency-tracking
-    --disable-introspection
-    --disable-static
-    --enable-gtk-doc-html=no
-    --enable-gtk-doc=no
-    --enable-pyvips8=no
-    --without-orc
-    --without-python
-    --prefix=$HOME/libvips
-    $1
-  - make
-  - make install
+    cd /tmp && \
+    curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS}/vips-${LIBVIPS}.tar.gz && \
+    tar zvxf vips-${LIBVIPS}.tar.gz && \
+    cd /tmp/vips-${LIBVIPS} && \
+    CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
+      ./configure \
+      --disable-debug \
+      --disable-dependency-tracking \
+      --disable-introspection \
+      --disable-static \
+      --enable-gtk-doc-html=no \
+      --enable-gtk-doc=no \
+      --enable-pyvips8=no \
+      --prefix=$HOME/libvips && \
+    make && \
+    make install && \
+    ldconfig \
   - cd ..
   - export PATH=$PATH:$HOME/libvips/bin
   - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
   - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/libvips/lib
   - vips --vips-version
+
+  # - >
+  #   test "$LIBVIPS" != "master" -a "$LIBVIPS" \< "8.4" \
+  #       && wget http://www.vips.ecs.soton.ac.uk/supported/${LIBVIPS%.*}/vips-${LIBVIPS}.tar.gz -O vips.tgz \
+  #       || echo ":-)"
+  # - >
+  #   test "$LIBVIPS" != "master" -a "$LIBVIPS" \> "8.4" \
+  #       && wget https://github.com/libvips/libvips/archive/v${LIBVIPS}.tar.gz -O vips.tgz \
+  #       || echo ":-)"
+  # - >
+  #   test $LIBVIPS == "master" \
+  #       && wget https://github.com/libvips/libvips/archive/${LIBVIPS}.tar.gz -O vips.tgz \
+  #       || echo ":-)"
+  # - mkdir libvips
+  # - tar xf vips.tgz -C libvips --strip-components 1
+  # - cd libvips
+  # - test -f autogen.sh && ./autogen.sh || ./bootstrap.sh
+  # - >
+  #   CXXFLAGS=-D_GLIBCXX_USE_CXX11_ABI=0
+  #   ./configure
+  #   --disable-debug
+  #   --disable-dependency-tracking
+  #   --disable-introspection
+  #   --disable-static
+  #   --enable-gtk-doc-html=no
+  #   --enable-gtk-doc=no
+  #   --enable-pyvips8=no
+  #   --without-orc
+  #   --without-python
+  #   --prefix=$HOME/libvips
+  #   $1
+  # - make
+  # - make install
+  # - cd ..
+  # - export PATH=$PATH:$HOME/libvips/bin
+  # - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
+  # - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/libvips/lib
+  # - vips --vips-version
 
 install:
   - go get -u golang.org/x/lint/golint
