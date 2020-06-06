@@ -71,7 +71,7 @@ addons:
       - libffi-dev
 
 # VIPS 8.3.3 requires Poppler 0.30 which is not released on Trusty.
-install:
+script:
   - >
     cd /tmp && \
     curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS}/vips-${LIBVIPS}.tar.gz && \
@@ -134,8 +134,7 @@ install:
   # - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
   # - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/libvips/lib
   # - vips --vips-version
-
-script:
+  # script:
   - diff -u <(echo -n) <(gofmt -s -d ./)
   - diff -u <(echo -n) <(go vet ./)
   - diff -u <(echo -n) <(golint ./)
