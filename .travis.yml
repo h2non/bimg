@@ -32,12 +32,13 @@ cache:
 addons:
   apt:
     update: true
-    sources: &common_sources
+    sources:
       # use a more recent imagemagick instead of 6.8.9-9
       - sourceline: 'ppa:cran/imagemagick'
       - sourceline: 'ppa:strukturag/libheif'
       - sourceline: 'ppa:strukturag/libde265'
-    packages: &common_packages
+    packages:
+      - curl
       - automake
       - gtk-doc-tools
       - gobject-introspection
