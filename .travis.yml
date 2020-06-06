@@ -4,28 +4,26 @@ dist: trusty
 sudo: false
 
 go:
-  # - "1.10"
-  #- "1.11"
   - "1.12"
   - "1.13"
-  # - "tip"
+	- "1.14"
 
 env:
-  # - LIBVIPS=7.42.3
-  # - LIBVIPS=8.2.3
+  - LIBVIPS=7.42.3
   # - LIBVIPS=8.3.3
-  # - LIBVIPS=8.4.6
-  # - LIBVIPS=8.5.8
+  - LIBVIPS=8.4.6
+  - LIBVIPS=8.5.8
   - LIBVIPS=8.6.2
+	- LIBVIPS=8.7.4
   - LIBVIPS=8.8.4
-  - LIBVIPS=8.9.1
+  - LIBVIPS=8.9.2
   - LIBVIPS=master
 
 matrix:
   allow_failures:
-    - env: LIBVIPS=7.42.3
-    - env: LIBVIPS=8.2.3
-    - env: LIBVIPS=8.3.3
+		- env: LIBVIPS=7.42.3
+	  - env: LIBVIPS=8.4.6
+    - env: LIBVIPS=master
 
 cache:
   apt:

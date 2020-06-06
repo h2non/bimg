@@ -40,7 +40,7 @@ func TestResizeVerticalImage(t *testing.T) {
 		{Width: 1000, Height: 1500},
 		{Width: 1000},
 		{Height: 1500},
-		{Width: 100, Height: 50},
+		{Width: 200, Height: 120},
 		{Width: 2000, Height: 2000},
 		{Width: 500, Height: 1000},
 		{Width: 500},
@@ -72,7 +72,7 @@ func TestResizeVerticalImage(t *testing.T) {
 		for _, options := range tests {
 			image, err := Resize(source.buf, options)
 			if err != nil {
-				t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+				t.Fatalf("Resize(imgData, %#v) error: %#v", options, err)
 			}
 
 			format := DetermineImageType(image)
