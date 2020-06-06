@@ -1,7 +1,7 @@
 language: go
 
 dist: xenial
-sudo: false
+sudo: required
 
 go:
   # - "1.13"
@@ -70,7 +70,6 @@ addons:
       - libopenslide-dev
       - libffi-dev
 
-# VIPS 8.3.3 requires Poppler 0.30 which is not released on Trusty.
 script:
   - >
     cd /tmp && \
@@ -89,7 +88,7 @@ script:
       --prefix=$HOME/libvips && \
     make && \
     make install && \
-    ldconfig \
+    ldconfig
   - cd ..
   - export PATH=$PATH:$HOME/libvips/bin
   - export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/libvips/lib/pkgconfig
