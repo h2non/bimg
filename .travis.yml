@@ -5,7 +5,7 @@ sudo: false
 
 go:
   - "1.13"
-	- "1.14"
+  - "1.14"
 
 env:
   # - LIBVIPS=7.42.3
@@ -13,15 +13,15 @@ env:
   # - LIBVIPS=8.4.6
   # - LIBVIPS=8.5.8
   # - LIBVIPS=8.6.2
-	# - LIBVIPS=8.7.4
+  # - LIBVIPS=8.7.4
   # - LIBVIPS=8.8.4
   - LIBVIPS=8.9.2
   - LIBVIPS=master
 
 matrix:
   allow_failures:
-		- env: LIBVIPS=7.42.3
-	  - env: LIBVIPS=8.4.6
+  - env: LIBVIPS=7.42.3
+    - env: LIBVIPS=8.4.6
     - env: LIBVIPS=master
 
 cache:
