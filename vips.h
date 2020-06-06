@@ -252,9 +252,14 @@ vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac) {
 int
 vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend, double r, double g, double b) {
 	if (extend == VIPS_EXTEND_BACKGROUND) {
+	if (has_alpha_channel(in) == 1) {
+		double background[4] = {r, g, b, 0.0};
+  	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 4);
+  	return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);
+	} else {
 		double background[3] = {r, g, b};
-		VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
-		return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);
+  	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
+  	return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);}
 	}
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
 }
