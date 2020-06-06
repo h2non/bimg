@@ -48,8 +48,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Install Go lint
 RUN go get -u golang.org/x/lint/golint
 
-ENV LD_LIBRARY_PATH="/vips/lib:$LD_LIBRARY_PATH"
-ENV PKG_CONFIG_PATH="/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig"
+# ENV LD_LIBRARY_PATH="/vips/lib:$LD_LIBRARY_PATH"
+# ENV PKG_CONFIG_PATH="/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig"
 
 WORKDIR ${GOPATH}/src/github.com/h2non/bimg
 COPY . .
