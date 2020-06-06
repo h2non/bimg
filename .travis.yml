@@ -7,14 +7,14 @@ services:
   - docker
 
 env:
-  # - LIBVIPS=7.42.3
-  # - LIBVIPS=8.4.6
-  # - LIBVIPS=8.5.8
-  # - LIBVIPS=8.6.2
-  # - LIBVIPS=8.7.4
-  # - LIBVIPS=8.8.4
+  - LIBVIPS=7.42.3
+  - LIBVIPS=8.4.6
+  - LIBVIPS=8.5.8
+  - LIBVIPS=8.6.2
+  - LIBVIPS=8.7.4
+  - LIBVIPS=8.8.4
   - LIBVIPS=8.9.2
-  # - LIBVIPS=master
+  - LIBVIPS=master
 
 matrix:
   allow_failures:
@@ -32,10 +32,6 @@ install:
 
 script:
   - docker run h2non/bimg:ci sh -c 'export LD_LIBRARY_PATH=/vips/lib:$LD_LIBRARY_PATH; export PKG_CONFIG_PATH=/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig;  go vet . && golint . && go test -v -race -covermode=atomic -coverprofile=coverage.out'
-  # - diff -u <(echo -n) <(gofmt -s -d ./)
-  # - diff -u <(echo -n) <(go vet ./)
-  # - diff -u <(echo -n) <(golint ./)
-  # - go test -v -race -covermode=atomic -coverprofile=coverage.out
 
 # after_success:
 #   - goveralls -coverprofile=coverage.out -service=travis-ci
