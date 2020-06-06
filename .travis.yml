@@ -20,7 +20,7 @@ env:
 
 matrix:
   allow_failures:
-  - env: LIBVIPS=7.42.3
+    - env: LIBVIPS=7.42.3
     - env: LIBVIPS=8.4.6
     - env: LIBVIPS=master
 
