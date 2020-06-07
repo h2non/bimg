@@ -1,4 +1,64 @@
 
+v0.1.0 / 2020-06-07
+===================
+
+  * feat(ci): enable libvips versions
+  * fix(ci)
+  * fix(ci)
+  * fix(ci): try exporting env vars
+  * fix
+  * feat: add Dockerfile / Docker-driven CI job
+  * fix(co)
+  * feat(version): bump minor to 1
+  * fix(ci): try new install
+  * fix(ci): try new install
+  * fix(ci): add curl package
+  * fix(ci): add curl package
+  * fix(ci): add curl package
+  * fix(ci): try new install
+  * fix(ci): indent style
+  * fix(ci): indent style
+  * fix(ci): indent style
+  * Merge pull request #299 from evanoberholster/master
+  * refactor(ci): disable verions matrix
+  * refactor(docs): use github.com package import path
+  * feat: add test image
+  * Merge pull request #281 from pohang/skip_smartcrop
+  * Merge pull request #317 from larrabee/master
+  * Merge pull request #307 from OrderMyGear/eslam/ch15924/some-product-images-have-a-border
+  * refactor(travis): adjust matrix versions
+  * Merge pull request #333 from simia-tech/master
+  * Fix orientation in vipsFlip call (resizer rotateAndFlipImage)
+  * chore(docs): delete old contributor
+  * enable vipsAffine to use  `Extend` option value and send it to lipvips this will change the default from the one that lipvips use which is `background` to the ones that bimg use which is  `C.VIPS_EXTEND_BLACK` but because the lip add extra 1 or .5 pix the background is considered black anyway so this will not affect anyone but will fix the bug of having border on the right and bottom of some images
+  * Merge pull request #327 from shoreward/master
+  * update libvips documentation links
+  * fix(vips.h): delete preprocessor HEIF version check
+  * Merge pull request #320 from cgroschupp/feat/reduce-png-save-size
+  * use VIPS_FOREIGN_PNG_FILTER_ALL in vips_pngsave_bridge
+  * fix(resizer): add exported error comment
+  * Merge branch 'master' of https://github.com/h2non/bimg
+  * chore(ci): temporarily disable go/libvips versions
+  * Merge pull request #291 from andrioid/patch-1
+  * Merge pull request #293 from team-lab/gammaFilter
+  * Merge pull request #315 from vansante/heif
+  * feat(version): bump patch
+  * Fix bug with images with alpha channel on embeding background
+  * Fix typo
+  * Dont upgrade version, add missing test file
+  * Add support for other HEIF mimetype
+  * Supporting auto rotate for HEIF/HEIC images.
+  * Adding support for heif (i.e. heic files).
+  * Merge branch 'master' into master
+  * feat(travis): add libvips 8.6.0 matrix
+  * GammaFilter
+  * Adds support to Elementary OS Loki
+  * Add min dimension logic to smartcrop
+  * Merge pull request #271 from Dynom/ImprovingAreaWidthTestCoverage
+  * Adding a test case that verifies #250
+  * Bumping versions in preinstall script
+  * Update Transform ICC Profiles with Input Profile
+
 ## v1.0.18 / 2017-12-22
 
   * Merge pull request #216 from Bynder/master
