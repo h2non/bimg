@@ -393,8 +393,7 @@ func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.Vi
 }
 
 func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsImage, error) {
-	// Only PNG images are supported for now
-	if o.Background == ColorBlack || (imageType != PNG && imageType != HEIF && imageType != WEBP) {
+	if o.Background == ColorBlack {
 		return image, nil
 	}
 	return vipsFlattenBackground(image, o.Background)
