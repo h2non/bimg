@@ -55,6 +55,7 @@ type vipsSaveOptions struct {
 	InputICC       string // Absolute path to the input ICC profile
 	OutputICC      string // Absolute path to the output ICC profile
 	Interpretation Interpretation
+	Palette        bool
 }
 
 type vipsWatermarkOptions struct {
@@ -458,6 +459,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	quality := C.int(o.Quality)
 	strip := C.int(boolToInt(o.StripMetadata))
 	lossless := C.int(boolToInt(o.Lossless))
+	palette := C.int(boolToInt(o.Palette))
 
 	if o.Type != 0 && !IsTypeSupportedSave(o.Type) {
 		return nil, fmt.Errorf("VIPS cannot save to %#v", ImageTypes[o.Type])
@@ -467,7 +469,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	case WEBP:
 		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
 	case PNG:
-		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace)
+		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
 	case HEIF:
