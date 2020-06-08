@@ -1,4 +1,15 @@
 
+v1.1.1 / 2020-06-08
+===================
+
+  * feat(version): bump patch
+  * refactor(docs): add libvips install reference
+  * fix(ci): disable old libvips versions
+  * fix(install): use latest libvips version
+  * fix(tests): add heif exception in libvips < 8.8
+  * refactor(ci): use libvips 8.7
+  * fix(History): use proper version
+
 
 v1.1.0 / 2020-06-07
 ===================
