@@ -53,6 +53,10 @@ func TestDeterminateImageTypeName(t *testing.T) {
 	}
 
 	for _, file := range files {
+		if file.expected == "heif" && VipsMajorVersion <= 8 && VipsMinorVersion < 8 {
+			continue
+		}
+
 		img, _ := os.Open(path.Join("testdata", file.name))
 		buf, _ := ioutil.ReadAll(img)
 		defer img.Close()
@@ -72,6 +76,9 @@ func TestIsTypeSupported(t *testing.T) {
 	}
 
 	for _, n := range types {
+		if n.name == HEIF && VipsMajorVersion <= 8 && VipsMinorVersion < 8 {
+			continue
+		}
 		if IsTypeSupported(n.name) == false {
 			t.Fatalf("Image type %s is not valid", ImageTypes[n.name])
 		}
@@ -92,6 +99,9 @@ func TestIsTypeNameSupported(t *testing.T) {
 	}
 
 	for _, n := range types {
+		if n.name == "heif" && VipsMajorVersion <= 8 && VipsMinorVersion < 8 {
+			continue
+		}
 		if IsTypeNameSupported(n.name) != n.expected {
 			t.Fatalf("Image type %s is not valid", n.name)
 		}

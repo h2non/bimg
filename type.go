@@ -6,6 +6,9 @@ import (
 	"unicode/utf8"
 )
 
+// ImageType represents an image type value.
+type ImageType int
+
 const (
 	// UNKNOWN represents an unknow image type value.
 	UNKNOWN ImageType = iota
@@ -28,9 +31,6 @@ const (
 	// HEIF represents the HEIC/HEIF/HVEC image type
 	HEIF
 )
-
-// ImageType represents an image type value.
-type ImageType int
 
 var (
 	htmlCommentRegex = regexp.MustCompile("(?i)<!--([\\s\\S]*?)-->")
