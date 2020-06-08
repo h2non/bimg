@@ -7,9 +7,6 @@ services:
   - docker
 
 env:
-  # - LIBVIPS=7.42.3
-  # - LIBVIPS=8.4.6
-  - LIBVIPS=8.5.8
   - LIBVIPS=8.6.2
   - LIBVIPS=8.7.4
   # - LIBVIPS=8.8.4
