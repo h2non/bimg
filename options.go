@@ -225,4 +225,5 @@ type Options struct {
 	Gamma          float64
 	OutputICC      string
 	InputICC       string
+	Palette        bool
 }
