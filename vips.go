@@ -654,6 +654,11 @@ func vipsImageType(buf []byte) ImageType {
 		// This is a HEIF file
 		return HEIF
 	}
+	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
+		buf[8] == 0x6d && buf[9] == 0x73 && buf[10] == 0x66 && buf[11] == 0x31 {
+		// This is a HEIFS file
+		return HEIF
+	}
 
 	return UNKNOWN
 }
