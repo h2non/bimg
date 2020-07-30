@@ -215,8 +215,31 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 	return false
 }
 
+func vipsExifMake(image *C.VipsImage) string {
+	return vipsExifShort(C.GoString(C.vips_exif_make(image)))
+}
+
+func vipsExifModel(image *C.VipsImage) string {
+	return vipsExifShort(C.GoString(C.vips_exif_model(image)))
+}
+
 func vipsExifOrientation(image *C.VipsImage) int {
 	return int(C.vips_exif_orientation(image))
+}
+
+func vipsExifSoftware(image *C.VipsImage) string {
+	return vipsExifShort(C.GoString(C.vips_exif_software(image)))
+}
+
+func vipsExifDatetime(image *C.VipsImage) string {
+	return vipsExifShort(C.GoString(C.vips_exif_datetime(image)))
+}
+
+func vipsExifShort(s string) string {
+	if strings.Contains(s, " (") {
+		return s[:strings.Index(s, "(")-1]
+	}
+	return s
 }
 
 func vipsHasAlpha(image *C.VipsImage) bool {
