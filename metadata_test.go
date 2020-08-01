@@ -89,6 +89,44 @@ func TestImageInterpretation(t *testing.T) {
 	}
 }
 
+func TestEXIF(t *testing.T) {
+	files := []struct {
+		name           string
+		make string
+		model string
+		orientation int
+		software string
+		datetime string
+	}{
+		{"test.jpg", "", "", 0, "", ""},
+		{"exif/Landscape_1.jpg", "", "", 1, "", ""},
+		{"test_exif.jpg", "Jolla", "Jolla", 1, "", "2014:09:21 16:00:56"},
+		{"test_exif_canon.jpg", "Canon", "Canon EOS 40D", 1, "GIMP 2.4.5", "2008:07:31 10:38:11"},
+	}
+
+	for _, file := range files {
+		metadata, err := Metadata(readFile(file.name))
+		if err != nil {
+			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
+		}
+		if metadata.EXIF.Make != file.make {
+			t.Fatalf("Unexpected image exif make: %s != %s", metadata.EXIF.Make, file.make)
+		}
+		if metadata.EXIF.Model != file.model {
+			t.Fatalf("Unexpected image exif model: %s != %s", metadata.EXIF.Model, file.model)
+		}
+		if metadata.EXIF.Orientation != file.orientation {
+			t.Fatalf("Unexpected image exif orientation: %d != %d", metadata.EXIF.Orientation, file.orientation)
+		}
+		if metadata.EXIF.Software != file.software {
+			t.Fatalf("Unexpected image exif software: %s != %s", metadata.EXIF.Software, file.software)
+		}
+		if metadata.EXIF.Datetime != file.datetime {
+			t.Fatalf("Unexpected image exif datetime: %s != %s", metadata.EXIF.Datetime, file.datetime)
+		}
+	}
+}
+
 func TestColourspaceIsSupported(t *testing.T) {
 	files := []struct {
 		name string

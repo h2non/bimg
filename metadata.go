@@ -22,6 +22,15 @@ type ImageMetadata struct {
 	Space       string
 	Colourspace string
 	Size        ImageSize
+	EXIF EXIF
+}
+
+type EXIF struct {
+	Make string
+	Model string
+	Orientation int
+	Software string
+	Datetime string
 }
 
 // Size returns the image size by width and height pixels.
@@ -63,14 +72,23 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 		Height: int(image.Ysize),
 	}
 
+	orientation := vipsExifOrientation(image)
+
 	metadata := ImageMetadata{
 		Size:        size,
 		Channels:    int(image.Bands),
-		Orientation: vipsExifOrientation(image),
+		Orientation: orientation,
 		Alpha:       vipsHasAlpha(image),
 		Profile:     vipsHasProfile(image),
 		Space:       vipsSpace(image),
 		Type:        ImageTypeName(imageType),
+		EXIF: EXIF{
+			Make: vipsExifMake(image),
+			Model: vipsExifModel(image),
+			Orientation: orientation,
+			Software: vipsExifSoftware(image),
+			Datetime: vipsExifDatetime(image),
+		},
 	}
 
 	return metadata, nil
