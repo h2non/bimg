@@ -99,7 +99,6 @@ func TestEXIF(t *testing.T) {
 			ResolutionUnit: 2,
 			YCbCrPositioning: 1,
 			ExifVersion: "Exif Version 2.1",
-			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 65535,
 		},
 		"test_exif.jpg":        {
@@ -121,7 +120,6 @@ func TestEXIF(t *testing.T) {
 			MeteringMode: 1,
 			Flash: 0,
 			FocalLength: "4/1",
-			FlashPixVersion: "FlashPix Version 1.0",
 			WhiteBalance: 1,
 			ColorSpace: 65535,
 		},
@@ -153,7 +151,6 @@ func TestEXIF(t *testing.T) {
 			SubSecTime: "00",
 			SubSecTimeOriginal: "00",
 			SubSecTimeDigitized: "00",
-			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 1,
 			PixelXDimension: 100,
 			PixelYDimension: 68,
