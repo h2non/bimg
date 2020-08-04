@@ -18,11 +18,7 @@
 #define VIPS_ANGLE_D270 VIPS_ANGLE_270
 #endif
 
-#define EXIF_IFD0_MAKE "exif-ifd0-Make"
-#define EXIF_IFD0_MODEL "exif-ifd0-Model"
 #define EXIF_IFD0_ORIENTATION "exif-ifd0-Orientation"
-#define EXIF_IFD0_SOFTWARE "exif-ifd0-Software"
-#define EXIF_IFD0_DATETIME "exif-ifd0-DateTime"
 
 #define INT_TO_GBOOLEAN(bool) (bool > 0 ? TRUE : FALSE)
 
@@ -234,34 +230,19 @@ vips_exif_tag(VipsImage *image, const char *tag) {
 	return "";
 }
 
-const char *
-vips_exif_make(VipsImage *image) {
-	return vips_exif_tag(image, EXIF_IFD0_MAKE);
-}
-
-const char *
-vips_exif_model(VipsImage *image) {
-	return vips_exif_tag(image, EXIF_IFD0_MODEL);
+int
+vips_exif_tag_to_int(VipsImage *image, const char *tag) {
+	int value = 0;
+	const char *exif = vips_exif_tag(image, tag);
+	if (strcmp(exif, "")) {
+		value = atoi(&exif[0]);
+	}
+	return value;
 }
 
 int
 vips_exif_orientation(VipsImage *image) {
-	int orientation = 0;
-	const char *exif = vips_exif_tag(image, EXIF_IFD0_ORIENTATION);
-	if (strcmp(exif, "")) {
-		orientation = atoi(&exif[0]);
-	}
-	return orientation;
-}
-
-const char *
-vips_exif_software(VipsImage *image) {
-	return vips_exif_tag(image, EXIF_IFD0_SOFTWARE);
-}
-
-const char *
-vips_exif_datetime(VipsImage *image) {
-	return vips_exif_tag(image, EXIF_IFD0_DATETIME);
+	return vips_exif_tag_to_int(image, EXIF_IFD0_ORIENTATION);
 }
 
 int
