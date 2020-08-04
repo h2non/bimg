@@ -99,7 +99,6 @@ func TestEXIF(t *testing.T) {
 			ResolutionUnit: 2,
 			YCbCrPositioning: 1,
 			ExifVersion: "Exif Version 2.1",
-			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 65535,
 		},
 		"test_exif.jpg":        {
@@ -121,7 +120,6 @@ func TestEXIF(t *testing.T) {
 			MeteringMode: 1,
 			Flash: 0,
 			FocalLength: "4/1",
-			FlashPixVersion: "FlashPix Version 1.0",
 			WhiteBalance: 1,
 			ColorSpace: 65535,
 		},
@@ -150,23 +148,14 @@ func TestEXIF(t *testing.T) {
 			MeteringMode: 5,
 			Flash: 9,
 			FocalLength: "135/1",
-			SubSecTime: "00",
 			SubSecTimeOriginal: "00",
 			SubSecTimeDigitized: "00",
-			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 1,
 			PixelXDimension: 100,
 			PixelYDimension: 68,
-			FocalPlaneXResolution: "3888000/876",
-			FocalPlaneYResolution: "2592000/583",
-			FocalPlaneResolutionUnit: 2,
-			CustomRendered: 0,
 			ExposureMode: 1,
 			WhiteBalance: 0,
 			SceneCaptureType: 0,
-			GPSVersionID: "2.2.0.0",
-			InteroperabilityIndex: "R98",
-			InteroperabilityVersion: "0100",
 		},
 		"test_exif_full.jpg": {
 			Make: "Apple",
@@ -207,10 +196,6 @@ func TestEXIF(t *testing.T) {
 			WhiteBalance: 0,
 			FocalLengthIn35mmFilm: 26,
 			SceneCaptureType: 0,
-			LensSpecification: "17/4 6/1 9/5 12/5",
-			LensMake: "Apple",
-			LensModel: "iPhone XS back dual camera 4.25mm f/1.8",
-			CompositeImage: 2,
 			GPSLatitudeRef: "N",
 			GPSLatitude: "55/1 43/1 5287/100",
 			GPSLongitudeRef: "E",
@@ -224,7 +209,6 @@ func TestEXIF(t *testing.T) {
 			GPSDestBearingRef: "M",
 			GPSDestBearing: "192127/921",
 			GPSDateStamp: "2020:07:28",
-			GPSHPositioningError: "99327/19144",
 		},
 	}
 
@@ -347,27 +331,6 @@ func TestEXIF(t *testing.T) {
 		if metadata.EXIF.SceneCaptureType != file.SceneCaptureType {
 			t.Fatalf("Unexpected image exif SceneCaptureType: %d != %d", metadata.EXIF.SceneCaptureType, file.SceneCaptureType)
 		}
-		if metadata.EXIF.CompositeImage != file.CompositeImage {
-			t.Fatalf("Unexpected image exif CompositeImage: %d != %d", metadata.EXIF.CompositeImage, file.CompositeImage)
-		}
-		if metadata.EXIF.UserComment != file.UserComment {
-			t.Fatalf("Unexpected image exif UserComment: %s != %s", metadata.EXIF.UserComment, file.UserComment)
-		}
-		if metadata.EXIF.SubSecTime != file.SubSecTime {
-			t.Fatalf("Unexpected image exif SubSecTime: %s != %s", metadata.EXIF.SubSecTime, file.SubSecTime)
-		}
-		if metadata.EXIF.FocalPlaneXResolution != file.FocalPlaneXResolution {
-			t.Fatalf("Unexpected image exif FocalPlaneXResolution: %s != %s", metadata.EXIF.FocalPlaneXResolution, file.FocalPlaneXResolution)
-		}
-		if metadata.EXIF.FocalPlaneYResolution != file.FocalPlaneYResolution {
-			t.Fatalf("Unexpected image exif FocalPlaneYResolution: %s != %s", metadata.EXIF.FocalPlaneYResolution, file.FocalPlaneYResolution)
-		}
-		if metadata.EXIF.FocalPlaneResolutionUnit != file.FocalPlaneResolutionUnit {
-			t.Fatalf("Unexpected image exif FocalPlaneResolutionUnit: %d != %d", metadata.EXIF.FocalPlaneResolutionUnit, file.FocalPlaneResolutionUnit)
-		}
-		if metadata.EXIF.CustomRendered != file.CustomRendered {
-			t.Fatalf("Unexpected image exif CustomRendered: %d != %d", metadata.EXIF.CustomRendered, file.CustomRendered)
-		}
 		if metadata.EXIF.GPSLatitudeRef != file.GPSLatitudeRef {
 			t.Fatalf("Unexpected image exif GPSLatitudeRef: %s != %s", metadata.EXIF.GPSLatitudeRef, file.GPSLatitudeRef)
 		}
@@ -406,18 +369,6 @@ func TestEXIF(t *testing.T) {
 		}
 		if metadata.EXIF.GPSDateStamp != file.GPSDateStamp {
 			t.Fatalf("Unexpected image exif GPSDateStamp: %s != %s", metadata.EXIF.GPSDateStamp, file.GPSDateStamp)
-		}
-		if metadata.EXIF.GPSHPositioningError != file.GPSHPositioningError {
-			t.Fatalf("Unexpected image exif GPSHPositioningError: %s != %s", metadata.EXIF.GPSHPositioningError, file.GPSHPositioningError)
-		}
-		if metadata.EXIF.GPSVersionID != file.GPSVersionID {
-			t.Fatalf("Unexpected image exif GPSVersionID: %s != %s", metadata.EXIF.GPSVersionID, file.GPSVersionID)
-		}
-		if metadata.EXIF.InteroperabilityIndex != file.InteroperabilityIndex {
-			t.Fatalf("Unexpected image exif InteroperabilityIndex: %s != %s", metadata.EXIF.InteroperabilityIndex, file.InteroperabilityIndex)
-		}
-		if metadata.EXIF.InteroperabilityVersion != file.InteroperabilityVersion {
-			t.Fatalf("Unexpected image exif InteroperabilityVersion: %s != %s", metadata.EXIF.InteroperabilityVersion, file.InteroperabilityVersion)
 		}
 	}
 }

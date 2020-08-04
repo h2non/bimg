@@ -36,7 +36,6 @@ const (
 	MakerNote = "exif-ifd2-MakerNote"
 	SubSecTimeOriginal = "exif-ifd2-SubSecTimeOriginal"
 	SubSecTimeDigitized = "exif-ifd2-SubSecTimeDigitized"
-	FlashPixVersion = "exif-ifd2-FlashpixVersion"
 	ColorSpace = "exif-ifd2-ColorSpace"
 	PixelXDimension = "exif-ifd2-PixelXDimension"
 	PixelYDimension = "exif-ifd2-PixelYDimension"
@@ -46,16 +45,6 @@ const (
 	WhiteBalance = "exif-ifd2-WhiteBalance"
 	FocalLengthIn35mmFilm = "exif-ifd2-FocalLengthIn35mmFilm"
 	SceneCaptureType = "exif-ifd2-SceneCaptureType"
-	LensSpecification = "exif-ifd2-LensSpecification"
-	LensMake = "exif-ifd2-LensMake"
-	LensModel = "exif-ifd2-LensModel"
-	CompositeImage = "exif-ifd2-CompositeImage"
-	UserComment = "exif-ifd2-UserComment"
-	SubSecTime = "exif-ifd2-SubsecTime"
-	FocalPlaneXResolution = "exif-ifd2-FocalPlaneXResolution"
-	FocalPlaneYResolution = "exif-ifd2-FocalPlaneYResolution"
-	FocalPlaneResolutionUnit = "exif-ifd2-FocalPlaneResolutionUnit"
-	CustomRendered = "exif-ifd2-CustomRendered"
 	GPSLatitudeRef = "exif-ifd3-GPSLatitudeRef"
 	GPSLatitude = "exif-ifd3-GPSLatitude"
 	GPSLongitudeRef = "exif-ifd3-GPSLongitudeRef"
@@ -69,10 +58,6 @@ const (
 	GPSDestBearingRef = "exif-ifd3-GPSDestBearingRef"
 	GPSDestBearing = "exif-ifd3-GPSDestBearing"
 	GPSDateStamp = "exif-ifd3-GPSDateStamp"
-	GPSHPositioningError = "exif-ifd3-GPSHPositioningError"
-	GPSVersionID = "exif-ifd3-GPSVersionID"
-	InteroperabilityIndex = "exif-ifd4-InteroperabilityIndex"
-	InteroperabilityVersion = "exif-ifd4-InteroperabilityVersion"
 )
 
 // ImageSize represents the image width and height values
@@ -124,7 +109,6 @@ type EXIF struct {
 	MakerNote string
 	SubSecTimeOriginal string
 	SubSecTimeDigitized string
-	FlashPixVersion string
 	ColorSpace int
 	PixelXDimension int
 	PixelYDimension int
@@ -134,16 +118,6 @@ type EXIF struct {
 	WhiteBalance int
 	FocalLengthIn35mmFilm int
 	SceneCaptureType int
-	LensSpecification string
-	LensMake string
-	LensModel string
-	CompositeImage int
-	UserComment string
-	SubSecTime string
-	FocalPlaneXResolution string
-	FocalPlaneYResolution string
-	FocalPlaneResolutionUnit int
-	CustomRendered int
 	GPSLatitudeRef string
 	GPSLatitude string
 	GPSLongitudeRef string
@@ -157,10 +131,6 @@ type EXIF struct {
 	GPSDestBearingRef string
 	GPSDestBearing string
 	GPSDateStamp string
-	GPSHPositioningError string
-	GPSVersionID string
-	InteroperabilityIndex string
-	InteroperabilityVersion string
 }
 
 // Size returns the image size by width and height pixels.
@@ -242,7 +212,6 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			MakerNote: vipsExifStringTag(image, MakerNote),
 			SubSecTimeOriginal: vipsExifStringTag(image, SubSecTimeOriginal),
 			SubSecTimeDigitized: vipsExifStringTag(image, SubSecTimeDigitized),
-			FlashPixVersion: vipsExifStringTag(image, FlashPixVersion),
 			ColorSpace: vipsExifIntTag(image, ColorSpace),
 			PixelXDimension: vipsExifIntTag(image, PixelXDimension),
 			PixelYDimension: vipsExifIntTag(image, PixelYDimension),
@@ -252,16 +221,6 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			WhiteBalance: vipsExifIntTag(image, WhiteBalance),
 			FocalLengthIn35mmFilm: vipsExifIntTag(image, FocalLengthIn35mmFilm),
 			SceneCaptureType: vipsExifIntTag(image, SceneCaptureType),
-			LensSpecification: vipsExifStringTag(image, LensSpecification),
-			LensMake: vipsExifStringTag(image, LensMake),
-			LensModel: vipsExifStringTag(image, LensModel),
-			CompositeImage: vipsExifIntTag(image, CompositeImage),
-			UserComment: vipsExifStringTag(image, UserComment),
-			SubSecTime: vipsExifStringTag(image, SubSecTime),
-			FocalPlaneXResolution: vipsExifStringTag(image, FocalPlaneXResolution),
-			FocalPlaneYResolution: vipsExifStringTag(image, FocalPlaneYResolution),
-			FocalPlaneResolutionUnit: vipsExifIntTag(image, FocalPlaneResolutionUnit),
-			CustomRendered: vipsExifIntTag(image, CustomRendered),
 			GPSLatitudeRef: vipsExifStringTag(image, GPSLatitudeRef),
 			GPSLatitude: vipsExifStringTag(image, GPSLatitude),
 			GPSLongitudeRef: vipsExifStringTag(image, GPSLongitudeRef),
@@ -275,10 +234,6 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			GPSDestBearingRef: vipsExifStringTag(image, GPSDestBearingRef),
 			GPSDestBearing: vipsExifStringTag(image, GPSDestBearing),
 			GPSDateStamp: vipsExifStringTag(image, GPSDateStamp),
-			GPSHPositioningError: vipsExifStringTag(image, GPSHPositioningError),
-			GPSVersionID: vipsExifStringTag(image, GPSVersionID),
-			InteroperabilityIndex: vipsExifStringTag(image, InteroperabilityIndex),
-			InteroperabilityVersion: vipsExifStringTag(image, InteroperabilityVersion),
 		},
 	}
 
