@@ -1,4 +1,23 @@
 
+v1.1.3 / 2020-08-04
+==================
+
+  * fix(ci): disable <8.7 libvips
+  * feat: autorotate
+  * feat: bump version
+  * Merge pull request #347 from vansante/master
+  * Merge pull request #345 from fredeastside/more_exif_data
+  * add more exif data to metadata
+  * Merge pull request #3 from laurentiuilie/add-support-for-heifs-file
+  * add brands heis, hevc
+  * Merge pull request #2 from laurentiuilie/add-support-for-heifs-file
+  * add test image for heifs
+  * remove test file and add the check
+  * add support for HEIFS file
+  * fix(palette): indentation
+  * Merge pull request #337 from theplant/master
+  * support Palette option for png
+
 v1.1.2 / 2020-06-08
 ===================
 
