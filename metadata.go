@@ -25,6 +25,7 @@ type ImageMetadata struct {
 	EXIF EXIF
 }
 
+// EXIF image metadata
 type EXIF struct {
 	Make string
 	Model string

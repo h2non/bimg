@@ -8,7 +8,7 @@ import "C"
 
 const (
 	// Quality defines the default JPEG quality to be used.
-	Quality = 80
+	Quality = 75
 	// MaxSize defines the maximum pixels width or height supported.
 	MaxSize = 16383
 )
@@ -226,4 +226,7 @@ type Options struct {
 	OutputICC      string
 	InputICC       string
 	Palette        bool
+
+	// private fields
+	autoRotateOnly bool
 }

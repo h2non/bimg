@@ -82,6 +82,42 @@ func TestVipsRotate(t *testing.T) {
 	}
 }
 
+func TestVipsAutoRotate(t *testing.T) {
+	files := []struct {
+		name         string
+		orientation  int
+	}{
+		{"test.jpg", 0},
+		{"test_exif.jpg", 0},
+		{"exif/Landscape_1.jpg", 0},
+		{"exif/Landscape_2.jpg", 2},
+		{"exif/Landscape_3.jpg", 0},
+		{"exif/Landscape_4.jpg", 4},
+		{"exif/Landscape_5.jpg", 5},
+		{"exif/Landscape_6.jpg", 0},
+		{"exif/Landscape_7.jpg", 7},
+	}
+
+	for _, file := range files {
+		image, _, _ := vipsRead(readImage(file.name))
+
+		newImg, err := vipsAutoRotate(image)
+		if err != nil {
+			t.Fatal("Cannot auto rotate the image")
+		}
+
+		orientation := vipsExifOrientation(newImg)
+		if orientation != file.orientation {
+			t.Fatalf("Invalid image orientation: %d != %d", orientation, file.orientation)
+		}
+
+		buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
+		if len(buf) == 0 {
+			t.Fatal("Empty image")
+		}
+	}
+}
+
 func TestVipsZoom(t *testing.T) {
 	image, _, _ := vipsRead(readImage("test.jpg"))
 

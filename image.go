@@ -154,6 +154,11 @@ func (i *Image) Rotate(a Angle) ([]byte, error) {
 	return i.Process(options)
 }
 
+// AutoRotate automatically rotates the image with no additional transformation based on the EXIF oritentation metadata, if available.
+func (i *Image) AutoRotate() ([]byte, error) {
+	return i.Process(Options{autoRotateOnly: true})
+}
+
 // Flip flips the image about the vertical Y axis.
 func (i *Image) Flip() ([]byte, error) {
 	options := Options{Flip: true}

@@ -222,6 +222,11 @@ vips_rotate_bridge(VipsImage *in, VipsImage **out, int angle) {
 	}
 }
 
+int
+vips_autorot_bridge(VipsImage *in, VipsImage **out) {
+	return vips_autorot(in, out, NULL);
+}
+
 const char *
 vips_exif_tag(VipsImage *image, const char *tag) {
 	const char *exif;

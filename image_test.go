@@ -345,6 +345,38 @@ func TestImageRotate(t *testing.T) {
 	Write("testdata/test_image_rotate_out.jpg", buf)
 }
 
+func TestImageAutoRotate(t *testing.T) {
+	tests := []struct {
+		file         string
+		orientation  int
+	}{
+		{"exif/Landscape_1.jpg", 1},
+		{"exif/Landscape_2.jpg", 2},
+		{"exif/Landscape_3.jpg", 1},
+		{"exif/Landscape_4.jpg", 4},
+		{"exif/Landscape_5.jpg", 5},
+		{"exif/Landscape_6.jpg", 1},
+		{"exif/Landscape_7.jpg", 7},
+	}
+
+	for index, test := range tests {
+		img := initImage(test.file)
+		buf, err := img.AutoRotate()
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+		Write(fmt.Sprintf("testdata/test_autorotate_%d_out.jpg", index), buf)
+
+		meta, err := img.Metadata()
+		if err != nil {
+			t.Errorf("Cannot read image metadata: %#v", err)
+		}
+		if meta.Orientation != test.orientation {
+			t.Errorf("Invalid image orientation for %s: %d != %d", test.file, meta.Orientation, test.orientation)
+		}
+	}
+}
+
 func TestImageConvert(t *testing.T) {
 	buf, err := initImage("test.jpg").Convert(PNG)
 	if err != nil {
