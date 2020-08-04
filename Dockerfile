@@ -2,7 +2,7 @@ FROM golang:1.14
 LABEL maintainer "tomas@aparicio.me"
 
 ARG LIBVIPS_VERSION=8.9.2
-ARG GOLANGCILINT_VERSION=1.23.3
+ARG GOLANGCILINT_VERSION=1.29.0
 
 # Installs libvips + required libraries
 RUN DEBIAN_FRONTEND=noninteractive \
