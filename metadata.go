@@ -36,7 +36,6 @@ const (
 	MakerNote = "exif-ifd2-MakerNote"
 	SubSecTimeOriginal = "exif-ifd2-SubSecTimeOriginal"
 	SubSecTimeDigitized = "exif-ifd2-SubSecTimeDigitized"
-	FlashPixVersion = "exif-ifd2-FlashpixVersion"
 	ColorSpace = "exif-ifd2-ColorSpace"
 	PixelXDimension = "exif-ifd2-PixelXDimension"
 	PixelYDimension = "exif-ifd2-PixelYDimension"
@@ -124,7 +123,6 @@ type EXIF struct {
 	MakerNote string
 	SubSecTimeOriginal string
 	SubSecTimeDigitized string
-	FlashPixVersion string
 	ColorSpace int
 	PixelXDimension int
 	PixelYDimension int
@@ -242,7 +240,6 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			MakerNote: vipsExifStringTag(image, MakerNote),
 			SubSecTimeOriginal: vipsExifStringTag(image, SubSecTimeOriginal),
 			SubSecTimeDigitized: vipsExifStringTag(image, SubSecTimeDigitized),
-			FlashPixVersion: vipsExifStringTag(image, FlashPixVersion),
 			ColorSpace: vipsExifIntTag(image, ColorSpace),
 			PixelXDimension: vipsExifIntTag(image, PixelXDimension),
 			PixelYDimension: vipsExifIntTag(image, PixelYDimension),

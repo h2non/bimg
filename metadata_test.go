@@ -198,7 +198,6 @@ func TestEXIF(t *testing.T) {
 			MakerNote: "1110 bytes undefined data",
 			SubSecTimeOriginal: "777",
 			SubSecTimeDigitized: "777",
-			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 65535,
 			PixelXDimension: 4032,
 			PixelYDimension: 3024,
@@ -320,9 +319,6 @@ func TestEXIF(t *testing.T) {
 		}
 		if metadata.EXIF.SubSecTimeDigitized != file.SubSecTimeDigitized {
 			t.Fatalf("Unexpected image exif SubSecTimeDigitized: %s != %s", metadata.EXIF.SubSecTimeDigitized, file.SubSecTimeDigitized)
-		}
-		if metadata.EXIF.FlashPixVersion != file.FlashPixVersion {
-			t.Fatalf("Unexpected image exif FlashPixVersion: %s != %s", metadata.EXIF.FlashPixVersion, file.FlashPixVersion)
 		}
 		if metadata.EXIF.ColorSpace != file.ColorSpace {
 			t.Fatalf("Unexpected image exif ColorSpace: %d != %d", metadata.EXIF.ColorSpace, file.ColorSpace)
