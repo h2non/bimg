@@ -204,7 +204,6 @@ func TestEXIF(t *testing.T) {
 			WhiteBalance: 0,
 			FocalLengthIn35mmFilm: 26,
 			SceneCaptureType: 0,
-			LensSpecification: "17/4 6/1 9/5 12/5",
 			LensMake: "Apple",
 			LensModel: "iPhone XS back dual camera 4.25mm f/1.8",
 			CompositeImage: 2,
@@ -343,9 +342,6 @@ func TestEXIF(t *testing.T) {
 		}
 		if metadata.EXIF.SceneCaptureType != file.SceneCaptureType {
 			t.Fatalf("Unexpected image exif SceneCaptureType: %d != %d", metadata.EXIF.SceneCaptureType, file.SceneCaptureType)
-		}
-		if metadata.EXIF.LensSpecification != file.LensSpecification {
-			t.Fatalf("Unexpected image exif LensSpecification: %s != %s", metadata.EXIF.LensSpecification, file.LensSpecification)
 		}
 		if metadata.EXIF.LensMake != file.LensMake {
 			t.Fatalf("Unexpected image exif LensMake: %s != %s", metadata.EXIF.LensMake, file.LensMake)

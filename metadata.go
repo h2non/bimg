@@ -45,7 +45,6 @@ const (
 	WhiteBalance = "exif-ifd2-WhiteBalance"
 	FocalLengthIn35mmFilm = "exif-ifd2-FocalLengthIn35mmFilm"
 	SceneCaptureType = "exif-ifd2-SceneCaptureType"
-	LensSpecification = "exif-ifd2-LensSpecification"
 	LensMake = "exif-ifd2-LensMake"
 	LensModel = "exif-ifd2-LensModel"
 	CompositeImage = "exif-ifd2-CompositeImage"
@@ -132,7 +131,6 @@ type EXIF struct {
 	WhiteBalance int
 	FocalLengthIn35mmFilm int
 	SceneCaptureType int
-	LensSpecification string
 	LensMake string
 	LensModel string
 	CompositeImage int
@@ -249,7 +247,6 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			WhiteBalance: vipsExifIntTag(image, WhiteBalance),
 			FocalLengthIn35mmFilm: vipsExifIntTag(image, FocalLengthIn35mmFilm),
 			SceneCaptureType: vipsExifIntTag(image, SceneCaptureType),
-			LensSpecification: vipsExifStringTag(image, LensSpecification),
 			LensMake: vipsExifStringTag(image, LensMake),
 			LensModel: vipsExifStringTag(image, LensModel),
 			CompositeImage: vipsExifIntTag(image, CompositeImage),
