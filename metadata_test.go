@@ -331,12 +331,6 @@ func TestEXIF(t *testing.T) {
 		if metadata.EXIF.SceneCaptureType != file.SceneCaptureType {
 			t.Fatalf("Unexpected image exif SceneCaptureType: %d != %d", metadata.EXIF.SceneCaptureType, file.SceneCaptureType)
 		}
-		if metadata.EXIF.GPSLatitudeRef != file.GPSLatitudeRef {
-			t.Fatalf("Unexpected image exif GPSLatitudeRef: %s != %s", metadata.EXIF.GPSLatitudeRef, file.GPSLatitudeRef)
-		}
-		if metadata.EXIF.GPSLatitude != file.GPSLatitude {
-			t.Fatalf("Unexpected image exif GPSLatitude: %s != %s", metadata.EXIF.GPSLatitude, file.GPSLatitude)
-		}
 		if metadata.EXIF.GPSLongitudeRef != file.GPSLongitudeRef {
 			t.Fatalf("Unexpected image exif GPSLongitudeRef: %s != %s", metadata.EXIF.GPSLongitudeRef, file.GPSLongitudeRef)
 		}
