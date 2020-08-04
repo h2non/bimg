@@ -99,6 +99,7 @@ func TestEXIF(t *testing.T) {
 			ResolutionUnit: 2,
 			YCbCrPositioning: 1,
 			ExifVersion: "Exif Version 2.1",
+			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 65535,
 		},
 		"test_exif.jpg":        {
@@ -120,6 +121,7 @@ func TestEXIF(t *testing.T) {
 			MeteringMode: 1,
 			Flash: 0,
 			FocalLength: "4/1",
+			FlashPixVersion: "FlashPix Version 1.0",
 			WhiteBalance: 1,
 			ColorSpace: 65535,
 		},
@@ -151,6 +153,7 @@ func TestEXIF(t *testing.T) {
 			SubSecTime: "00",
 			SubSecTimeOriginal: "00",
 			SubSecTimeDigitized: "00",
+			FlashPixVersion: "FlashPix Version 1.0",
 			ColorSpace: 1,
 			PixelXDimension: 100,
 			PixelYDimension: 68,
@@ -204,6 +207,7 @@ func TestEXIF(t *testing.T) {
 			WhiteBalance: 0,
 			FocalLengthIn35mmFilm: 26,
 			SceneCaptureType: 0,
+			LensSpecification: "17/4 6/1 9/5 12/5",
 			LensMake: "Apple",
 			LensModel: "iPhone XS back dual camera 4.25mm f/1.8",
 			CompositeImage: 2,
@@ -342,12 +346,6 @@ func TestEXIF(t *testing.T) {
 		}
 		if metadata.EXIF.SceneCaptureType != file.SceneCaptureType {
 			t.Fatalf("Unexpected image exif SceneCaptureType: %d != %d", metadata.EXIF.SceneCaptureType, file.SceneCaptureType)
-		}
-		if metadata.EXIF.LensMake != file.LensMake {
-			t.Fatalf("Unexpected image exif LensMake: %s != %s", metadata.EXIF.LensMake, file.LensMake)
-		}
-		if metadata.EXIF.LensModel != file.LensModel {
-			t.Fatalf("Unexpected image exif LensModel: %s != %s", metadata.EXIF.LensModel, file.LensModel)
 		}
 		if metadata.EXIF.CompositeImage != file.CompositeImage {
 			t.Fatalf("Unexpected image exif CompositeImage: %d != %d", metadata.EXIF.CompositeImage, file.CompositeImage)

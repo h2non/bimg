@@ -36,6 +36,7 @@ const (
 	MakerNote = "exif-ifd2-MakerNote"
 	SubSecTimeOriginal = "exif-ifd2-SubSecTimeOriginal"
 	SubSecTimeDigitized = "exif-ifd2-SubSecTimeDigitized"
+	FlashPixVersion = "exif-ifd2-FlashpixVersion"
 	ColorSpace = "exif-ifd2-ColorSpace"
 	PixelXDimension = "exif-ifd2-PixelXDimension"
 	PixelYDimension = "exif-ifd2-PixelYDimension"
@@ -45,6 +46,7 @@ const (
 	WhiteBalance = "exif-ifd2-WhiteBalance"
 	FocalLengthIn35mmFilm = "exif-ifd2-FocalLengthIn35mmFilm"
 	SceneCaptureType = "exif-ifd2-SceneCaptureType"
+	LensSpecification = "exif-ifd2-LensSpecification"
 	LensMake = "exif-ifd2-LensMake"
 	LensModel = "exif-ifd2-LensModel"
 	CompositeImage = "exif-ifd2-CompositeImage"
@@ -122,6 +124,7 @@ type EXIF struct {
 	MakerNote string
 	SubSecTimeOriginal string
 	SubSecTimeDigitized string
+	FlashPixVersion string
 	ColorSpace int
 	PixelXDimension int
 	PixelYDimension int
@@ -131,6 +134,7 @@ type EXIF struct {
 	WhiteBalance int
 	FocalLengthIn35mmFilm int
 	SceneCaptureType int
+	LensSpecification string
 	LensMake string
 	LensModel string
 	CompositeImage int
@@ -238,6 +242,7 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			MakerNote: vipsExifStringTag(image, MakerNote),
 			SubSecTimeOriginal: vipsExifStringTag(image, SubSecTimeOriginal),
 			SubSecTimeDigitized: vipsExifStringTag(image, SubSecTimeDigitized),
+			FlashPixVersion: vipsExifStringTag(image, FlashPixVersion),
 			ColorSpace: vipsExifIntTag(image, ColorSpace),
 			PixelXDimension: vipsExifIntTag(image, PixelXDimension),
 			PixelYDimension: vipsExifIntTag(image, PixelYDimension),
@@ -247,6 +252,7 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			WhiteBalance: vipsExifIntTag(image, WhiteBalance),
 			FocalLengthIn35mmFilm: vipsExifIntTag(image, FocalLengthIn35mmFilm),
 			SceneCaptureType: vipsExifIntTag(image, SceneCaptureType),
+			LensSpecification: vipsExifStringTag(image, LensSpecification),
 			LensMake: vipsExifStringTag(image, LensMake),
 			LensModel: vipsExifStringTag(image, LensModel),
 			CompositeImage: vipsExifIntTag(image, CompositeImage),
