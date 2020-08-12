@@ -346,17 +346,22 @@ func TestImageRotate(t *testing.T) {
 }
 
 func TestImageAutoRotate(t *testing.T) {
+	if VipsMajorVersion <= 8 && VipsMinorVersion < 10 {
+		t.Skip("Skip test in libvips < 8.10")
+		return
+	}
+
 	tests := []struct {
 		file         string
 		orientation  int
 	}{
 		{"exif/Landscape_1.jpg", 1},
-		{"exif/Landscape_2.jpg", 2},
+		{"exif/Landscape_2.jpg", 1},
 		{"exif/Landscape_3.jpg", 1},
-		{"exif/Landscape_4.jpg", 4},
+		{"exif/Landscape_4.jpg", 1},
 		{"exif/Landscape_5.jpg", 5},
 		{"exif/Landscape_6.jpg", 1},
-		{"exif/Landscape_7.jpg", 7},
+		{"exif/Landscape_7.jpg", 1},
 	}
 
 	for index, test := range tests {

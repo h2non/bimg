@@ -6,6 +6,7 @@ package bimg
 */
 import "C"
 
+// Common EXIF fields for data extraction
 const (
 	Make = "exif-ifd0-Make"
 	Model = "exif-ifd0-Model"

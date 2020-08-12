@@ -49,7 +49,6 @@ func TestMetadata(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
 		}
-
 		if metadata.Type != file.format {
 			t.Fatalf("Unexpected image format: %s", file.format)
 		}
@@ -90,6 +89,11 @@ func TestImageInterpretation(t *testing.T) {
 }
 
 func TestEXIF(t *testing.T) {
+	if VipsMajorVersion <= 8 && VipsMinorVersion < 10 {
+		t.Skip("Skip test in libvips < 8.10")
+		return
+	}
+
 	files := map[string]EXIF {
 		"test.jpg":             {},
 		"exif/Landscape_1.jpg": {
@@ -104,8 +108,8 @@ func TestEXIF(t *testing.T) {
 		"test_exif.jpg":        {
 			Make: "Jolla",
 			Model: "Jolla",
-			XResolution: "25400/1000",
-			YResolution: "25400/1000",
+			XResolution: "72/1",
+			YResolution: "72/1",
 			ResolutionUnit: 2,
 			Orientation: 1,
 			Datetime: "2014:09:21 16:00:56",
