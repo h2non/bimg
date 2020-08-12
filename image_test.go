@@ -359,7 +359,7 @@ func TestImageAutoRotate(t *testing.T) {
 		{"exif/Landscape_2.jpg", 1},
 		{"exif/Landscape_3.jpg", 1},
 		{"exif/Landscape_4.jpg", 1},
-		{"exif/Landscape_5.jpg", 5},
+		{"exif/Landscape_5.jpg", 1},
 		{"exif/Landscape_6.jpg", 1},
 		{"exif/Landscape_7.jpg", 1},
 	}

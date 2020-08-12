@@ -97,7 +97,7 @@ func TestVipsAutoRotate(t *testing.T) {
 		{"exif/Landscape_1.jpg", 0},
 		{"exif/Landscape_2.jpg", 0},
 		{"exif/Landscape_3.jpg", 0},
-		{"exif/Landscape_4.jpg", 4},
+		{"exif/Landscape_4.jpg", 0},
 		{"exif/Landscape_5.jpg", 5},
 		{"exif/Landscape_6.jpg", 0},
 		{"exif/Landscape_7.jpg", 7},
