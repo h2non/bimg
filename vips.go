@@ -649,7 +649,7 @@ func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, 
 
 	defer C.g_object_unref(C.gpointer(input))
 	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width),
-		C.int(height), C.int(extend), C.double(background.R), C.double(background.G), C.double(background.B))
+		C.int(height), C.int(extend), C.double(background.R), C.double(background.G), C.double(background.B), C.double(background.A))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
