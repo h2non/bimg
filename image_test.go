@@ -583,6 +583,12 @@ func TestRGBAEmbed(t *testing.T) {
 			t.Errorf("The image could not be put on background: %v", err)
 		}
 
+		if metadata, err := i.Metadata(); err != nil {
+			t.Errorf("Cannot read metadata from target image: %v", err)
+		} else if metadata.Alpha {
+			t.Errorf("Target image shouldn't have an alpha channel!")
+		}
+
 		Write("testdata/transparent_on_background_out.png", buf)
 	})
 
@@ -600,13 +606,26 @@ func TestRGBAEmbed(t *testing.T) {
 			t.Errorf("The image could not be put on background: %v", err)
 		}
 
+		if metadata, err := i.Metadata(); err != nil {
+			t.Errorf("Cannot read metadata from target image: %v", err)
+		} else if !metadata.Alpha {
+			t.Errorf("Target image should have an alpha channel!")
+		}
+
 		Write("testdata/transparent_on_transparent_out.png", buf)
 	})
 
 	t.Run("opaque on transparent", func(t *testing.T) {
 		i := initImage("test.jpg")
-		buf, _ := i.Convert(PNG)
-		buf, err := NewImage(buf).Process(Options{
+
+		if metadata, err := i.Metadata(); err != nil {
+			t.Fatalf("Cannot read metadata from source image: %v", err)
+		} else if metadata.Alpha {
+			t.Fatalf("Source image should not have an alpha channel.")
+		}
+
+		buf, err := i.Process(Options{
+			Type: PNG,
 			Width: 500,
 			Height: 500,
 			Enlarge: true,
@@ -616,6 +635,12 @@ func TestRGBAEmbed(t *testing.T) {
 		})
 		if err != nil {
 			t.Errorf("The image could not be put on background: %v", err)
+		}
+
+		if metadata, err := i.Metadata(); err != nil {
+			t.Errorf("Cannot read metadata from target image: %v", err)
+		} else if !metadata.Alpha {
+			t.Errorf("Target image should have an alpha channel!")
 		}
 
 		Write("testdata/opaque_on_transparent_out.png", buf)
