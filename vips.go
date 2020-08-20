@@ -389,13 +389,18 @@ func vipsInterpretation(image *C.VipsImage) Interpretation {
 	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
 }
 
-func vipsFlattenBackground(image *C.VipsImage, background Color) (*C.VipsImage, error) {
+func vipsFlattenBackground(image *C.VipsImage, background RGBAProvider) (*C.VipsImage, error) {
 	var outImage *C.VipsImage
 
+	if background == nil {
+		return nil, errors.New("cannot flatten without background")
+	}
+
+	r, g, b, _ := background.RGBA()
 	backgroundC := [3]C.double{
-		C.double(background.R),
-		C.double(background.G),
-		C.double(background.B),
+		C.double(r),
+		C.double(g),
+		C.double(b),
 	}
 
 	if vipsHasAlpha(image) {
@@ -570,7 +575,7 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 	return buf, nil
 }
 
-func vipsTrim(image *C.VipsImage, background Color, threshold float64) (int, int, int, int, error) {
+func vipsTrim(image *C.VipsImage, background RGBAProvider, threshold float64) (int, int, int, int, error) {
 	defer C.g_object_unref(C.gpointer(image))
 
 	top := C.int(0)
@@ -578,9 +583,16 @@ func vipsTrim(image *C.VipsImage, background Color, threshold float64) (int, int
 	width := C.int(0)
 	height := C.int(0)
 
+	if background == nil {
+		//return 0, 0, 0, 0, errors.New("cannot trim without a background to look for")
+		background = ColorBlack
+	}
+
+	r, g, b, _ := background.RGBA()
+
 	err := C.vips_find_trim_bridge(image,
 		&top, &left, &width, &height,
-		C.double(background.R), C.double(background.G), C.double(background.B),
+		C.double(r), C.double(g), C.double(b),
 		C.double(threshold))
 	if err != 0 {
 		return 0, 0, 0, 0, catchVipsError()
@@ -639,7 +651,7 @@ func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64) (*C.VipsIm
 	return image, nil
 }
 
-func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, background Color) (*C.VipsImage, error) {
+func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, background RGBAProvider) (*C.VipsImage, error) {
 	var image *C.VipsImage
 
 	// Max extend value, see: https://libvips.github.io/libvips/API/current/libvips-conversion.html#VipsExtend
@@ -647,9 +659,20 @@ func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, 
 		extend = ExtendBackground
 	}
 
+	if extend == ExtendBackground && background == nil {
+ 		return nil, errors.New("cannot use ExtendBackground without specifying a background")
+	}
+
+	// If it's not ExtendBackground, the values are not really used anyway. Therefore just use black.
+	if background == nil {
+		background = ColorBlack
+	}
+
+	r, g, b, a := background.RGBA()
+
 	defer C.g_object_unref(C.gpointer(input))
 	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width),
-		C.int(height), C.int(extend), C.double(background.R), C.double(background.G), C.double(background.B), C.double(background.A))
+		C.int(height), C.int(extend), C.double(r), C.double(g), C.double(b), C.double(a))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

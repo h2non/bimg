@@ -142,15 +142,38 @@ const (
 // WatermarkFont defines the default watermark font to be used.
 var WatermarkFont = "sans 10"
 
-// Color represents a traditional RGBA color scheme.
+// Color represents a traditional RGB color scheme.
 type Color struct {
-	R, G, B, A uint8
+	R, G, B uint8
+}
+
+// RGBA returns the color with full opacity.
+func (c Color) RGBA() (r uint8, g uint8, b uint8, a uint8) {
+	return c.R, c.G, c.B, 0xFF
+}
+
+// ColorWithAlpha represents a traditional RGBA color scheme.
+// It uses Color as base for easier reusability of already defined colors.
+type ColorWithAlpha struct {
+	Color
+	A uint8
+}
+
+// RGBA returns the color with the specified alpha value.
+func (c ColorWithAlpha) RGBA() (r uint8, g uint8, b uint8, a uint8) {
+	return c.R, c.G, c.B, c.A
+}
+
+// RGBAProvider defines the interface required to get RGBA compatible
+// color channels.
+type RGBAProvider interface {
+	RGBA() (r uint8, g uint8, b uint8, a uint8)
 }
 
 // ColorBlack is a shortcut to black RGB color representation.
-var ColorBlack = Color{0x00, 0x00, 0x00, 0xFF}
+var ColorBlack = Color{0x00, 0x00, 0x00}
 // ColorWhite is a shortcut to white RGB color representation.
-var ColorWhite = Color{0xFF, 0xFF, 0xFF, 0xFF}
+var ColorWhite = Color{0xFF, 0xFF, 0xFF}
 
 // Watermark represents the text-based watermark supported options.
 type Watermark struct {
@@ -214,7 +237,7 @@ type Options struct {
 	Lossless       bool
 	Extend         Extend
 	Rotate         Angle
-	Background     Color
+	Background     RGBAProvider
 	Gravity        Gravity
 	Watermark      Watermark
 	WatermarkImage WatermarkImage
