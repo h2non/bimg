@@ -10,7 +10,7 @@ env:
   # - LIBVIPS=8.6.2
   # - LIBVIPS=8.7.4
   # - LIBVIPS=8.8.4
-  - LIBVIPS=8.9.2
+  # - LIBVIPS=8.9.2
   - LIBVIPS=8.10.0
 
 matrix:
