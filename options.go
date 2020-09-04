@@ -172,6 +172,7 @@ type RGBAProvider interface {
 
 // ColorBlack is a shortcut to black RGB color representation.
 var ColorBlack = Color{0x00, 0x00, 0x00}
+
 // ColorWhite is a shortcut to white RGB color representation.
 var ColorWhite = Color{0xFF, 0xFF, 0xFF}
 
@@ -184,7 +185,7 @@ type Watermark struct {
 	NoReplicate bool
 	Text        string
 	Font        string
-	Background  Color
+	Background  RGBAProvider
 }
 
 // WatermarkImage represents the image-based watermark supported options.

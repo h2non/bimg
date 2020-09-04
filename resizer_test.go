@@ -366,12 +366,12 @@ func TestExtractCustomAxis(t *testing.T) {
 
 func TestExtractOrEmbedImage(t *testing.T) {
 	buf, _ := Read("testdata/test.jpg")
-	input, _, err := loadImage(buf)
+	transform, err := NewImageTransformation(buf)
 	if err != nil {
 		t.Fatalf("Unable to load image %s", err)
 	}
 
-	o := Options{
+	o := ResizeOptions{
 		Top:    10,
 		Left:   10,
 		Width:  100,
@@ -380,12 +380,9 @@ func TestExtractOrEmbedImage(t *testing.T) {
 		// Fields to test
 		AreaHeight: 0,
 		AreaWidth:  0,
-
-		Quality: 100, /* Needs a value to satisfy libvips */
 	}
 
-	result, err := extractOrEmbedImage(input, o)
-	if err != nil {
+	if err := transform.Resize(o); err != nil {
 		if err == ErrExtractAreaParamsRequired {
 			t.Fatalf("Expecting AreaWidth and AreaHeight to have been defined")
 		}
@@ -393,7 +390,7 @@ func TestExtractOrEmbedImage(t *testing.T) {
 		t.Fatalf("Unknown error occurred %s", err)
 	}
 
-	image, err := saveImage(result, o)
+	image, err := transform.Save(SaveOptions{Quality: 100})
 	if err != nil {
 		t.Fatalf("Failed saving image %s", err)
 	}

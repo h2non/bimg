@@ -535,15 +535,37 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
-func getImageBuffer(image *C.VipsImage) ([]byte, error) {
+func getImageBuffer(image *C.VipsImage, imageType ImageType) ([]byte, error) {
+	if imageType != JPEG && imageType != HEIF && imageType != PNG {
+		return nil, fmt.Errorf("retrieving buffer not supported for the given type")
+	}
+
 	var ptr unsafe.Pointer
-
 	length := C.size_t(0)
-	interlace := C.int(0)
-	quality := C.int(100)
-
 	err := C.int(0)
-	err = C.vips_jpegsave_bridge(image, &ptr, &length, 1, quality, interlace)
+
+	switch imageType {
+	case JPEG:
+		strip := C.int(1)
+		quality := C.int(100)
+		interlace := C.int(0)
+		err = C.vips_jpegsave_bridge(image, &ptr, &length, strip, quality, interlace)
+	case HEIF:
+		strip := C.int(1)
+		quality := C.int(100)
+		lossless := C.int(1)
+		C.vips_heifsave_bridge(image, &ptr, &length, strip, quality, lossless)
+	case PNG:
+		strip := C.int(1)
+		compression := C.int(7)
+		quality := C.int(100)
+		interlace := C.int(0)
+		palette := C.int(0)
+		err = C.vips_pngsave_bridge(image, &ptr, &length, strip, compression, quality, interlace, palette)
+	default:
+		return nil, fmt.Errorf("retrieving buffer not supported for the given type")
+	}
+
 	if int(err) != 0 {
 		return nil, catchVipsError()
 	}
