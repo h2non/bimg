@@ -3,6 +3,7 @@ package bimg
 import (
 	"bytes"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -382,13 +383,15 @@ func TestExtractOrEmbedImage(t *testing.T) {
 		AreaWidth:  0,
 	}
 
-	if err := transform.Resize(o); err != nil {
-		if err == ErrExtractAreaParamsRequired {
+	result, err := extractOrEmbedImage(transform.image, o)
+	if err != nil {
+		if errors.Unwrap(err) == ErrExtractAreaParamsRequired {
 			t.Fatalf("Expecting AreaWidth and AreaHeight to have been defined")
 		}
 
 		t.Fatalf("Unknown error occurred %s", err)
 	}
+	transform.updateImage(result)
 
 	image, err := transform.Save(SaveOptions{Quality: 100})
 	if err != nil {
