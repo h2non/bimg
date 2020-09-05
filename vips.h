@@ -269,30 +269,9 @@ vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac) {
 }
 
 int
-vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend, double r, double g, double b, double a) {
+vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend, VipsArrayDouble *background) {
 	if (extend == VIPS_EXTEND_BACKGROUND) {
-		int hasAlpha = has_alpha_channel(in);
-		
-		// We don't have an alpha channel but request alpha to be present? Add a channel then.
-		if (hasAlpha == 0 && a < 255.0) {
-			VipsImage *withAlpha = vips_image_new();
-			vips_addalpha(in, &withAlpha);
-			double background[4] = {r, g, b, a};
-			VipsArrayDouble *vipsBackground = vips_array_double_new(background, 4);
-			int result = vips_embed(withAlpha, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);
-			g_object_unref(withAlpha);
-			return result;
-		}
-
-		if (hasAlpha == 1) {
-			double background[4] = {r, g, b, a};
-			VipsArrayDouble *vipsBackground = vips_array_double_new(background, 4);
-			return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);
-		} else {
-			double background[3] = {r, g, b};
-			VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
-			return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);
-		}
+		return vips_embed(in, out, left, top, width, height, "extend", extend, "background", background, NULL);
 	}
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
 }
@@ -637,7 +616,10 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 #endif
 }
 
-int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
-{
-  return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent) {
+	return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+}
+
+int vips_addalpha_bridge(VipsImage *in, VipsImage **out) {
+	return vips_addalpha(in, out);
 }

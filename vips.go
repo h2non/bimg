@@ -700,15 +700,30 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 	}
 
 	// If it's not ExtendBackground, the values are not really used anyway. Therefore just use black.
+	var vipsBackground *C.VipsArrayDouble
 	if background == nil {
-		background = ColorBlack
+		vipsBackground = nil
+	} else {
+		r, g, b, a := background.RGBA()
+		hasAlpha := vipsHasAlpha(input)
+		if !hasAlpha && a < 0xFF {
+			// No alpha channel but the background color is not opaque? Try to add an alpha channel then.
+			var withAlpha *C.VipsImage = C.vips_image_new()
+			C.vips_addalpha_bridge(input.c, &withAlpha)
+			input = newVipsImage(withAlpha)
+		}
+
+		if hasAlpha || a < 0xFF {
+			bgArray := [4]C.double{C.double(r), C.double(g), C.double(b), C.double(a)}
+			vipsBackground = C.vips_array_double_new(&bgArray[0], 4)
+		} else {
+			bgArray := [3]C.double{C.double(r), C.double(g), C.double(b)}
+			vipsBackground = C.vips_array_double_new(&bgArray[0], 3)
+		}
 	}
 
-	r, g, b, a := background.RGBA()
-
-	defer C.g_object_unref(C.gpointer(input))
 	err := C.vips_embed_bridge(input.c, &image, C.int(left), C.int(top), C.int(width),
-		C.int(height), C.int(extend), C.double(r), C.double(g), C.double(b), C.double(a))
+		C.int(height), C.int(extend), vipsBackground)
 	if err != 0 {
 		return nil, catchVipsError()
 	}
