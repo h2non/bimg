@@ -104,22 +104,24 @@ func TestVipsAutoRotate(t *testing.T) {
 	}
 
 	for _, file := range files {
-		image, _, _ := vipsRead(readImage(file.name))
+		t.Run(file.name, func(t *testing.T) {
+			image, _, _ := vipsRead(readImage(file.name))
 
-		newImg, err := vipsAutoRotate(image)
-		if err != nil {
-			t.Fatal("Cannot auto rotate the image")
-		}
+			newImg, err := vipsAutoRotate(image)
+			if err != nil {
+				t.Fatal("Cannot auto rotate the image")
+			}
 
-		orientation := vipsExifOrientation(newImg)
-		if orientation != file.orientation {
-			t.Fatalf("Invalid image orientation: %d != %d", orientation, file.orientation)
-		}
+			orientation := vipsExifOrientation(newImg)
+			if orientation != file.orientation {
+				t.Fatalf("Invalid image orientation: %d != %d", orientation, file.orientation)
+			}
 
-		buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
-		if len(buf) == 0 {
-			t.Fatal("Empty image")
-		}
+			buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
+			if len(buf) == 0 {
+				t.Fatal("Empty image")
+			}
+		})
 	}
 }
 

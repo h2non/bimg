@@ -139,13 +139,15 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"webp", true},
 		{"gif", false},
 		{"pdf", false},
-		{"tiff", VipsVersion >= "8.5.0"},
-		{"heif", VipsVersion >= "8.8.0"},
+		{"tiff", VipsMajorVersion >= 8 && VipsMinorVersion >= 5},
+		{"heif", VipsMajorVersion >= 8 && VipsMinorVersion >= 8},
 	}
 
 	for _, n := range types {
-		if IsTypeNameSupportedSave(n.name) != n.expected {
-			t.Fatalf("Image type %s is not valid", n.name)
-		}
+		t.Run(n.name, func(t *testing.T) {
+			if IsTypeNameSupportedSave(n.name) != n.expected {
+				t.Fatalf("Image type is not valid (expected = %t)", n.expected)
+			}
+		})
 	}
 }

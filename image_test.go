@@ -352,8 +352,8 @@ func TestImageAutoRotate(t *testing.T) {
 	}
 
 	tests := []struct {
-		file         string
-		orientation  int
+		file        string
+		orientation int
 	}{
 		{"exif/Landscape_1.jpg", 1},
 		{"exif/Landscape_2.jpg", 1},
@@ -365,20 +365,22 @@ func TestImageAutoRotate(t *testing.T) {
 	}
 
 	for index, test := range tests {
-		img := initImage(test.file)
-		buf, err := img.AutoRotate()
-		if err != nil {
-			t.Errorf("Cannot process the image: %#v", err)
-		}
-		Write(fmt.Sprintf("testdata/test_autorotate_%d_out.jpg", index), buf)
+		t.Run(test.file, func(t *testing.T) {
+			img := initImage(test.file)
+			buf, err := img.AutoRotate()
+			if err != nil {
+				t.Errorf("Cannot process the image: %#v", err)
+			}
+			Write(fmt.Sprintf("testdata/test_autorotate_%d_out.jpg", index), buf)
 
-		meta, err := img.Metadata()
-		if err != nil {
-			t.Errorf("Cannot read image metadata: %#v", err)
-		}
-		if meta.Orientation != test.orientation {
-			t.Errorf("Invalid image orientation for %s: %d != %d", test.file, meta.Orientation, test.orientation)
-		}
+			meta, err := img.Metadata()
+			if err != nil {
+				t.Errorf("Cannot read image metadata: %#v", err)
+			}
+			if meta.Orientation != test.orientation {
+				t.Errorf("Invalid image orientation for %s: %d != %d", test.file, meta.Orientation, test.orientation)
+			}
+		})
 	}
 }
 
@@ -572,11 +574,11 @@ func TestRGBAEmbed(t *testing.T) {
 	t.Run("transparent on background", func(t *testing.T) {
 		i := initImage("transparent.png")
 		buf, err := i.Process(Options{
-			Width: 500,
-			Height: 500,
-			Enlarge: true,
-			Embed: true,
-			Extend: ExtendBackground,
+			Width:      500,
+			Height:     500,
+			Enlarge:    true,
+			Embed:      true,
+			Extend:     ExtendBackground,
 			Background: ColorWithAlpha{Color{255, 255, 255}, 255},
 		})
 		if err != nil {
@@ -595,11 +597,11 @@ func TestRGBAEmbed(t *testing.T) {
 	t.Run("transparent on transparent", func(t *testing.T) {
 		i := initImage("transparent.png")
 		buf, err := i.Process(Options{
-			Width: 500,
-			Height: 500,
-			Enlarge: true,
-			Embed: true,
-			Extend: ExtendBackground,
+			Width:      500,
+			Height:     500,
+			Enlarge:    true,
+			Embed:      true,
+			Extend:     ExtendBackground,
 			Background: ColorWithAlpha{Color{0, 0, 0}, 0},
 		})
 		if err != nil {
@@ -625,12 +627,12 @@ func TestRGBAEmbed(t *testing.T) {
 		}
 
 		buf, err := i.Process(Options{
-			Type: PNG,
-			Width: 500,
-			Height: 500,
-			Enlarge: true,
-			Embed: true,
-			Extend: ExtendBackground,
+			Type:       PNG,
+			Width:      500,
+			Height:     500,
+			Enlarge:    true,
+			Embed:      true,
+			Extend:     ExtendBackground,
 			Background: ColorWithAlpha{Color{0, 0, 0}, 0},
 		})
 		if err != nil {
