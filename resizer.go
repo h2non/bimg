@@ -116,7 +116,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	return t.Save(saveOptions)
 }
 
-func loadImage(buf []byte) (*C.VipsImage, ImageType, error) {
+func loadImage(buf []byte) (*vipsImage, ImageType, error) {
 	if len(buf) == 0 {
 		return nil, JPEG, errors.New("Image buffer is empty")
 	}
@@ -170,7 +170,7 @@ func shouldTransformImage(o ResizeOptions, inWidth, inHeight int) bool {
 		o.Trim
 }
 
-func transformImage(image *C.VipsImage, o ResizeOptions, shrink int, residual float64) (*C.VipsImage, error) {
+func transformImage(image *vipsImage, o ResizeOptions, shrink int, residual float64) (*vipsImage, error) {
 	var err error
 	// Use vips_shrink with the integral reduction
 	if shrink > 1 {
@@ -182,8 +182,8 @@ func transformImage(image *C.VipsImage, o ResizeOptions, shrink int, residual fl
 
 	residualx, residualy := residual, residual
 	if o.Force {
-		residualx = float64(o.Width) / float64(image.Xsize)
-		residualy = float64(o.Height) / float64(image.Ysize)
+		residualx = float64(o.Width) / float64(image.c.Xsize)
+		residualy = float64(o.Height) / float64(image.c.Ysize)
 	}
 
 	if o.Force || residual != 0 {
@@ -210,30 +210,10 @@ func transformImage(image *C.VipsImage, o ResizeOptions, shrink int, residual fl
 	return image, nil
 }
 
-func applyEffects(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+func extractOrEmbedImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) {
 	var err error
-
-	if o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 {
-		image, err = vipsGaussianBlur(image, o.GaussianBlur)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0 {
-		image, err = vipsSharpen(image, o.Sharpen)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return image, nil
-}
-
-func extractOrEmbedImage(image *C.VipsImage, o ResizeOptions) (*C.VipsImage, error) {
-	var err error
-	inWidth := int(image.Xsize)
-	inHeight := int(image.Ysize)
+	inWidth := int(image.c.Xsize)
+	inHeight := int(image.c.Ysize)
 
 	switch {
 	case o.Gravity == GravitySmart:
@@ -283,7 +263,7 @@ func extractOrEmbedImage(image *C.VipsImage, o ResizeOptions) (*C.VipsImage, err
 	return image, err
 }
 
-func rotateAndFlipImage(image *C.VipsImage, o RotateOptions) (*C.VipsImage, bool, error) {
+func rotateAndFlipImage(image *vipsImage, o RotateOptions) (*vipsImage, bool, error) {
 	var err error
 	var rotated bool
 
@@ -314,7 +294,7 @@ func rotateAndFlipImage(image *C.VipsImage, o RotateOptions) (*C.VipsImage, bool
 	return image, rotated, err
 }
 
-func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+func watermarkImageWithText(image *vipsImage, w Watermark) (*vipsImage, error) {
 	if w.Text == "" {
 		return image, nil
 	}
@@ -324,7 +304,7 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 		w.Font = WatermarkFont
 	}
 	if w.Width == 0 {
-		w.Width = int(math.Floor(float64(image.Xsize / 6)))
+		w.Width = int(math.Floor(float64(image.c.Xsize / 6)))
 	}
 	if w.DPI == 0 {
 		w.DPI = 150
@@ -346,7 +326,7 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 	return image, nil
 }
 
-func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.VipsImage, error) {
+func watermarkImageWithAnotherImage(image *vipsImage, w WatermarkImage) (*vipsImage, error) {
 	if len(w.Buf) == 0 {
 		return image, nil
 	}
@@ -380,14 +360,14 @@ func shouldFlatten(o Options) bool {
 	return true
 }
 
-func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
+func zoomImage(image *vipsImage, zoom int) (*vipsImage, error) {
 	if zoom == 0 {
 		return image, nil
 	}
 	return vipsZoom(image, zoom+1)
 }
 
-func shrinkImage(image *C.VipsImage, o ResizeOptions, residual float64, shrink int) (*C.VipsImage, float64, error) {
+func shrinkImage(image *vipsImage, o ResizeOptions, residual float64, shrink int) (*vipsImage, float64, error) {
 	// Use vips_shrink with the integral reduction
 	image, err := vipsShrink(image, shrink)
 	if err != nil {
@@ -395,8 +375,8 @@ func shrinkImage(image *C.VipsImage, o ResizeOptions, residual float64, shrink i
 	}
 
 	// Recalculate residual float based on dimensions of required vs shrunk images
-	residualx := float64(o.Width) / float64(image.Xsize)
-	residualy := float64(o.Height) / float64(image.Ysize)
+	residualx := float64(o.Width) / float64(image.c.Xsize)
+	residualy := float64(o.Height) / float64(image.c.Ysize)
 
 	if o.Crop {
 		residual = math.Max(residualx, residualy)
@@ -407,8 +387,8 @@ func shrinkImage(image *C.VipsImage, o ResizeOptions, residual float64, shrink i
 	return image, residual, nil
 }
 
-func shrinkOnLoad(buf []byte, input *C.VipsImage, imageType ImageType, factor float64, shrink int) (*C.VipsImage, float64, error) {
-	var image *C.VipsImage
+func shrinkOnLoad(buf []byte, imageType ImageType, factor float64, shrink int) (*vipsImage, float64, error) {
+	var image *vipsImage
 	var err error
 
 	// Reload input using shrink-on-load
@@ -427,9 +407,9 @@ func shrinkOnLoad(buf []byte, input *C.VipsImage, imageType ImageType, factor fl
 			shrinkOnLoad = 2
 		}
 
-		image, err = vipsShrinkJpeg(buf, input, shrinkOnLoad)
+		image, err = vipsShrinkJpeg(buf, shrinkOnLoad)
 	} else if imageType == WEBP {
-		image, err = vipsShrinkWebp(buf, input, shrink)
+		image, err = vipsShrinkWebp(buf, shrink)
 	} else {
 		return nil, 0, fmt.Errorf("%v doesn't support shrink on load", ImageTypeName(imageType))
 	}
@@ -466,7 +446,7 @@ func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) 
 	return left, top
 }
 
-func calculateRotationAndFlip(image *C.VipsImage, angle Angle) (Angle, bool) {
+func calculateRotationAndFlip(image *vipsImage, angle Angle) (Angle, bool) {
 	rotate := D0
 	flip := false
 

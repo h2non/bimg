@@ -511,37 +511,39 @@ func TestRotationAndFlip(t *testing.T) {
 	}
 
 	for _, file := range files {
-		img, err := os.Open(fmt.Sprintf("testdata/exif/%s.jpg", file.Name))
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(file.Name, func(t *testing.T) {
+			img, err := os.Open(fmt.Sprintf("testdata/exif/%s.jpg", file.Name))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		buf, err := ioutil.ReadAll(img)
-		if err != nil {
-			t.Fatal(err)
-		}
-		img.Close()
+			buf, err := ioutil.ReadAll(img)
+			if err != nil {
+				t.Fatal(err)
+			}
+			img.Close()
 
-		image, _, err := loadImage(buf)
-		if err != nil {
-			t.Fatal(err)
-		}
+			image, _, err := loadImage(buf)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		angle, flip := calculateRotationAndFlip(image, D0)
-		if angle != file.Angle {
-			t.Errorf("Rotation for %v expected to be %v. got %v", file.Name, file.Angle, angle)
-		}
-		if flip != file.Flip {
-			t.Errorf("Flip for %v expected to be %v. got %v", file.Name, file.Flip, flip)
-		}
+			angle, flip := calculateRotationAndFlip(image, D0)
+			if angle != file.Angle {
+				t.Errorf("Rotation for %v expected to be %v. got %v", file.Name, file.Angle, angle)
+			}
+			if flip != file.Flip {
+				t.Errorf("Flip for %v expected to be %v. got %v", file.Name, file.Flip, flip)
+			}
 
-		// Visual debugging.
-		newImg, err := Resize(buf, Options{})
-		if err != nil {
-			t.Fatal(err)
-		}
+			// Visual debugging.
+			newImg, err := Resize(buf, Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+			Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+		})
 	}
 }
 

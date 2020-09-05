@@ -43,6 +43,10 @@ type VipsMemoryInfo struct {
 	Allocations     int64
 }
 
+type vipsImage struct {
+	c *C.VipsImage
+}
+
 // vipsSaveOptions represents the internal option used to talk with libvips.
 type vipsSaveOptions struct {
 	Quality        int
@@ -80,6 +84,32 @@ type vipsWatermarkTextOptions struct {
 
 func init() {
 	Initialize()
+}
+
+func newVipsImage(cImage *C.VipsImage) *vipsImage {
+	vipsImage := &vipsImage{cImage}
+	runtime.SetFinalizer(vipsImage, finalizeVipsImage)
+	return vipsImage
+}
+
+func (vi *vipsImage) isNil() bool {
+	return vi.c == nil
+}
+
+func (vi *vipsImage) clone() *vipsImage {
+	C.g_object_ref(C.gpointer(vi.c))
+	return newVipsImage(vi.c)
+}
+
+func (vi *vipsImage) close() {
+	if vi.c != nil {
+		C.g_object_unref(C.gpointer(vi.c))
+		vi.c = nil
+	}
+}
+
+func finalizeVipsImage(vi *vipsImage) {
+	vi.close()
 }
 
 // Initialize is used to explicitly start libvips in thread-safe way.
@@ -215,16 +245,16 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 	return false
 }
 
-func vipsExifStringTag(image *C.VipsImage, tag string) string {
-	return vipsExifShort(C.GoString(C.vips_exif_tag(image, C.CString(tag))))
+func vipsExifStringTag(image *vipsImage, tag string) string {
+	return vipsExifShort(C.GoString(C.vips_exif_tag(image.c, C.CString(tag))))
 }
 
-func vipsExifIntTag(image *C.VipsImage, tag string) int {
-	return int(C.vips_exif_tag_to_int(image, C.CString(tag)))
+func vipsExifIntTag(image *vipsImage, tag string) int {
+	return int(C.vips_exif_tag_to_int(image.c, C.CString(tag)))
 }
 
-func vipsExifOrientation(image *C.VipsImage) int {
-	return int(C.vips_exif_orientation(image))
+func vipsExifOrientation(image *vipsImage) int {
+	return int(C.vips_exif_orientation(image.c))
 }
 
 func vipsExifShort(s string) string {
@@ -234,12 +264,12 @@ func vipsExifShort(s string) string {
 	return s
 }
 
-func vipsHasAlpha(image *C.VipsImage) bool {
-	return int(C.has_alpha_channel(image)) > 0
+func vipsHasAlpha(image *vipsImage) bool {
+	return int(C.has_alpha_channel(image.c)) > 0
 }
 
-func vipsHasProfile(image *C.VipsImage) bool {
-	return int(C.has_profile_embed(image)) > 0
+func vipsHasProfile(image *vipsImage) bool {
+	return int(C.has_profile_embed(image.c)) > 0
 }
 
 func vipsWindowSize(name string) float64 {
@@ -248,76 +278,71 @@ func vipsWindowSize(name string) float64 {
 	return float64(C.interpolator_window_size(cname))
 }
 
-func vipsSpace(image *C.VipsImage) string {
-	return C.GoString(C.vips_enum_nick_bridge(image))
+func vipsSpace(image *vipsImage) string {
+	return C.GoString(C.vips_enum_nick_bridge(image.c))
 }
 
-func vipsRotate(image *C.VipsImage, angle Angle) (*C.VipsImage, error) {
+func vipsRotate(image *vipsImage, angle Angle) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_rotate_bridge(image, &out, C.int(angle))
+	err := C.vips_rotate_bridge(image.c, &out, C.int(angle))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsAutoRotate(image *C.VipsImage) (*C.VipsImage, error) {
+func vipsAutoRotate(image *vipsImage) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_autorot_bridge(image, &out)
+	err := C.vips_autorot_bridge(image.c, &out)
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsTransformICC(image *C.VipsImage, inputICC string, outputICC string) (*C.VipsImage, error) {
+func vipsTransformICC(image *vipsImage, inputICC string, outputICC string) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
 	outputIccPath := C.CString(outputICC)
 	defer C.free(unsafe.Pointer(outputIccPath))
 	inputIccPath := C.CString(inputICC)
 	defer C.free(unsafe.Pointer(inputIccPath))
-	err := C.vips_icc_transform_with_default_bridge(image, &out, outputIccPath, inputIccPath)
+	err := C.vips_icc_transform_with_default_bridge(image.c, &out, outputIccPath, inputIccPath)
 	//err := C.vips_icc_transform_bridge2(image, &outImage, outputIccPath, inputIccPath)
 	if int(err) != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsFlip(image *C.VipsImage, direction Direction) (*C.VipsImage, error) {
+func vipsFlip(image *vipsImage, direction Direction) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_flip_bridge(image, &out, C.int(direction))
+	err := C.vips_flip_bridge(image.c, &out, C.int(direction))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsZoom(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
+func vipsZoom(image *vipsImage, zoom int) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_zoom_bridge(image, &out, C.int(zoom), C.int(zoom))
+	err := C.vips_zoom_bridge(image.c, &out, C.int(zoom), C.int(zoom))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+func vipsWatermark(image *vipsImage, w Watermark) (*vipsImage, error) {
 	var out *C.VipsImage
 
 	// Defaults
@@ -348,15 +373,15 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	defer C.free(unsafe.Pointer(text))
 	defer C.free(unsafe.Pointer(font))
 
-	err := C.vips_watermark(image, &out, (*C.WatermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.WatermarkOptions)(unsafe.Pointer(&opts)))
+	err := C.vips_watermark(image.c, &out, (*C.WatermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.WatermarkOptions)(unsafe.Pointer(&opts)))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
+func vipsRead(buf []byte) (*vipsImage, ImageType, error) {
 	var image *C.VipsImage
 	imageType := vipsImageType(buf)
 
@@ -372,7 +397,7 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
 		return nil, UNKNOWN, catchVipsError()
 	}
 
-	return image, imageType, nil
+	return newVipsImage(image), imageType, nil
 }
 
 func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
@@ -384,8 +409,8 @@ func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	return vipsColourspaceIsSupported(image), nil
 }
 
-func vipsColourspaceIsSupported(image *C.VipsImage) bool {
-	return int(C.vips_colourspace_issupported_bridge(image)) == 1
+func vipsColourspaceIsSupported(image *vipsImage) bool {
+	return int(C.vips_colourspace_issupported_bridge(image.c)) == 1
 }
 
 func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
@@ -397,15 +422,17 @@ func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 	return vipsInterpretation(image), nil
 }
 
-func vipsInterpretation(image *C.VipsImage) Interpretation {
-	return Interpretation(C.vips_image_guess_interpretation_bridge(image))
+func vipsInterpretation(image *vipsImage) Interpretation {
+	return Interpretation(C.vips_image_guess_interpretation_bridge(image.c))
 }
 
-func vipsFlattenBackground(image *C.VipsImage, background RGBAProvider) (*C.VipsImage, error) {
-	var outImage *C.VipsImage
-
+func vipsFlattenBackground(image *vipsImage, background RGBAProvider) (*vipsImage, error) {
 	if background == nil {
 		return nil, errors.New("cannot flatten without background")
+	}
+
+	if !vipsHasAlpha(image) {
+		return image, nil
 	}
 
 	r, g, b, _ := background.RGBA()
@@ -415,24 +442,20 @@ func vipsFlattenBackground(image *C.VipsImage, background RGBAProvider) (*C.Vips
 		C.double(b),
 	}
 
-	if vipsHasAlpha(image) {
-		err := C.vips_flatten_background_brigde(image, &outImage,
-			backgroundC[0], backgroundC[1], backgroundC[2])
-		if int(err) != 0 {
-			return nil, catchVipsError()
-		}
-		C.g_object_unref(C.gpointer(image))
-		image = outImage
+	var outImage *C.VipsImage
+	err := C.vips_flatten_background_brigde(image.c, &outImage,
+		backgroundC[0], backgroundC[1], backgroundC[2])
+	if int(err) != 0 {
+		return nil, catchVipsError()
 	}
-
-	return image, nil
+	return newVipsImage(outImage), nil
 }
 
-func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
+func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
 	var outImage *C.VipsImage
 	// Remove ICC profile metadata
 	if o.NoProfile {
-		C.remove_profile(image)
+		C.remove_profile(image.c)
 	}
 
 	// Use a default interpretation and cast it to C type
@@ -443,11 +466,11 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 
 	// Apply the proper colour space
 	if vipsColourspaceIsSupported(image) {
-		err := C.vips_colourspace_bridge(image, &outImage, interpretation)
+		err := C.vips_colourspace_bridge(image.c, &outImage, interpretation)
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		image = outImage
+		image = newVipsImage(outImage)
 	}
 
 	if o.OutputICC != "" && o.InputICC != "" {
@@ -457,44 +480,31 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 		inputIccPath := C.CString(o.InputICC)
 		defer C.free(unsafe.Pointer(inputIccPath))
 
-		err := C.vips_icc_transform_with_default_bridge(image, &outImage, outputIccPath, inputIccPath)
+		err := C.vips_icc_transform_with_default_bridge(image.c, &outImage, outputIccPath, inputIccPath)
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		C.g_object_unref(C.gpointer(image))
-		return outImage, nil
+		return newVipsImage(outImage), nil
 	}
 
 	if o.OutputICC != "" && vipsHasProfile(image) {
 		outputIccPath := C.CString(o.OutputICC)
 		defer C.free(unsafe.Pointer(outputIccPath))
 
-		err := C.vips_icc_transform_bridge(image, &outImage, outputIccPath)
+		err := C.vips_icc_transform_bridge(image.c, &outImage, outputIccPath)
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		C.g_object_unref(C.gpointer(image))
-		image = outImage
+		image = newVipsImage(outImage)
 	}
 
 	return image, nil
 }
 
-func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
-	defer C.g_object_unref(C.gpointer(image))
-
-	tmpImage, err := vipsPreSave(image, &o)
+func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
+	image, err := vipsPreSave(image, &o)
 	if err != nil {
 		return nil, err
-	}
-
-	// When an image has an unsupported color space, vipsPreSave
-	// returns the pointer of the image passed to it unmodified.
-	// When this occurs, we must take care to not dereference the
-	// original image a second time; we may otherwise erroneously
-	// free the object twice.
-	if tmpImage != image {
-		defer C.g_object_unref(C.gpointer(tmpImage))
 	}
 
 	length := C.size_t(0)
@@ -511,15 +521,15 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	var ptr unsafe.Pointer
 	switch o.Type {
 	case WEBP:
-		saveErr = C.vips_webpsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
+		saveErr = C.vips_webpsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case PNG:
-		saveErr = C.vips_pngsave_bridge(tmpImage, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette)
+		saveErr = C.vips_pngsave_bridge(image.c, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette)
 	case TIFF:
-		saveErr = C.vips_tiffsave_bridge(tmpImage, &ptr, &length)
+		saveErr = C.vips_tiffsave_bridge(image.c, &ptr, &length)
 	case HEIF:
-		saveErr = C.vips_heifsave_bridge(tmpImage, &ptr, &length, strip, quality, lossless)
+		saveErr = C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	default:
-		saveErr = C.vips_jpegsave_bridge(tmpImage, &ptr, &length, strip, quality, interlace)
+		saveErr = C.vips_jpegsave_bridge(image.c, &ptr, &length, strip, quality, interlace)
 	}
 
 	if int(saveErr) != 0 {
@@ -535,7 +545,7 @@ func vipsSave(image *C.VipsImage, o vipsSaveOptions) ([]byte, error) {
 	return buf, nil
 }
 
-func getImageBuffer(image *C.VipsImage, imageType ImageType) ([]byte, error) {
+func getImageBuffer(image *vipsImage, imageType ImageType) ([]byte, error) {
 	if imageType != JPEG && imageType != HEIF && imageType != PNG {
 		return nil, fmt.Errorf("retrieving buffer not supported for the given type")
 	}
@@ -549,19 +559,19 @@ func getImageBuffer(image *C.VipsImage, imageType ImageType) ([]byte, error) {
 		strip := C.int(1)
 		quality := C.int(100)
 		interlace := C.int(0)
-		err = C.vips_jpegsave_bridge(image, &ptr, &length, strip, quality, interlace)
+		err = C.vips_jpegsave_bridge(image.c, &ptr, &length, strip, quality, interlace)
 	case HEIF:
 		strip := C.int(1)
 		quality := C.int(100)
 		lossless := C.int(1)
-		C.vips_heifsave_bridge(image, &ptr, &length, strip, quality, lossless)
+		C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case PNG:
 		strip := C.int(1)
 		compression := C.int(7)
 		quality := C.int(100)
 		interlace := C.int(0)
 		palette := C.int(0)
-		err = C.vips_pngsave_bridge(image, &ptr, &length, strip, compression, quality, interlace, palette)
+		err = C.vips_pngsave_bridge(image.c, &ptr, &length, strip, compression, quality, interlace, palette)
 	default:
 		return nil, fmt.Errorf("retrieving buffer not supported for the given type")
 	}
@@ -576,42 +586,38 @@ func getImageBuffer(image *C.VipsImage, imageType ImageType) ([]byte, error) {
 	return C.GoBytes(ptr, C.int(length)), nil
 }
 
-func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage, error) {
-	var buf *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
+func vipsExtract(image *vipsImage, left, top, width, height int) (*vipsImage, error) {
+	var out *C.VipsImage
 
 	if width > MaxSize || height > MaxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
 	top, left = max(top), max(left)
-	err := C.vips_extract_area_bridge(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
+	err := C.vips_extract_area_bridge(image.c, &out, C.int(left), C.int(top), C.int(width), C.int(height))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return buf, nil
+	return newVipsImage(out), nil
 }
 
-func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) {
-	var buf *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
+func vipsSmartCrop(image *vipsImage, width, height int) (*vipsImage, error) {
+	var out *C.VipsImage
 
 	if width > MaxSize || height > MaxSize {
-		return nil, errors.New("Maximum image size exceeded")
+		return nil, errors.New("maximum image size exceeded")
 	}
 
-	err := C.vips_smartcrop_bridge(image, &buf, C.int(width), C.int(height))
+	err := C.vips_smartcrop_bridge(image.c, &out, C.int(width), C.int(height))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return buf, nil
+	return newVipsImage(out), nil
 }
 
-func vipsTrim(image *C.VipsImage, background RGBAProvider, threshold float64) (int, int, int, int, error) {
-	defer C.g_object_unref(C.gpointer(image))
-
+func vipsTrim(image *vipsImage, background RGBAProvider, threshold float64) (int, int, int, int, error) {
 	top := C.int(0)
 	left := C.int(0)
 	width := C.int(0)
@@ -624,7 +630,7 @@ func vipsTrim(image *C.VipsImage, background RGBAProvider, threshold float64) (i
 
 	r, g, b, _ := background.RGBA()
 
-	err := C.vips_find_trim_bridge(image,
+	err := C.vips_find_trim_bridge(image.c,
 		&top, &left, &width, &height,
 		C.double(r), C.double(g), C.double(b),
 		C.double(threshold))
@@ -635,57 +641,53 @@ func vipsTrim(image *C.VipsImage, background RGBAProvider, threshold float64) (i
 	return int(top), int(left), int(width), int(height), nil
 }
 
-func vipsShrinkJpeg(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
+func vipsShrinkJpeg(buf []byte, shrink int) (*vipsImage, error) {
 	var image *C.VipsImage
 	var ptr = unsafe.Pointer(&buf[0])
-	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_jpegload_buffer_shrink(ptr, C.size_t(len(buf)), &image, C.int(shrink))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return image, nil
+	return newVipsImage(image), nil
 }
 
-func vipsShrinkWebp(buf []byte, input *C.VipsImage, shrink int) (*C.VipsImage, error) {
+func vipsShrinkWebp(buf []byte, shrink int) (*vipsImage, error) {
 	var image *C.VipsImage
 	var ptr = unsafe.Pointer(&buf[0])
-	defer C.g_object_unref(C.gpointer(input))
 
 	err := C.vips_webpload_buffer_shrink(ptr, C.size_t(len(buf)), &image, C.int(shrink))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return image, nil
+	return newVipsImage(image), nil
 }
 
-func vipsShrink(input *C.VipsImage, shrink int) (*C.VipsImage, error) {
+func vipsShrink(input *vipsImage, shrink int) (*vipsImage, error) {
 	var image *C.VipsImage
-	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_shrink_bridge(input, &image, C.double(float64(shrink)), C.double(float64(shrink)))
+	err := C.vips_shrink_bridge(input.c, &image, C.double(float64(shrink)), C.double(float64(shrink)))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return image, nil
+	return newVipsImage(image), nil
 }
 
-func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64) (*C.VipsImage, error) {
+func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage, error) {
 	var image *C.VipsImage
-	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink))
+	err := C.vips_reduce_bridge(input.c, &image, C.double(xshrink), C.double(yshrink))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return image, nil
+	return newVipsImage(image), nil
 }
 
-func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, background RGBAProvider) (*C.VipsImage, error) {
+func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, background RGBAProvider) (*vipsImage, error) {
 	var image *C.VipsImage
 
 	// Max extend value, see: https://libvips.github.io/libvips/API/current/libvips-conversion.html#VipsExtend
@@ -694,7 +696,7 @@ func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, 
 	}
 
 	if extend == ExtendBackground && background == nil {
- 		return nil, errors.New("cannot use ExtendBackground without specifying a background")
+		return nil, errors.New("cannot use ExtendBackground without specifying a background")
 	}
 
 	// If it's not ExtendBackground, the values are not really used anyway. Therefore just use black.
@@ -705,16 +707,16 @@ func vipsEmbed(input *C.VipsImage, left, top, width, height int, extend Extend, 
 	r, g, b, a := background.RGBA()
 
 	defer C.g_object_unref(C.gpointer(input))
-	err := C.vips_embed_bridge(input, &image, C.int(left), C.int(top), C.int(width),
+	err := C.vips_embed_bridge(input.c, &image, C.int(left), C.int(top), C.int(width),
 		C.int(height), C.int(extend), C.double(r), C.double(g), C.double(b), C.double(a))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return image, nil
+	return newVipsImage(image), nil
 }
 
-func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator, extend Extend) (*C.VipsImage, error) {
+func vipsAffine(input *vipsImage, residualx, residualy float64, i Interpolator, extend Extend) (*vipsImage, error) {
 	if extend > 5 {
 		extend = ExtendBackground
 	}
@@ -724,15 +726,14 @@ func vipsAffine(input *C.VipsImage, residualx, residualy float64, i Interpolator
 	interpolator := C.vips_interpolate_new(cstring)
 
 	defer C.free(unsafe.Pointer(cstring))
-	defer C.g_object_unref(C.gpointer(input))
 	defer C.g_object_unref(C.gpointer(interpolator))
 
-	err := C.vips_affine_interpolator(input, &image, C.double(residualx), 0, 0, C.double(residualy), interpolator, C.int(extend))
+	err := C.vips_affine_interpolator(input.c, &image, C.double(residualx), 0, 0, C.double(residualy), interpolator, C.int(extend))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return image, nil
+	return newVipsImage(image), nil
 }
 
 func vipsImageType(buf []byte) ImageType {
@@ -817,35 +818,34 @@ func boolToInt(b bool) int {
 	return 0
 }
 
-func vipsGaussianBlur(image *C.VipsImage, o GaussianBlur) (*C.VipsImage, error) {
+func vipsGaussianBlur(image *vipsImage, o GaussianBlur) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_gaussblur_bridge(image, &out, C.double(o.Sigma), C.double(o.MinAmpl))
+	err := C.vips_gaussblur_bridge(image.c, &out, C.double(o.Sigma), C.double(o.MinAmpl))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
+func vipsSharpen(image *vipsImage, o Sharpen) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_sharpen_bridge(image, &out, C.int(o.Radius), C.double(o.X1), C.double(o.Y2), C.double(o.Y3), C.double(o.M1), C.double(o.M2))
+	err := C.vips_sharpen_bridge(image.c, &out, C.int(o.Radius), C.double(o.X1), C.double(o.Y2), C.double(o.Y3), C.double(o.M1), C.double(o.M2))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	return out, nil
+	return newVipsImage(out), nil
 }
 
 func max(x int) int {
 	return int(math.Max(float64(x), 0))
 }
 
-func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {
+func vipsDrawWatermark(image *vipsImage, o WatermarkImage) (*vipsImage, error) {
 	var out *C.VipsImage
 
+	// TODO vipsImage instead?
 	watermark, _, e := vipsRead(o.Buf)
 	if e != nil {
 		return nil, e
@@ -853,22 +853,21 @@ func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, erro
 
 	opts := vipsWatermarkImageOptions{C.int(o.Left), C.int(o.Top), C.float(o.Opacity)}
 
-	err := C.vips_watermark_image(image, watermark, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
+	err := C.vips_watermark_image(image.c, watermark.c, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
 
 	if err != 0 {
 		return nil, catchVipsError()
 	}
 
-	return out, nil
+	return newVipsImage(out), nil
 }
 
-func vipsGamma(image *C.VipsImage, Gamma float64) (*C.VipsImage, error) {
+func vipsGamma(image *vipsImage, Gamma float64) (*vipsImage, error) {
 	var out *C.VipsImage
-	defer C.g_object_unref(C.gpointer(image))
 
-	err := C.vips_gamma_bridge(image, &out, C.double(Gamma))
+	err := C.vips_gamma_bridge(image.c, &out, C.double(Gamma))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	return out, nil
+	return newVipsImage(out), nil
 }

@@ -8,13 +8,12 @@ import "C"
 import (
 	"fmt"
 	"math"
-	"runtime"
 )
 
 type ImageTransformation struct {
 	buf        []byte
 	bufTainted bool
-	image      *C.VipsImage
+	image      *vipsImage
 	imageType  ImageType
 }
 
@@ -29,37 +28,32 @@ func NewImageTransformation(buf []byte) (*ImageTransformation, error) {
 		image:      image,
 		imageType:  imageType,
 	}
-	runtime.SetFinalizer(it, finalizeImageTransformation)
 	return it, nil
 }
 
 func (it *ImageTransformation) Clone() *ImageTransformation {
-	clone := &ImageTransformation{
+	return &ImageTransformation{
 		buf:        it.buf,
 		bufTainted: it.bufTainted,
-		image:      it.image,
+		image:      it.image.clone(),
 		imageType:  it.imageType,
 	}
-	C.g_object_ref(C.gpointer(clone.image))
-	runtime.SetFinalizer(it, finalizeImageTransformation)
-	return clone
 }
 
 func (it *ImageTransformation) Close() {
-	C.g_object_unref(C.gpointer(it.image))
+	it.image.close()
 	it.image = nil
+	it.buf = nil
 }
 
-func finalizeImageTransformation(it *ImageTransformation) {
-	it.Close()
-}
-
-func (it *ImageTransformation) updateImage(image *C.VipsImage) {
+func (it *ImageTransformation) updateImage(image *vipsImage) {
 	if it.image == image {
 		return
 	}
 
-	C.g_object_unref(C.gpointer(it.image))
+	if it.image != nil {
+		it.image.close()
+	}
 	it.image = image
 	// We replaced the image, so the buffer is no longer the same content.
 	it.bufTainted = true
@@ -133,8 +127,8 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 		opts.Force = true
 	}
 
-	inWidth := int(it.image.Xsize)
-	inHeight := int(it.image.Ysize)
+	inWidth := int(it.image.c.Xsize)
+	inHeight := int(it.image.c.Ysize)
 
 	// image calculations
 	factor := calculateResizeFactor(&opts, inWidth, inHeight)
@@ -161,7 +155,7 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	supportsShrinkOnLoad := !it.bufTainted && (isShrinkableWebP || isShrinkableJpeg)
 
 	if supportsShrinkOnLoad && shrink >= 2 {
-		tmpImage, factor, err := shrinkOnLoad(it.buf, it.image, it.imageType, factor, shrink)
+		tmpImage, factor, err := shrinkOnLoad(it.buf, it.imageType, factor, shrink)
 		if err != nil {
 			return fmt.Errorf("cannot shrink-on-load: %w", err)
 		}
