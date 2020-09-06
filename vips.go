@@ -112,6 +112,10 @@ func finalizeVipsImage(vi *vipsImage) {
 	vi.close()
 }
 
+func vipsVersionMin(major, minor int) bool {
+	return VipsMajorVersion > major || (VipsMajorVersion == major && VipsMinorVersion >= minor)
+}
+
 // Initialize is used to explicitly start libvips in thread-safe way.
 // Only call this function if you have previously turned off libvips.
 func Initialize() {
@@ -381,7 +385,7 @@ func vipsRead(buf []byte) (*vipsImage, ImageType, error) {
 	imageType := vipsImageType(buf)
 
 	if imageType == UNKNOWN {
-		return nil, UNKNOWN, errors.New("Unsupported image format")
+		return nil, UNKNOWN, errors.New("unsupported image format")
 	}
 
 	length := C.size_t(len(buf))
@@ -583,7 +587,7 @@ func vipsExtract(image *vipsImage, left, top, width, height int) (*vipsImage, er
 	var out *C.VipsImage
 
 	if width > MaxSize || height > MaxSize {
-		return nil, errors.New("Maximum image size exceeded")
+		return nil, errors.New("maximum image size exceeded")
 	}
 
 	top, left = max(top), max(left)

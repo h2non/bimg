@@ -150,7 +150,7 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	// Try to use libjpeg/libwebp shrink-on-load, if the buffer is still usable.
 	// If we performed "destructive" transformations already, this will no longer
 	// be the case.
-	isShrinkableWebP := it.imageType == WEBP && VipsMajorVersion >= 8 && VipsMinorVersion >= 3
+	isShrinkableWebP := it.imageType == WEBP && vipsVersionMin(8, 3)
 	isShrinkableJpeg := it.imageType == JPEG
 	supportsShrinkOnLoad := !it.bufTainted && (isShrinkableWebP || isShrinkableJpeg)
 

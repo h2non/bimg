@@ -42,7 +42,7 @@ func TestImageSvgResize(t *testing.T) {
 }
 
 func TestImageGifToJpeg(t *testing.T) {
-	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+	if vipsVersionMin(8, 3) {
 		i := initImage("test.gif")
 		options := Options{
 			Type: JPEG,
@@ -57,7 +57,7 @@ func TestImageGifToJpeg(t *testing.T) {
 }
 
 func TestImagePdfToJpeg(t *testing.T) {
-	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+	if vipsVersionMin(8, 3) {
 		i := initImage("test.pdf")
 		options := Options{
 			Type: JPEG,
@@ -72,7 +72,7 @@ func TestImagePdfToJpeg(t *testing.T) {
 }
 
 func TestImageSvgToJpeg(t *testing.T) {
-	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+	if vipsVersionMin(8, 3) {
 		i := initImage("test.svg")
 		options := Options{
 			Type: JPEG,
@@ -346,7 +346,7 @@ func TestImageRotate(t *testing.T) {
 }
 
 func TestImageAutoRotate(t *testing.T) {
-	if VipsMajorVersion <= 8 && VipsMinorVersion < 10 {
+	if !vipsVersionMin(8, 10) {
 		t.Skip("Skip test in libvips < 8.10")
 		return
 	}
@@ -496,7 +496,7 @@ func TestFluentInterface(t *testing.T) {
 
 func TestImageSmartCrop(t *testing.T) {
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 5) {
+	if !(vipsVersionMin(8, 5)) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.5", VipsVersion)
 	}
 
@@ -516,7 +516,7 @@ func TestImageSmartCrop(t *testing.T) {
 
 func TestImageTrim(t *testing.T) {
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+	if !vipsVersionMin(8, 6) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
 	}
 
@@ -536,7 +536,7 @@ func TestImageTrim(t *testing.T) {
 
 func TestImageTrimParameters(t *testing.T) {
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+	if !vipsVersionMin(8, 6) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
 	}
 

@@ -89,7 +89,7 @@ func TestImageInterpretation(t *testing.T) {
 }
 
 func TestEXIF(t *testing.T) {
-	if VipsMajorVersion <= 8 && VipsMinorVersion < 10 {
+	if !vipsVersionMin(8, 10) {
 		t.Skip("Skip test in libvips < 8.10")
 		return
 	}
