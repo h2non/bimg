@@ -68,7 +68,7 @@ type vipsWatermarkOptions struct {
 	Margin      C.int
 	NoReplicate C.int
 	Opacity     C.float
-	Background  interface{}
+	Background  [3]C.double
 }
 
 type vipsWatermarkImageOptions struct {
@@ -355,17 +355,12 @@ func vipsWatermark(image *vipsImage, w Watermark) (*vipsImage, error) {
 	font := C.CString(w.Font)
 
 	var r, g, b uint8
-	var a uint8 = 0xFF
 	if w.Background != nil {
-		r, g, b, a = w.Background.RGBA()
+		r, g, b, _ = w.Background.RGBA()
 	}
 
-	var background interface{}
-	if vipsHasAlpha(image) {
-		background = [4]C.double{C.double(r), C.double(g), C.double(b), C.double(a)}
-	} else {
-		background = [3]C.double{C.double(r), C.double(g), C.double(b)}
-	}
+	var background [3]C.double
+	background = [3]C.double{C.double(r), C.double(g), C.double(b)}
 
 	textOpts := vipsWatermarkTextOptions{text, font}
 	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
