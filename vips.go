@@ -86,7 +86,7 @@ func init() {
 	Initialize()
 }
 
-func newVipsImage(cImage *C.VipsImage) *vipsImage {
+func wrapVipsImage(cImage *C.VipsImage) *vipsImage {
 	vipsImage := &vipsImage{cImage}
 	runtime.SetFinalizer(vipsImage, finalizeVipsImage)
 	return vipsImage
@@ -98,7 +98,7 @@ func (vi *vipsImage) isNil() bool {
 
 func (vi *vipsImage) clone() *vipsImage {
 	C.g_object_ref(C.gpointer(vi.c))
-	return newVipsImage(vi.c)
+	return wrapVipsImage(vi.c)
 }
 
 func (vi *vipsImage) close() {
@@ -290,7 +290,7 @@ func vipsRotate(image *vipsImage, angle Angle) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsAutoRotate(image *vipsImage) (*vipsImage, error) {
@@ -301,7 +301,7 @@ func vipsAutoRotate(image *vipsImage) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsTransformICC(image *vipsImage, inputICC string, outputICC string) (*vipsImage, error) {
@@ -317,7 +317,7 @@ func vipsTransformICC(image *vipsImage, inputICC string, outputICC string) (*vip
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsFlip(image *vipsImage, direction Direction) (*vipsImage, error) {
@@ -328,7 +328,7 @@ func vipsFlip(image *vipsImage, direction Direction) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsZoom(image *vipsImage, zoom int) (*vipsImage, error) {
@@ -339,7 +339,7 @@ func vipsZoom(image *vipsImage, zoom int) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsWatermark(image *vipsImage, w Watermark) (*vipsImage, error) {
@@ -378,7 +378,7 @@ func vipsWatermark(image *vipsImage, w Watermark) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsRead(buf []byte) (*vipsImage, ImageType, error) {
@@ -397,7 +397,7 @@ func vipsRead(buf []byte) (*vipsImage, ImageType, error) {
 		return nil, UNKNOWN, catchVipsError()
 	}
 
-	return newVipsImage(image), imageType, nil
+	return wrapVipsImage(image), imageType, nil
 }
 
 func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
@@ -405,7 +405,6 @@ func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	C.g_object_unref(C.gpointer(image))
 	return vipsColourspaceIsSupported(image), nil
 }
 
@@ -418,7 +417,6 @@ func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 	if err != nil {
 		return InterpretationError, err
 	}
-	C.g_object_unref(C.gpointer(image))
 	return vipsInterpretation(image), nil
 }
 
@@ -448,7 +446,7 @@ func vipsFlattenBackground(image *vipsImage, background RGBAProvider) (*vipsImag
 	if int(err) != 0 {
 		return nil, catchVipsError()
 	}
-	return newVipsImage(outImage), nil
+	return wrapVipsImage(outImage), nil
 }
 
 func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
@@ -470,7 +468,7 @@ func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		image = newVipsImage(outImage)
+		image = wrapVipsImage(outImage)
 	}
 
 	if o.OutputICC != "" && o.InputICC != "" {
@@ -484,7 +482,7 @@ func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		return newVipsImage(outImage), nil
+		return wrapVipsImage(outImage), nil
 	}
 
 	if o.OutputICC != "" && vipsHasProfile(image) {
@@ -495,7 +493,7 @@ func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
-		image = newVipsImage(outImage)
+		image = wrapVipsImage(outImage)
 	}
 
 	return image, nil
@@ -599,7 +597,7 @@ func vipsExtract(image *vipsImage, left, top, width, height int) (*vipsImage, er
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsSmartCrop(image *vipsImage, width, height int) (*vipsImage, error) {
@@ -614,7 +612,7 @@ func vipsSmartCrop(image *vipsImage, width, height int) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsTrim(image *vipsImage, background RGBAProvider, threshold float64) (int, int, int, int, error) {
@@ -650,7 +648,7 @@ func vipsShrinkJpeg(buf []byte, shrink int) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(image), nil
+	return wrapVipsImage(image), nil
 }
 
 func vipsShrinkWebp(buf []byte, shrink int) (*vipsImage, error) {
@@ -662,7 +660,7 @@ func vipsShrinkWebp(buf []byte, shrink int) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(image), nil
+	return wrapVipsImage(image), nil
 }
 
 func vipsShrink(input *vipsImage, shrink int) (*vipsImage, error) {
@@ -673,7 +671,7 @@ func vipsShrink(input *vipsImage, shrink int) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(image), nil
+	return wrapVipsImage(image), nil
 }
 
 func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage, error) {
@@ -684,7 +682,7 @@ func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage,
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(image), nil
+	return wrapVipsImage(image), nil
 }
 
 func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, background RGBAProvider) (*vipsImage, error) {
@@ -710,7 +708,7 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 			// No alpha channel but the background color is not opaque? Try to add an alpha channel then.
 			var withAlpha *C.VipsImage = C.vips_image_new()
 			C.vips_addalpha_bridge(input.c, &withAlpha)
-			input = newVipsImage(withAlpha)
+			input = wrapVipsImage(withAlpha)
 		}
 
 		if hasAlpha || a < 0xFF {
@@ -728,7 +726,7 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(image), nil
+	return wrapVipsImage(image), nil
 }
 
 func vipsAffine(input *vipsImage, residualx, residualy float64, i Interpolator, extend Extend) (*vipsImage, error) {
@@ -748,7 +746,7 @@ func vipsAffine(input *vipsImage, residualx, residualy float64, i Interpolator, 
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(image), nil
+	return wrapVipsImage(image), nil
 }
 
 func vipsImageType(buf []byte) ImageType {
@@ -840,7 +838,7 @@ func vipsGaussianBlur(image *vipsImage, o GaussianBlur) (*vipsImage, error) {
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsSharpen(image *vipsImage, o Sharpen) (*vipsImage, error) {
@@ -850,7 +848,7 @@ func vipsSharpen(image *vipsImage, o Sharpen) (*vipsImage, error) {
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func max(x int) int {
@@ -874,7 +872,7 @@ func vipsDrawWatermark(image *vipsImage, o WatermarkImage) (*vipsImage, error) {
 		return nil, catchVipsError()
 	}
 
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
 
 func vipsGamma(image *vipsImage, Gamma float64) (*vipsImage, error) {
@@ -884,5 +882,5 @@ func vipsGamma(image *vipsImage, Gamma float64) (*vipsImage, error) {
 	if err != 0 {
 		return nil, catchVipsError()
 	}
-	return newVipsImage(out), nil
+	return wrapVipsImage(out), nil
 }
