@@ -263,35 +263,22 @@ func extractOrEmbedImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) 
 	return image, err
 }
 
-func rotateAndFlipImage(image *vipsImage, o RotateOptions) (*vipsImage, bool, error) {
+func rotateAndFlipImage(image *vipsImage, o RotateOptions) (*vipsImage, error) {
 	var err error
-	var rotated bool
-
-	if o.NoAutoRotate == false {
-		rotation, flip := calculateRotationAndFlip(image, o.Angle)
-		if flip {
-			o.Flip = flip
-		}
-		if rotation > 0 && o.Angle == 0 {
-			o.Angle = rotation
-		}
-	}
 
 	if o.Angle > 0 {
-		rotated = true
 		image, err = vipsRotate(image, getAngle(o.Angle))
 	}
 
 	if o.Flip {
-		rotated = true
 		image, err = vipsFlip(image, Horizontal)
 	}
 
 	if o.Flop {
-		rotated = true
 		image, err = vipsFlip(image, Vertical)
 	}
-	return image, rotated, err
+
+	return image, err
 }
 
 func watermarkImageWithText(image *vipsImage, w Watermark) (*vipsImage, error) {

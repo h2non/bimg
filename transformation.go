@@ -193,7 +193,19 @@ type RotateOptions struct {
 }
 
 func (it *ImageTransformation) Rotate(opts RotateOptions) error {
-	image, _, err := rotateAndFlipImage(it.image, opts)
+	var image *vipsImage
+	var err error
+
+	if opts.NoAutoRotate {
+		image = it.image
+	} else {
+		image, err = vipsAutoRotate(it.image)
+		if err != nil {
+			return fmt.Errorf("cannot autorotate image: %w", err)
+		}
+	}
+
+	image, err = rotateAndFlipImage(image, opts)
 	if err != nil {
 		return err
 	}
