@@ -25,16 +25,18 @@ func TestDeterminateImageType(t *testing.T) {
 	}
 
 	for _, file := range files {
-		img, _ := os.Open(path.Join("testdata", file.name))
-		buf, _ := ioutil.ReadAll(img)
-		defer img.Close()
+		t.Run(file.name, func(t *testing.T) {
+			img, _ := os.Open(path.Join("testdata", file.name))
+			buf, _ := ioutil.ReadAll(img)
+			defer img.Close()
 
-		if VipsIsTypeSupported(file.expected) {
-			value := DetermineImageType(buf)
-			if value != file.expected {
-				t.Fatalf("Image type is not valid: %s != %s, got: %s", file.name, ImageTypes[file.expected], ImageTypes[value])
+			if VipsIsTypeSupported(file.expected) {
+				value := DetermineImageType(buf)
+				if value != file.expected {
+					t.Fatalf("Image type is not valid: wanted %s, got: %s", ImageTypes[file.expected], ImageTypes[value])
+				}
 			}
-		}
+		})
 	}
 }
 

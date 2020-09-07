@@ -7,6 +7,7 @@ package bimg
 import "C"
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"math"
@@ -752,58 +753,42 @@ func vipsImageType(buf []byte) ImageType {
 	if len(buf) < 12 {
 		return UNKNOWN
 	}
-	if buf[0] == 0xFF && buf[1] == 0xD8 && buf[2] == 0xFF {
+	if bytes.HasPrefix(buf, []byte{0xFF, 0xD8, 0xFF}) {
 		return JPEG
 	}
-	if IsTypeSupported(GIF) && buf[0] == 0x47 && buf[1] == 0x49 && buf[2] == 0x46 {
+	if bytes.HasPrefix(buf, []byte("GIF")) {
 		return GIF
 	}
-	if buf[0] == 0x89 && buf[1] == 0x50 && buf[2] == 0x4E && buf[3] == 0x47 {
+	if bytes.HasPrefix(buf, []byte{0x89, 'P', 'N', 'G'}) {
 		return PNG
 	}
 	if IsTypeSupported(TIFF) &&
-		((buf[0] == 0x49 && buf[1] == 0x49 && buf[2] == 0x2A && buf[3] == 0x0) ||
-			(buf[0] == 0x4D && buf[1] == 0x4D && buf[2] == 0x0 && buf[3] == 0x2A)) {
+		(bytes.HasPrefix(buf, []byte{0x49, 0x49, 0x2A, 0x0}) ||
+			bytes.HasPrefix(buf, []byte{0x4D, 0x4D, 0x0, 0x2A})) {
 		return TIFF
 	}
-	if IsTypeSupported(PDF) && buf[0] == 0x25 && buf[1] == 0x50 && buf[2] == 0x44 && buf[3] == 0x46 {
+	if IsTypeSupported(PDF) && bytes.HasPrefix(buf, []byte("%PDF")) {
 		return PDF
 	}
-	if IsTypeSupported(WEBP) && buf[8] == 0x57 && buf[9] == 0x45 && buf[10] == 0x42 && buf[11] == 0x50 {
+	if IsTypeSupported(WEBP) && string(buf[8:12]) == "WEBP" {
 		return WEBP
 	}
 	if IsTypeSupported(SVG) && IsSVGImage(buf) {
 		return SVG
 	}
-	if IsTypeSupported(MAGICK) && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
-		return MAGICK
-	}
 	// NOTE: libheif currently only supports heic sub types; see:
 	//   https://github.com/strukturag/libheif/issues/83#issuecomment-421427091
-	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
-		buf[8] == 0x68 && buf[9] == 0x65 && buf[10] == 0x69 && buf[11] == 0x63 {
-		// This is a HEIC file, ftypheic
-		return HEIF
+	if IsTypeSupported(HEIF) && string(buf[4:8]) == "ftyp" {
+		subType := string(buf[8:12])
+		switch subType {
+		case "heic", "mif1", "msf1", "heis", "hevc":
+			return HEIF
+		}
 	}
-	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
-		buf[8] == 0x6d && buf[9] == 0x69 && buf[10] == 0x66 && buf[11] == 0x31 {
-		// This is a HEIF file, ftypmif1
-		return HEIF
-	}
-	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
-		buf[8] == 0x6d && buf[9] == 0x73 && buf[10] == 0x66 && buf[11] == 0x31 {
-		// This is a HEIFS file, ftypmsf1
-		return HEIF
-	}
-	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
-		buf[8] == 0x68 && buf[9] == 0x65 && buf[10] == 0x69 && buf[11] == 0x73 {
-		// This is a HEIFS file, ftypheis
-		return HEIF
-	}
-	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
-		buf[8] == 0x68 && buf[9] == 0x65 && buf[10] == 0x76 && buf[11] == 0x63 {
-		// This is a HEIFS file, ftyphevc
-		return HEIF
+
+	// If nothing matched directly, try to fallback to imagemagick (if available).
+	if IsTypeSupported(MAGICK) && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
+		return MAGICK
 	}
 
 	return UNKNOWN
