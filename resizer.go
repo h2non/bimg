@@ -54,27 +54,35 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, fmt.Errorf("cannot rotate image: %w", err)
 	}
 
+	var resizeMode ResizeMode
+	switch {
+	case o.Force:
+		resizeMode = ResizeModeForce
+	case o.Enlarge, o.Zoom > 0:
+		resizeMode = ResizeModeUp
+	case o.Crop:
+		resizeMode = ResizeModeDown
+	case o.Embed, o.Trim, o.Left > 0, o.Top > 0, o.AreaHeight > 0, o.AreaWidth > 0:
+		resizeMode = ResizeModeFit
+	default:
+		resizeMode = ResizeModeForce
+	}
+
 	if err := t.Resize(ResizeOptions{
 		Height:         o.Height,
 		Width:          o.Width,
-		AreaHeight:     o.AreaHeight,
-		AreaWidth:      o.AreaWidth,
 		Top:            o.Top,
 		Left:           o.Left,
 		Zoom:           o.Zoom,
-		Crop:           o.Crop,
-		Enlarge:        o.Enlarge,
-		Embed:          o.Embed,
-		Force:          o.Force,
-		Trim:           o.Trim,
-		Extend:         o.Extend,
-		Background:     o.Background,
-		Gravity:        o.Gravity,
+		Mode:           resizeMode,
 		Interpolator:   o.Interpolator,
 		Interpretation: o.Interpretation,
-		Threshold:      o.Threshold,
 	}); err != nil {
 		return nil, fmt.Errorf("cannot resize image: %w", err)
+	}
+
+	if err := extractOrEmbedImage(t, o); err != nil {
+		return nil, fmt.Errorf("cannot extract or embed: %w", err)
 	}
 
 	// Apply effects, if necessary
@@ -164,12 +172,6 @@ func buildSaveOptions(o Options) SaveOptions {
 	}
 }
 
-func shouldTransformImage(o ResizeOptions, inWidth, inHeight int) bool {
-	return o.Force || (o.Width > 0 && o.Width != inWidth) ||
-		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0 ||
-		o.Trim
-}
-
 func transformImage(image *vipsImage, o ResizeOptions, shrink int, residual float64) (*vipsImage, error) {
 	var err error
 	// Use vips_shrink with the integral reduction
@@ -181,71 +183,59 @@ func transformImage(image *vipsImage, o ResizeOptions, shrink int, residual floa
 	}
 
 	residualx, residualy := residual, residual
-	if o.Force {
+	if o.Mode == ResizeModeForce {
 		residualx = float64(o.Width) / float64(image.c.Xsize)
 		residualy = float64(o.Height) / float64(image.c.Ysize)
 	}
 
-	if o.Force || residual != 0 {
+	if o.Mode == ResizeModeForce || residual != 0 {
 		if residualx < 1 && residualy < 1 {
 			image, err = vipsReduce(image, 1/residualx, 1/residualy)
 		} else {
-			image, err = vipsAffine(image, residualx, residualy, o.Interpolator, o.Extend)
+			// TODO extend configurable?
+			image, err = vipsAffine(image, residualx, residualy, o.Interpolator, ExtendBlack)
 		}
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	return image, nil
+}
+
+func extractOrEmbedImage(it *ImageTransformation, o Options) error {
 	if o.Force {
 		o.Crop = false
 		o.Embed = false
 	}
-
-	image, err = extractOrEmbedImage(image, o)
-	if err != nil {
-		return nil, err
+	// If (one of) the size values are not given, assume they stay
+	// as in the current state of transformation.
+	if o.Width == 0 {
+		o.Width = int(it.image.c.Xsize)
+	}
+	if o.Height == 0 {
+		o.Height = int(it.image.c.Ysize)
 	}
 
-	return image, nil
-}
-
-func extractOrEmbedImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) {
-	var err error
-	inWidth := int(image.c.Xsize)
-	inHeight := int(image.c.Ysize)
-
 	switch {
-	case o.Gravity == GravitySmart:
-		// it's already at an appropriate size, return immediately
-		if inWidth <= o.Width && inHeight <= o.Height {
-			break
-		}
-		width := int(math.Min(float64(inWidth), float64(o.Width)))
-		height := int(math.Min(float64(inHeight), float64(o.Height)))
-		image, err = vipsSmartCrop(image, width, height)
-		break
-	case o.Crop:
-		// it's already at an appropriate size, return immediately
-		if inWidth <= o.Width && inHeight <= o.Height {
-			break
-		}
-		width := int(math.Min(float64(inWidth), float64(o.Width)))
-		height := int(math.Min(float64(inHeight), float64(o.Height)))
-		left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
-		left, top = int(math.Max(float64(left), 0)), int(math.Max(float64(top), 0))
-		image, err = vipsExtract(image, left, top, width, height)
-		break
+	case o.Crop || o.Gravity == GravitySmart:
+		return it.Crop(CropOptions{
+			Width:   o.Width,
+			Height:  o.Height,
+			Gravity: o.Gravity,
+		})
 	case o.Embed:
-		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
-		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend, o.Background)
-		break
+		return it.Embed(EmbedOptions{
+			Width:      o.Width,
+			Height:     o.Height,
+			Extend:     o.Extend,
+			Background: o.Background,
+		})
 	case o.Trim:
-		left, top, width, height, err := vipsTrim(image, o.Background, o.Threshold)
-		if err == nil {
-			image, err = vipsExtract(image, left, top, width, height)
-		}
-		break
+		return it.Trim(TrimOptions{
+			Background: o.Background,
+			Threshold:  o.Threshold,
+		})
 	case o.Top != 0 || o.Left != 0 || o.AreaWidth != 0 || o.AreaHeight != 0:
 		if o.AreaWidth == 0 {
 			o.AreaWidth = o.Width
@@ -253,14 +243,15 @@ func extractOrEmbedImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) 
 		if o.AreaHeight == 0 {
 			o.AreaHeight = o.Height
 		}
-		if o.AreaWidth == 0 || o.AreaHeight == 0 {
-			return nil, errors.New("Extract area width/height params are required")
-		}
-		image, err = vipsExtract(image, o.Left, o.Top, o.AreaWidth, o.AreaHeight)
-		break
+		return it.Extract(ExtractOptions{
+			Left:   o.Left,
+			Top:    o.Top,
+			Width:  o.AreaWidth,
+			Height: o.AreaHeight,
+		})
 	}
 
-	return image, err
+	return nil
 }
 
 func rotateAndFlipImage(image *vipsImage, o RotateOptions) (*vipsImage, error) {
@@ -365,7 +356,7 @@ func shrinkImage(image *vipsImage, o ResizeOptions, residual float64, shrink int
 	residualx := float64(o.Width) / float64(image.c.Xsize)
 	residualy := float64(o.Height) / float64(image.c.Ysize)
 
-	if o.Crop {
+	if o.Mode == ResizeModeDown {
 		residual = math.Max(residualx, residualy)
 	} else {
 		residual = math.Min(residualx, residualy)

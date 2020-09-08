@@ -6,6 +6,7 @@ package bimg
 */
 import "C"
 import (
+	"errors"
 	"fmt"
 	"math"
 )
@@ -59,25 +60,24 @@ func (it *ImageTransformation) updateImage(image *vipsImage) {
 	it.bufTainted = true
 }
 
+type ResizeMode int
+
+const (
+	ResizeModeFit ResizeMode = iota
+	ResizeModeUp
+	ResizeModeDown
+	ResizeModeForce
+)
+
 type ResizeOptions struct {
 	Height         int
 	Width          int
-	AreaHeight     int
-	AreaWidth      int
 	Top            int
 	Left           int
 	Zoom           int
-	Crop           bool
-	Enlarge        bool
-	Embed          bool
-	Force          bool
-	Trim           bool
-	Extend         Extend
-	Background     RGBAProvider
-	Gravity        Gravity
+	Mode           ResizeMode
 	Interpolator   Interpolator
 	Interpretation Interpretation
-	Threshold      float64
 }
 
 func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
@@ -88,26 +88,26 @@ func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
 	switch {
 	// Fixed width and height
 	case opts.Width > 0 && opts.Height > 0:
-		if opts.Crop {
-			factor = math.Min(xfactor, yfactor)
-		} else {
+		if opts.Mode == ResizeModeForce {
 			factor = math.Max(xfactor, yfactor)
+		} else {
+			factor = math.Min(xfactor, yfactor)
 		}
 	// Fixed width, auto height
 	case opts.Width > 0:
-		if opts.Crop {
-			opts.Height = inHeight
-		} else {
+		if opts.Mode == ResizeModeForce {
 			factor = xfactor
 			opts.Height = roundFloat(float64(inHeight) / factor)
+		} else {
+			opts.Height = inHeight
 		}
 	// Fixed height, auto width
 	case opts.Height > 0:
-		if opts.Crop {
-			opts.Width = inWidth
-		} else {
+		if opts.Mode == ResizeModeForce {
 			factor = yfactor
 			opts.Width = roundFloat(float64(inWidth) / factor)
+		} else {
+			opts.Width = inWidth
 		}
 	// Identity transform
 	default:
@@ -123,9 +123,6 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	if opts.Interpretation == 0 {
 		opts.Interpretation = InterpretationSRGB
 	}
-	if !opts.Force && !opts.Crop && !opts.Embed && !opts.Enlarge && (opts.Width > 0 || opts.Height > 0) {
-		opts.Force = true
-	}
 
 	inWidth := int(it.image.c.Xsize)
 	inHeight := int(it.image.c.Ysize)
@@ -137,14 +134,14 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 
 	// Do not enlarge the output if the input width or height
 	// are already less than the required dimensions
-	if !opts.Enlarge && !opts.Force {
-		if inWidth < opts.Width && inHeight < opts.Height {
-			factor = 1.0
-			shrink = 1
-			residual = 0
-			opts.Width = inWidth
-			opts.Height = inHeight
-		}
+	if (opts.Mode == ResizeModeDown || opts.Mode == ResizeModeFit) &&
+		inWidth < opts.Width && inHeight < opts.Height {
+
+		factor = 1.0
+		shrink = 1
+		residual = 0
+		opts.Width = inWidth
+		opts.Height = inHeight
 	}
 
 	// Try to use libjpeg/libwebp shrink-on-load, if the buffer is still usable.
@@ -174,15 +171,111 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	}
 
 	// Transform image, if necessary
-	if shouldTransformImage(opts, inWidth, inHeight) {
-		if image, err := transformImage(it.image, opts, shrink, residual); err != nil {
-			return err
-		} else {
-			it.updateImage(image)
-		}
+	if image, err := transformImage(it.image, opts, shrink, residual); err != nil {
+		return err
+	} else {
+		it.updateImage(image)
 	}
 
 	return nil
+}
+
+type CropOptions struct {
+	Width   int
+	Height  int
+	Gravity Gravity
+}
+
+func (it *ImageTransformation) Crop(opts CropOptions) error {
+	inWidth := int(it.image.c.Xsize)
+	inHeight := int(it.image.c.Ysize)
+
+	// it's already at an appropriate size, return immediately
+	if inWidth <= opts.Width && inHeight <= opts.Height {
+		return nil
+	}
+
+	if opts.Gravity == GravitySmart {
+		width := int(math.Min(float64(inWidth), float64(opts.Width)))
+		height := int(math.Min(float64(inHeight), float64(opts.Height)))
+
+		if image, err := vipsSmartCrop(it.image, width, height); err != nil {
+			return err
+		} else {
+			it.updateImage(image)
+			return nil
+		}
+	} else {
+		width := int(math.Min(float64(inWidth), float64(opts.Width)))
+		height := int(math.Min(float64(inHeight), float64(opts.Height)))
+		left, top := calculateCrop(inWidth, inHeight, opts.Width, opts.Height, opts.Gravity)
+		left, top = int(math.Max(float64(left), 0)), int(math.Max(float64(top), 0))
+
+		if image, err := vipsExtract(it.image, left, top, width, height); err != nil {
+			return err
+		} else {
+			it.updateImage(image)
+			return nil
+		}
+	}
+}
+
+type TrimOptions struct {
+	Background RGBAProvider
+	Threshold  float64
+}
+
+func (it *ImageTransformation) Trim(opts TrimOptions) error {
+	left, top, width, height, err := vipsTrim(it.image, opts.Background, opts.Threshold)
+	if err != nil {
+		return fmt.Errorf("cannot determine trim area: %w", err)
+	}
+
+	if image, err := vipsExtract(it.image, left, top, width, height); err != nil {
+		return fmt.Errorf("cannot extract trim area: %w", err)
+	} else {
+		it.updateImage(image)
+		return nil
+	}
+}
+
+type EmbedOptions struct {
+	Width      int
+	Height     int
+	Extend     Extend
+	Background RGBAProvider
+}
+
+func (it *ImageTransformation) Embed(opts EmbedOptions) error {
+	inWidth := int(it.image.c.Xsize)
+	inHeight := int(it.image.c.Ysize)
+
+	left, top := (opts.Width-inWidth)/2, (opts.Height-inHeight)/2
+	if image, err := vipsEmbed(it.image, left, top, opts.Width, opts.Height, opts.Extend, opts.Background); err != nil {
+		return err
+	} else {
+		it.updateImage(image)
+		return err
+	}
+}
+
+type ExtractOptions struct {
+	Left   int
+	Top    int
+	Width  int
+	Height int
+}
+
+func (it *ImageTransformation) Extract(opts ExtractOptions) error {
+	if opts.Width == 0 || opts.Height == 0 {
+		return errors.New("extract area width/height params are required")
+	}
+	if image, err := vipsExtract(it.image, opts.Left, opts.Top, opts.Width, opts.Height); err != nil {
+		return err
+	} else {
+		it.updateImage(image)
+		return nil
+	}
 }
 
 type RotateOptions struct {

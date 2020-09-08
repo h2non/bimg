@@ -393,7 +393,7 @@ func TestExtractOrEmbedImage(t *testing.T) {
 		t.Fatalf("Unable to load image %s", err)
 	}
 
-	o := ResizeOptions{
+	o := Options{
 		Top:    10,
 		Left:   10,
 		Width:  100,
@@ -404,15 +404,13 @@ func TestExtractOrEmbedImage(t *testing.T) {
 		AreaWidth:  0,
 	}
 
-	result, err := extractOrEmbedImage(transform.image, o)
-	if err != nil {
+	if err := extractOrEmbedImage(transform, o); err != nil {
 		if errors.Unwrap(err) == ErrExtractAreaParamsRequired {
 			t.Fatalf("Expecting AreaWidth and AreaHeight to have been defined")
 		}
 
 		t.Fatalf("Unknown error occurred %s", err)
 	}
-	transform.updateImage(result)
 
 	image, err := transform.Save(SaveOptions{Quality: 100})
 	if err != nil {
