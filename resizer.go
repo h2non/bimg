@@ -103,8 +103,19 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// Add watermark, if necessary
-	if err := t.WatermarkImage(o.WatermarkImage); err != nil {
-		return nil, fmt.Errorf("cannot add watermark image: %w", err)
+	if len(o.WatermarkImage.Buf) > 0 {
+		watermarkImage, err := NewImageTransformation(o.WatermarkImage.Buf)
+		if err != nil {
+			return nil, fmt.Errorf("cannot decode watermark image: %w", err)
+		}
+		if err := t.WatermarkImage(WatermarkImageOptions{
+			Left:    o.WatermarkImage.Left,
+			Top:     o.WatermarkImage.Top,
+			Image:   watermarkImage,
+			Opacity: o.WatermarkImage.Opacity,
+		}); err != nil {
+			return nil, fmt.Errorf("cannot add watermark image: %w", err)
+		}
 	}
 
 	// Flatten image on a background, if necessary
@@ -304,16 +315,21 @@ func watermarkImageWithText(image *vipsImage, w Watermark) (*vipsImage, error) {
 	return image, nil
 }
 
-func watermarkImageWithAnotherImage(image *vipsImage, w WatermarkImage) (*vipsImage, error) {
-	if len(w.Buf) == 0 {
-		return image, nil
+func watermarkImageWithAnotherImage(image *vipsImage, w WatermarkImageOptions) (*vipsImage, error) {
+	if w.Image == nil || w.Image.image == nil {
+		return image, errors.New("no image to watermark with given")
 	}
 
 	if w.Opacity == 0.0 {
 		w.Opacity = 1.0
 	}
 
-	image, err := vipsDrawWatermark(image, w)
+	image, err := vipsDrawWatermark(image, drawWatermarkOptions{
+		Left:    w.Left,
+		Top:     w.Top,
+		Image:   w.Image.image,
+		Opacity: w.Opacity,
+	})
 
 	if err != nil {
 		return nil, err

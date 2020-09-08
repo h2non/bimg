@@ -839,18 +839,19 @@ func max(x int) int {
 	return int(math.Max(float64(x), 0))
 }
 
-func vipsDrawWatermark(image *vipsImage, o WatermarkImage) (*vipsImage, error) {
-	var out *C.VipsImage
+type drawWatermarkOptions struct {
+	Left    int
+	Top     int
+	Image   *vipsImage
+	Opacity float32
+}
 
-	// TODO vipsImage instead?
-	watermark, _, e := vipsRead(o.Buf)
-	if e != nil {
-		return nil, e
-	}
+func vipsDrawWatermark(image *vipsImage, o drawWatermarkOptions) (*vipsImage, error) {
+	var out *C.VipsImage
 
 	opts := vipsWatermarkImageOptions{C.int(o.Left), C.int(o.Top), C.float(o.Opacity)}
 
-	err := C.vips_watermark_image(image.c, watermark.c, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
+	err := C.vips_watermark_image(image.c, o.Image.c, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
 
 	if err != 0 {
 		return nil, catchVipsError()

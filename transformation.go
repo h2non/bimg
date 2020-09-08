@@ -345,7 +345,14 @@ func (it *ImageTransformation) WatermarkText(opts Watermark) error {
 	}
 }
 
-func (it *ImageTransformation) WatermarkImage(opts WatermarkImage) error {
+type WatermarkImageOptions struct {
+	Left    int
+	Top     int
+	Image   *ImageTransformation
+	Opacity float32
+}
+
+func (it *ImageTransformation) WatermarkImage(opts WatermarkImageOptions) error {
 	if image, err := watermarkImageWithAnotherImage(it.image, opts); err != nil {
 		return err
 	} else {

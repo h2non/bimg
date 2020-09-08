@@ -89,8 +89,8 @@ func TestVipsAutoRotate(t *testing.T) {
 	}
 
 	files := []struct {
-		name         string
-		orientation  int
+		name        string
+		orientation int
 	}{
 		{"test.jpg", 0},
 		{"test_exif.jpg", 0},
@@ -165,10 +165,9 @@ func TestVipsWatermark(t *testing.T) {
 
 func TestVipsWatermarkWithImage(t *testing.T) {
 	image, _, _ := vipsRead(readImage("test.jpg"))
+	watermark, _, _ := vipsRead(readImage("transparent.png"))
 
-	watermark := readImage("transparent.png")
-
-	options := WatermarkImage{Left: 100, Top: 100, Opacity: 1.0, Buf: watermark}
+	options := drawWatermarkOptions{Left: 100, Top: 100, Opacity: 1.0, Image: watermark}
 	newImg, err := vipsDrawWatermark(image, options)
 	if err != nil {
 		t.Errorf("Cannot add watermark: %s", err)
