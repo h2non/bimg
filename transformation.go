@@ -389,4 +389,80 @@ func (it *ImageTransformation) Save(opts SaveOptions) ([]byte, error) {
 	return vipsSave(it.image, vipsSaveOptions(opts))
 }
 
+func (it *ImageTransformation) Size() ImageSize {
+	return ImageSize{
+		Width:  int(it.image.c.Xsize),
+		Height: int(it.image.c.Ysize),
+	}
+}
+
+func (it *ImageTransformation) Metadata() ImageMetadata {
+	size := it.Size()
+
+	orientation := vipsExifIntTag(it.image, Orientation)
+
+	return ImageMetadata{
+		Size:        size,
+		Channels:    int(it.image.c.Bands),
+		Orientation: orientation,
+		Alpha:       vipsHasAlpha(it.image),
+		Profile:     vipsHasProfile(it.image),
+		Space:       vipsSpace(it.image),
+		Type:        ImageTypeName(it.imageType),
+		EXIF: EXIF{
+			Make:                    vipsExifStringTag(it.image, Make),
+			Model:                   vipsExifStringTag(it.image, Model),
+			Orientation:             orientation,
+			XResolution:             vipsExifStringTag(it.image, XResolution),
+			YResolution:             vipsExifStringTag(it.image, YResolution),
+			ResolutionUnit:          vipsExifIntTag(it.image, ResolutionUnit),
+			Software:                vipsExifStringTag(it.image, Software),
+			Datetime:                vipsExifStringTag(it.image, Datetime),
+			YCbCrPositioning:        vipsExifIntTag(it.image, YCbCrPositioning),
+			Compression:             vipsExifIntTag(it.image, Compression),
+			ExposureTime:            vipsExifStringTag(it.image, ExposureTime),
+			FNumber:                 vipsExifStringTag(it.image, FNumber),
+			ExposureProgram:         vipsExifIntTag(it.image, ExposureProgram),
+			ISOSpeedRatings:         vipsExifIntTag(it.image, ISOSpeedRatings),
+			ExifVersion:             vipsExifStringTag(it.image, ExifVersion),
+			DateTimeOriginal:        vipsExifStringTag(it.image, DateTimeOriginal),
+			DateTimeDigitized:       vipsExifStringTag(it.image, DateTimeDigitized),
+			ComponentsConfiguration: vipsExifStringTag(it.image, ComponentsConfiguration),
+			ShutterSpeedValue:       vipsExifStringTag(it.image, ShutterSpeedValue),
+			ApertureValue:           vipsExifStringTag(it.image, ApertureValue),
+			BrightnessValue:         vipsExifStringTag(it.image, BrightnessValue),
+			ExposureBiasValue:       vipsExifStringTag(it.image, ExposureBiasValue),
+			MeteringMode:            vipsExifIntTag(it.image, MeteringMode),
+			Flash:                   vipsExifIntTag(it.image, Flash),
+			FocalLength:             vipsExifStringTag(it.image, FocalLength),
+			SubjectArea:             vipsExifStringTag(it.image, SubjectArea),
+			MakerNote:               vipsExifStringTag(it.image, MakerNote),
+			SubSecTimeOriginal:      vipsExifStringTag(it.image, SubSecTimeOriginal),
+			SubSecTimeDigitized:     vipsExifStringTag(it.image, SubSecTimeDigitized),
+			ColorSpace:              vipsExifIntTag(it.image, ColorSpace),
+			PixelXDimension:         vipsExifIntTag(it.image, PixelXDimension),
+			PixelYDimension:         vipsExifIntTag(it.image, PixelYDimension),
+			SensingMethod:           vipsExifIntTag(it.image, SensingMethod),
+			SceneType:               vipsExifStringTag(it.image, SceneType),
+			ExposureMode:            vipsExifIntTag(it.image, ExposureMode),
+			WhiteBalance:            vipsExifIntTag(it.image, WhiteBalance),
+			FocalLengthIn35mmFilm:   vipsExifIntTag(it.image, FocalLengthIn35mmFilm),
+			SceneCaptureType:        vipsExifIntTag(it.image, SceneCaptureType),
+			GPSLatitudeRef:          vipsExifStringTag(it.image, GPSLatitudeRef),
+			GPSLatitude:             vipsExifStringTag(it.image, GPSLatitude),
+			GPSLongitudeRef:         vipsExifStringTag(it.image, GPSLongitudeRef),
+			GPSLongitude:            vipsExifStringTag(it.image, GPSLongitude),
+			GPSAltitudeRef:          vipsExifStringTag(it.image, GPSAltitudeRef),
+			GPSAltitude:             vipsExifStringTag(it.image, GPSAltitude),
+			GPSSpeedRef:             vipsExifStringTag(it.image, GPSSpeedRef),
+			GPSSpeed:                vipsExifStringTag(it.image, GPSSpeed),
+			GPSImgDirectionRef:      vipsExifStringTag(it.image, GPSImgDirectionRef),
+			GPSImgDirection:         vipsExifStringTag(it.image, GPSImgDirection),
+			GPSDestBearingRef:       vipsExifStringTag(it.image, GPSDestBearingRef),
+			GPSDestBearing:          vipsExifStringTag(it.image, GPSDestBearing),
+			GPSDateStamp:            vipsExifStringTag(it.image, GPSDateStamp),
+		},
+	}
+}
+
 // TODO convert o.SmartCrop to o.Gravity
