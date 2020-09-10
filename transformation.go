@@ -63,11 +63,27 @@ func (it *ImageTransformation) updateImage(image *vipsImage) {
 type ResizeMode int
 
 const (
+	// The dimensions will not be exceeded while honoring the aspect ratio.
 	ResizeModeFit ResizeMode = iota
-	ResizeModeUp
-	ResizeModeDown
+	// One dimension will not be exceeded. The image will be *at least* as big
+	// as the desired dimensions, while the aspect ratio is kept.
+	ResizeModeFitUp
+	// The dimensions will be enforced, no matter the aspect ratio.
 	ResizeModeForce
 )
+
+func (rm ResizeMode) String() string {
+	switch rm {
+	case ResizeModeFit:
+		return "fit"
+	case ResizeModeFitUp:
+		return "fitup"
+	case ResizeModeForce:
+		return "force"
+	default:
+		panic("invalid resize mode")
+	}
+}
 
 type ResizeOptions struct {
 	Height         int
@@ -88,26 +104,45 @@ func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
 	switch {
 	// Fixed width and height
 	case opts.Width > 0 && opts.Height > 0:
-		if opts.Mode == ResizeModeForce {
+		switch opts.Mode {
+		case ResizeModeForce:
 			factor = math.Max(xfactor, yfactor)
-		} else {
+		case ResizeModeFit:
+			// The bigger dimension is the limit.
+			if xfactor > yfactor {
+				factor = xfactor
+				opts.Height = roundFloat(float64(inHeight) / factor)
+			} else {
+				factor = yfactor
+				opts.Width = roundFloat(float64(inWidth) / factor)
+			}
+		case ResizeModeFitUp:
+			// The smaller dimension is the limit.
+			if yfactor > xfactor {
+				factor = xfactor
+				opts.Height = roundFloat(float64(inHeight) / factor)
+			} else {
+				factor = yfactor
+				opts.Width = roundFloat(float64(inWidth) / factor)
+			}
+		default:
 			factor = math.Min(xfactor, yfactor)
 		}
 	// Fixed width, auto height
 	case opts.Width > 0:
 		if opts.Mode == ResizeModeForce {
+			opts.Height = inHeight
+		} else {
 			factor = xfactor
 			opts.Height = roundFloat(float64(inHeight) / factor)
-		} else {
-			opts.Height = inHeight
 		}
 	// Fixed height, auto width
 	case opts.Height > 0:
 		if opts.Mode == ResizeModeForce {
+			opts.Width = inWidth
+		} else {
 			factor = yfactor
 			opts.Width = roundFloat(float64(inWidth) / factor)
-		} else {
-			opts.Width = inWidth
 		}
 	// Identity transform
 	default:
@@ -131,18 +166,6 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	factor := calculateResizeFactor(&opts, inWidth, inHeight)
 	shrink := calculateShrink(factor, opts.Interpolator)
 	residual := calculateResidual(factor, shrink)
-
-	// Do not enlarge the output if the input width or height
-	// are already less than the required dimensions
-	if (opts.Mode == ResizeModeDown || opts.Mode == ResizeModeFit) &&
-		inWidth < opts.Width && inHeight < opts.Height {
-
-		factor = 1.0
-		shrink = 1
-		residual = 0
-		opts.Width = inWidth
-		opts.Height = inHeight
-	}
 
 	// Try to use libjpeg/libwebp shrink-on-load, if the buffer is still usable.
 	// If we performed "destructive" transformations already, this will no longer

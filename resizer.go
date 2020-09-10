@@ -54,31 +54,8 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, fmt.Errorf("cannot rotate image: %w", err)
 	}
 
-	var resizeMode ResizeMode
-	switch {
-	case o.Force:
-		resizeMode = ResizeModeForce
-	case o.Enlarge, o.Zoom > 0:
-		resizeMode = ResizeModeUp
-	case o.Crop:
-		resizeMode = ResizeModeDown
-	case o.Embed, o.Trim, o.Left > 0, o.Top > 0, o.AreaHeight > 0, o.AreaWidth > 0:
-		resizeMode = ResizeModeFit
-	default:
-		resizeMode = ResizeModeForce
-	}
-
-	if err := t.Resize(ResizeOptions{
-		Height:         o.Height,
-		Width:          o.Width,
-		Top:            o.Top,
-		Left:           o.Left,
-		Zoom:           o.Zoom,
-		Mode:           resizeMode,
-		Interpolator:   o.Interpolator,
-		Interpretation: o.Interpretation,
-	}); err != nil {
-		return nil, fmt.Errorf("cannot resize image: %w", err)
+	if err := resizeIfNecessary(t, o); err != nil {
+		return nil, err
 	}
 
 	if err := extractOrEmbedImage(t, o); err != nil {
@@ -133,6 +110,40 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	}
 
 	return t.Save(saveOptions)
+}
+
+func resizeIfNecessary(t *ImageTransformation, o Options) error {
+	if (o.Crop || o.Embed) && !o.Force && !o.Enlarge {
+		// Nothing to do.
+		return nil
+	}
+
+	var resizeMode ResizeMode
+
+	switch {
+	case o.Force:
+		resizeMode = ResizeModeForce
+	case o.Crop, o.Embed, o.Trim:
+		resizeMode = ResizeModeFitUp
+	case o.Zoom > 0, o.Left > 0, o.Top > 0, o.AreaHeight > 0, o.AreaWidth > 0:
+		resizeMode = ResizeModeFit
+	default:
+		resizeMode = ResizeModeForce
+	}
+
+	if err := t.Resize(ResizeOptions{
+		Height:         o.Height,
+		Width:          o.Width,
+		Top:            o.Top,
+		Left:           o.Left,
+		Zoom:           o.Zoom,
+		Mode:           resizeMode,
+		Interpolator:   o.Interpolator,
+		Interpretation: o.Interpretation,
+	}); err != nil {
+		return fmt.Errorf("cannot resize image: %w", err)
+	}
+	return nil
 }
 
 func loadImage(buf []byte) (*vipsImage, ImageType, error) {
@@ -372,7 +383,7 @@ func shrinkImage(image *vipsImage, o ResizeOptions, residual float64, shrink int
 	residualx := float64(o.Width) / float64(image.c.Xsize)
 	residualy := float64(o.Height) / float64(image.c.Ysize)
 
-	if o.Mode == ResizeModeDown {
+	if o.Mode == ResizeModeFit {
 		residual = math.Max(residualx, residualy)
 	} else {
 		residual = math.Min(residualx, residualy)
