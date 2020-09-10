@@ -113,9 +113,20 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 }
 
 func resizeIfNecessary(t *ImageTransformation, o Options) error {
-	if (o.Crop || o.Embed) && !o.Force && !o.Enlarge {
-		// Nothing to do.
-		return nil
+	imageSize := t.Size()
+
+	if o.Crop || o.Embed {
+		if o.Width == 0 {
+			o.Width = imageSize.Width
+		}
+		if o.Height == 0 {
+			o.Height = imageSize.Height
+		}
+
+		if !o.Force && !o.Enlarge && imageSize.Width < o.Width && imageSize.Height < o.Height {
+			// Nothing to do.
+			return nil
+		}
 	}
 
 	var resizeMode ResizeMode
