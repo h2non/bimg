@@ -34,6 +34,7 @@ enum types {
 	SVG,
 	MAGICK,
 	HEIF,
+	AVIF
 };
 
 typedef struct {
@@ -335,7 +336,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 		"compression", compression,
 		"interlace", INT_TO_GBOOLEAN(interlace),
 		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
-	        "palette", INT_TO_GBOOLEAN(palette),
+		"palette", INT_TO_GBOOLEAN(palette),
 		NULL
 	);
 #else
@@ -364,6 +365,21 @@ vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 	return vips_tiffsave_buffer(in, buf, len, NULL);
 #else
 	return 0;
+#endif
+}
+
+int
+vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9))
+    return vips_heifsave_buffer(in, buf, len,
+    "strip", INT_TO_GBOOLEAN(strip),
+    "Q", quality,
+    "lossless", INT_TO_GBOOLEAN(lossless),
+    "compression", VIPS_FOREIGN_HEIF_COMPRESSION_AV1,
+    NULL
+    );
+#else
+    return 0;
 #endif
 }
 

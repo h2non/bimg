@@ -30,6 +30,8 @@ const (
 	MAGICK
 	// HEIF represents the HEIC/HEIF/HVEC image type
 	HEIF
+	// AVIF represents the AVIF image type.
+	AVIF
 )
 
 var (
@@ -48,6 +50,7 @@ var ImageTypes = map[ImageType]string{
 	SVG:    "svg",
 	MAGICK: "magick",
 	HEIF:   "heif",
+	AVIF:   "avif",
 }
 
 // imageMutex is used to provide thread-safe synchronization

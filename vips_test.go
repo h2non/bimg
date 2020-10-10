@@ -58,6 +58,22 @@ func TestVipsSaveTiff(t *testing.T) {
 	}
 }
 
+func TestVipsSafeAvif(t *testing.T) {
+	if !IsTypeSupportedSave(AVIF) {
+		t.Skipf("Format %#v is not supported", ImageTypes[AVIF])
+	}
+	image, _, _ := vipsRead(readImage("test.jpg"))
+	options := vipsSaveOptions{Quality: 95, Type: AVIF}
+	buf, err := vipsSave(image, options)
+	if err != nil {
+		t.Fatalf("Error saving image type %v: %v", ImageTypes[AVIF], err)
+	}
+
+	if len(buf) == 0 {
+		t.Fatalf("Empty saved '%v' image", ImageTypes[AVIF])
+	}
+}
+
 func TestVipsRotate(t *testing.T) {
 	files := []struct {
 		name   string
