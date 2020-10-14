@@ -12,6 +12,7 @@ env:
   # - LIBVIPS=8.8.4
   # - LIBVIPS=8.9.2
   - LIBVIPS=8.10.1
+  - LIBVIPS=8.10.2
 
 matrix:
   allow_failures:

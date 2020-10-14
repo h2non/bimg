@@ -369,8 +369,17 @@ vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 }
 
 int
-vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9))
+vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless, int speed) {
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION > 10) || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 10 && VIPS_MICRO_VERSION >= 2))
+    return vips_heifsave_buffer(in, buf, len,
+    "strip", INT_TO_GBOOLEAN(strip),
+    "Q", quality,
+    "lossless", INT_TO_GBOOLEAN(lossless),
+    "compression", VIPS_FOREIGN_HEIF_COMPRESSION_AV1,
+    "speed", speed,
+    NULL
+    );
+#elif (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9))
     return vips_heifsave_buffer(in, buf, len,
     "strip", INT_TO_GBOOLEAN(strip),
     "Q", quality,
