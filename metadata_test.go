@@ -42,6 +42,7 @@ func TestMetadata(t *testing.T) {
 		{"test_icc_prophoto.jpg", "jpeg", 0, false, true, "srgb"},
 		{"test.png", "png", 0, true, false, "srgb"},
 		{"test.webp", "webp", 0, false, false, "srgb"},
+		{"test.avif", "avif", 0, false, false, "srgb"},
 	}
 
 	for _, file := range files {
