@@ -457,6 +457,10 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == HEIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
+#if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9)
+	} else if (imageType == AVIF) {
+		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
 	}
 
 	return code;
