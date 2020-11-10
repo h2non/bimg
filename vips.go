@@ -198,56 +198,50 @@ func VipsMemory() VipsMemoryInfo {
 // VipsIsTypeSupported returns true if the given image type
 // is supported by the current libvips compilation.
 func VipsIsTypeSupported(t ImageType) bool {
-	if t == JPEG {
+	switch t {
+	case JPEG:
 		return int(C.vips_type_find_bridge(C.JPEG)) != 0
-	}
-	if t == WEBP {
+	case WEBP:
 		return int(C.vips_type_find_bridge(C.WEBP)) != 0
-	}
-	if t == PNG {
+	case PNG:
 		return int(C.vips_type_find_bridge(C.PNG)) != 0
-	}
-	if t == GIF {
+	case GIF:
 		return int(C.vips_type_find_bridge(C.GIF)) != 0
-	}
-	if t == PDF {
+	case PDF:
 		return int(C.vips_type_find_bridge(C.PDF)) != 0
-	}
-	if t == SVG {
+	case SVG:
 		return int(C.vips_type_find_bridge(C.SVG)) != 0
-	}
-	if t == TIFF {
+	case TIFF:
 		return int(C.vips_type_find_bridge(C.TIFF)) != 0
-	}
-	if t == MAGICK {
+	case MAGICK:
 		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
-	}
-	if t == HEIF {
+	case HEIF:
 		return int(C.vips_type_find_bridge(C.HEIF)) != 0
+	default:
+		return false
 	}
-	return false
 }
 
 // VipsIsTypeSupportedSave returns true if the given image type
 // is supported by the current libvips compilation for the
 // save operation.
 func VipsIsTypeSupportedSave(t ImageType) bool {
-	if t == JPEG {
+	switch t {
+	case JPEG:
 		return int(C.vips_type_find_save_bridge(C.JPEG)) != 0
-	}
-	if t == WEBP {
+	case WEBP:
 		return int(C.vips_type_find_save_bridge(C.WEBP)) != 0
-	}
-	if t == PNG {
+	case PNG:
 		return int(C.vips_type_find_save_bridge(C.PNG)) != 0
-	}
-	if t == TIFF {
+	case TIFF:
 		return int(C.vips_type_find_save_bridge(C.TIFF)) != 0
-	}
-	if t == HEIF {
+	case HEIF:
 		return int(C.vips_type_find_save_bridge(C.HEIF)) != 0
+	case GIF:
+		return int(C.vips_type_find_save_bridge(C.GIF)) != 0
+	default:
+		return false
 	}
-	return false
 }
 
 func vipsExifStringTag(image *vipsImage, tag string) string {
@@ -526,6 +520,10 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_tiffsave_bridge(image.c, &ptr, &length)
 	case HEIF:
 		saveErr = C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
+	case GIF:
+		formatString := C.CString("GIF")
+		defer C.free(unsafe.Pointer(formatString))
+		saveErr = C.vips_magicksave_bridge(image.c, &ptr, &length, formatString, quality)
 	default:
 		saveErr = C.vips_jpegsave_bridge(image.c, &ptr, &length, strip, quality, interlace)
 	}

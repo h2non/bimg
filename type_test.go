@@ -151,7 +151,7 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"jpeg", true},
 		{"png", true},
 		{"webp", true},
-		{"gif", false},
+		{"gif", vipsVersionMin(8, 0)},
 		{"pdf", false},
 		{"tiff", vipsVersionMin(8, 5)},
 		{"heif", vipsVersionMin(8, 8)},

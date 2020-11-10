@@ -184,6 +184,11 @@ vips_type_find_save_bridge(int t) {
 		return vips_type_find("VipsOperation", "heifsave_buffer");
 	}
 #endif
+#if (VIPS_MAJOR_VERSION >= 8)
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "magicksave_buffer");
+	}
+#endif
 	return 0;
 }
 
@@ -375,6 +380,19 @@ vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 }
 
 int
+vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len, const char *format, int quality) {
+#if (VIPS_MAJOR_VERSION >= 8)
+	return vips_magicksave_buffer(in, buf, len,
+		"format", format,
+		"quality", quality,
+		NULL
+	);
+#else
+	return 0;
+#endif
+}
+
+int
 vips_is_16bit (VipsInterpretation interpretation) {
 	return interpretation == VIPS_INTERPRETATION_RGB16 || interpretation == VIPS_INTERPRETATION_GREY16;
 }
@@ -410,7 +428,7 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == TIFF) {
 		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #if (VIPS_MAJOR_VERSION >= 8)
-#if (VIPS_MINOR_VERSION >= 3)
+#if (VIPS_MAJOR_VERSION > 8 || VIPS_MINOR_VERSION >= 3)
 	} else if (imageType == GIF) {
 		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == PDF) {
