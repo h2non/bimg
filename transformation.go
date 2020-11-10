@@ -11,6 +11,12 @@ import (
 	"math"
 )
 
+// ImageTransformation allows the sequential transformation of an image.
+// All transformation steps are done in memory on a raw buffer. The image
+// is not encoded until it is saved.
+//
+// This can and should be used if multiple transformations will be performed
+// since there are no lossy encoding/decoding cycled in between.
 type ImageTransformation struct {
 	buf        []byte
 	bufTainted bool
@@ -18,6 +24,9 @@ type ImageTransformation struct {
 	imageType  ImageType
 }
 
+// Creates a new image transformation from the given buffer. The file type
+// is determined by the header of the buffer and the image is decoded
+// according to that determined file type.
 func NewImageTransformation(buf []byte) (*ImageTransformation, error) {
 	image, imageType, err := vipsRead(buf)
 	if err != nil {
@@ -32,6 +41,8 @@ func NewImageTransformation(buf []byte) (*ImageTransformation, error) {
 	return it, nil
 }
 
+// Clone the current transformation state. Performing further transformations
+// will not manipulate the source it has been cloned from (and vice versa).
 func (it *ImageTransformation) Clone() *ImageTransformation {
 	return &ImageTransformation{
 		buf:        it.buf,
@@ -41,6 +52,8 @@ func (it *ImageTransformation) Clone() *ImageTransformation {
 	}
 }
 
+// Explicitly close the transformation and free up its resources. It should not
+// longer be used afterwards.
 func (it *ImageTransformation) Close() {
 	it.image.close()
 	it.image = nil
@@ -60,6 +73,7 @@ func (it *ImageTransformation) updateImage(image *vipsImage) {
 	it.bufTainted = true
 }
 
+// ResizeMode defines how the resize operation should be performed.
 type ResizeMode int
 
 const (
@@ -154,6 +168,18 @@ func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
 	return factor
 }
 
+// Resize the current image buffer according to the given options. Depending
+// on the selected mode, aspect ratio is honored or ignored.
+//
+// If neither Height nor Width are specified, both are set to the current
+// dimensions of the image.
+//
+// If only Height or Width is specified, the other is determined from the
+// selected resize mode:
+//   * ResizeModeForce: the missing dimension from the current image is used
+//   * ResizeModeFit and ResizeModeFitUp:
+//       the specified values are calculated from the current image dimensions,
+//       treating the specified dimension as a constraint.
 func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	if opts.Interpretation == 0 {
 		opts.Interpretation = InterpretationSRGB
@@ -209,6 +235,9 @@ type CropOptions struct {
 	Gravity Gravity
 }
 
+// Crop the current image to the specified Width and Height, if necessary.
+// If the image is already smaller than the given dimensions, nothing is
+// done.
 func (it *ImageTransformation) Crop(opts CropOptions) error {
 	inWidth := int(it.image.c.Xsize)
 	inHeight := int(it.image.c.Ysize)
@@ -248,6 +277,9 @@ type TrimOptions struct {
 	Threshold  float64
 }
 
+// Trim the image in regards to a given color and threshold. It will look for the
+// specified color (within the given threshold) from the border of the image inwards
+// and find the "borders" to a different colors to determine how to cut the image.
 func (it *ImageTransformation) Trim(opts TrimOptions) error {
 	left, top, width, height, err := vipsTrim(it.image, opts.Background, opts.Threshold)
 	if err != nil {
@@ -269,6 +301,7 @@ type EmbedOptions struct {
 	Background RGBAProvider
 }
 
+// Embed the image on the given background. The image will be centered.
 func (it *ImageTransformation) Embed(opts EmbedOptions) error {
 	inWidth := int(it.image.c.Xsize)
 	inHeight := int(it.image.c.Ysize)
@@ -289,6 +322,7 @@ type ExtractOptions struct {
 	Height int
 }
 
+// Extract the given area from the image (removing everything outside that area).
 func (it *ImageTransformation) Extract(opts ExtractOptions) error {
 	if opts.Width == 0 || opts.Height == 0 {
 		return errors.New("extract area width/height params are required")
@@ -302,12 +336,19 @@ func (it *ImageTransformation) Extract(opts ExtractOptions) error {
 }
 
 type RotateOptions struct {
-	Angle        Angle
-	Flip         bool
-	Flop         bool
+	// Angle to rotate the image by.
+	Angle Angle
+	// Transpose the image along the X axis.
+	Flip bool
+	// Transpose the image along the Y axis.
+	Flop bool
+	// Do *not* apply rotation as specified in the metadata first.
 	NoAutoRotate bool
 }
 
+// Rotate or transpose the image. By default it will perform auto-rotation
+// first, meaning it will take the "virtual" rotation specified in the image
+// metadata and turn it into a real rotation (actually modifying pixels).
 func (it *ImageTransformation) Rotate(opts RotateOptions) error {
 	var image *vipsImage
 	var err error
@@ -327,20 +368,10 @@ func (it *ImageTransformation) Rotate(opts RotateOptions) error {
 	}
 	it.updateImage(image)
 
-	// TODO is the following a good idea? Isn't saving always destructive and so time consuming
-	//      that it outweighs the potential time saving when using the optimized shrink?
-	// If it's a JPEG or HEIF image, the rotation might have been non-destructive. So we
-	// update our buffer (which involves saving).
-	//if rotated && (it.imageType == JPEG || it.imageType == HEIF) {
-	//	buf, err := getImageBuffer(image)
-	//	if err != nil {
-	//		return fmt.Errorf("cannot get the rotated image buffer: %w", err)
-	//	}
-	//}
-
 	return nil
 }
 
+// Blur the image.
 func (it *ImageTransformation) Blur(opts GaussianBlur) error {
 	if image, err := vipsGaussianBlur(it.image, opts); err != nil {
 		return err
@@ -350,6 +381,7 @@ func (it *ImageTransformation) Blur(opts GaussianBlur) error {
 	}
 }
 
+// Sharpen the image.
 func (it *ImageTransformation) Sharpen(opts Sharpen) error {
 	if image, err := vipsSharpen(it.image, opts); err != nil {
 		return err
@@ -359,6 +391,7 @@ func (it *ImageTransformation) Sharpen(opts Sharpen) error {
 	}
 }
 
+// WatermarkText adds a text on top of the image.
 func (it *ImageTransformation) WatermarkText(opts Watermark) error {
 	if image, err := watermarkImageWithText(it.image, opts); err != nil {
 		return err
@@ -375,6 +408,7 @@ type WatermarkImageOptions struct {
 	Opacity float32
 }
 
+// WatermarkImage puts an image on top of the image.
 func (it *ImageTransformation) WatermarkImage(opts WatermarkImageOptions) error {
 	if image, err := watermarkImageWithAnotherImage(it.image, opts); err != nil {
 		return err
@@ -384,6 +418,8 @@ func (it *ImageTransformation) WatermarkImage(opts WatermarkImageOptions) error 
 	}
 }
 
+// Flatten removes the alpha channel from the current image, replacing it with the
+// given background.
 func (it *ImageTransformation) Flatten(background RGBAProvider) error {
 	if image, err := vipsFlattenBackground(it.image, background); err != nil {
 		return err
@@ -393,6 +429,7 @@ func (it *ImageTransformation) Flatten(background RGBAProvider) error {
 	}
 }
 
+// Gamma applies the given gamma value to the current image.
 func (it *ImageTransformation) Gamma(gamma float64) error {
 	if image, err := vipsGamma(it.image, gamma); err != nil {
 		return err
@@ -404,6 +441,12 @@ func (it *ImageTransformation) Gamma(gamma float64) error {
 
 type SaveOptions vipsSaveOptions
 
+// Save the image to a buffer, encoding it in the process. If no image type
+// is specified, the image type from the initial image will be used (so if it
+// was a JPEG before, it will be a JPEG again).
+//
+// If no Quality or Compression levels are set, default values are used. Those
+// are a quality level of 75% and a compression level of 6.
 func (it *ImageTransformation) Save(opts SaveOptions) ([]byte, error) {
 	// Normalize options first.
 	if opts.Quality == 0 {
@@ -419,6 +462,7 @@ func (it *ImageTransformation) Save(opts SaveOptions) ([]byte, error) {
 	return vipsSave(it.image, vipsSaveOptions(opts))
 }
 
+// Size returns the dimensions of the current image.
 func (it *ImageTransformation) Size() ImageSize {
 	return ImageSize{
 		Width:  int(it.image.c.Xsize),
@@ -426,6 +470,7 @@ func (it *ImageTransformation) Size() ImageSize {
 	}
 }
 
+// Metadata returns the metadata of the image.
 func (it *ImageTransformation) Metadata() ImageMetadata {
 	size := it.Size()
 
@@ -494,5 +539,3 @@ func (it *ImageTransformation) Metadata() ImageMetadata {
 		},
 	}
 }
-
-// TODO convert o.SmartCrop to o.Gravity
