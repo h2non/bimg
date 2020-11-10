@@ -25,87 +25,101 @@ func TestDeterminateImageType(t *testing.T) {
 	}
 
 	for _, file := range files {
-		img, _ := os.Open(path.Join("testdata", file.name))
-		buf, _ := ioutil.ReadAll(img)
-		defer img.Close()
+		t.Run(file.name, func(t *testing.T) {
+			img, _ := os.Open(path.Join("testdata", file.name))
+			buf, _ := ioutil.ReadAll(img)
+			defer img.Close()
 
-		if VipsIsTypeSupported(file.expected) {
-			value := DetermineImageType(buf)
-			if value != file.expected {
-				t.Fatalf("Image type is not valid: %s != %s, got: %s", file.name, ImageTypes[file.expected], ImageTypes[value])
+			if VipsIsTypeSupported(file.expected) {
+				value := DetermineImageType(buf)
+				if value != file.expected {
+					t.Fatalf("Image type is not valid: wanted %s, got: %s", ImageTypes[file.expected], ImageTypes[value])
+				}
 			}
-		}
+		})
 	}
 }
 
 func TestDeterminateImageTypeName(t *testing.T) {
 	files := []struct {
-		name     string
-		expected string
+		name      string
+		expected  string
+		condition bool
 	}{
-		{"test.jpg", "jpeg"},
-		{"test.png", "png"},
-		{"test.webp", "webp"},
-		{"test.gif", "gif"},
-		{"test.pdf", "pdf"},
-		{"test.svg", "svg"},
+		{"test.jpg", "jpeg", true},
+		{"test.png", "png", true},
+		{"test.webp", "webp", true},
+		{"test.gif", "gif", true},
+		{"test.pdf", "pdf", true},
+		{"test.svg", "svg", true},
 		// {"test.jp2", "magick"},
-		{"test.heic", "heif"},
+		{"test.heic", "heif", vipsVersionMin(8, 8)},
 	}
 
 	for _, file := range files {
-		if file.expected == "heif" && VipsMajorVersion <= 8 && VipsMinorVersion < 8 {
-			continue
-		}
+		t.Run(file.name, func(t *testing.T) {
+			if !file.condition {
+				t.Skip("condition not met")
+			}
 
-		img, _ := os.Open(path.Join("testdata", file.name))
-		buf, _ := ioutil.ReadAll(img)
-		defer img.Close()
+			img, _ := os.Open(path.Join("testdata", file.name))
+			buf, _ := ioutil.ReadAll(img)
+			defer img.Close()
 
-		value := DetermineImageTypeName(buf)
-		if value != file.expected {
-			t.Fatalf("Image type is not valid: %s != %s, got: %s", file.name, file.expected, value)
-		}
+			value := DetermineImageTypeName(buf)
+			if value != file.expected {
+				t.Fatalf("Image type is not valid: %s != %s, got: %s", file.name, file.expected, value)
+			}
+		})
+
 	}
 }
 
 func TestIsTypeSupported(t *testing.T) {
 	types := []struct {
-		name ImageType
+		name      ImageType
+		supported bool
 	}{
-		{JPEG}, {PNG}, {WEBP}, {GIF}, {PDF}, {HEIF},
+		{JPEG, true},
+		{PNG, true},
+		{WEBP, true},
+		{GIF, true},
+		{PDF, true},
+		{HEIF, vipsVersionMin(8, 8)},
 	}
 
-	for _, n := range types {
-		if n.name == HEIF && VipsMajorVersion <= 8 && VipsMinorVersion < 8 {
-			continue
-		}
-		if IsTypeSupported(n.name) == false {
-			t.Fatalf("Image type %s is not valid", ImageTypes[n.name])
-		}
+	for _, typ := range types {
+		t.Run(ImageTypes[typ.name], func(t *testing.T) {
+			if IsTypeSupported(typ.name) != typ.supported {
+				t.Fatalf("Image type support is not as expected")
+			}
+		})
 	}
 }
 
 func TestIsTypeNameSupported(t *testing.T) {
 	types := []struct {
-		name     string
-		expected bool
+		name      string
+		expected  bool
+		condition bool
 	}{
-		{"jpeg", true},
-		{"png", true},
-		{"webp", true},
-		{"gif", true},
-		{"pdf", true},
-		{"heif", true},
+		{"jpeg", true, true},
+		{"png", true, true},
+		{"webp", true, true},
+		{"gif", true, true},
+		{"pdf", true, true},
+		{"heif", true, vipsVersionMin(8, 8)},
 	}
 
 	for _, n := range types {
-		if n.name == "heif" && VipsMajorVersion <= 8 && VipsMinorVersion < 8 {
-			continue
-		}
-		if IsTypeNameSupported(n.name) != n.expected {
-			t.Fatalf("Image type %s is not valid", n.name)
-		}
+		t.Run(n.name, func(t *testing.T) {
+			if !n.condition {
+				t.Skip("condition not met")
+			}
+			if IsTypeNameSupported(n.name) != n.expected {
+				t.Fatalf("Image type %s is not valid", n.name)
+			}
+		})
 	}
 }
 
@@ -115,10 +129,10 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	}{
 		{JPEG}, {PNG}, {WEBP},
 	}
-	if VipsVersion >= "8.5.0" {
+	if vipsVersionMin(8, 5) {
 		types = append(types, struct{ name ImageType }{TIFF})
 	}
-	if VipsVersion >= "8.8.0" {
+	if vipsVersionMin(8, 8) {
 		types = append(types, struct{ name ImageType }{HEIF})
 	}
 
@@ -137,15 +151,17 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"jpeg", true},
 		{"png", true},
 		{"webp", true},
-		{"gif", false},
+		{"gif", vipsVersionMin(8, 0)},
 		{"pdf", false},
-		{"tiff", VipsVersion >= "8.5.0"},
-		{"heif", VipsVersion >= "8.8.0"},
+		{"tiff", vipsVersionMin(8, 5)},
+		{"heif", vipsVersionMin(8, 8)},
 	}
 
 	for _, n := range types {
-		if IsTypeNameSupportedSave(n.name) != n.expected {
-			t.Fatalf("Image type %s is not valid", n.name)
-		}
+		t.Run(n.name, func(t *testing.T) {
+			if IsTypeNameSupportedSave(n.name) != n.expected {
+				t.Fatalf("Image type is not valid (expected = %t)", n.expected)
+			}
+		})
 	}
 }

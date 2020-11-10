@@ -3,12 +3,14 @@ package bimg
 import (
 	"bytes"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"testing"
 )
 
@@ -33,6 +35,27 @@ func TestResize(t *testing.T) {
 	Write("testdata/test_out.jpg", newImg)
 }
 
+func formatOptions(o Options) string {
+	var attributes []string
+	if o.Crop {
+		attributes = append(attributes, "Crop")
+	}
+	if o.Enlarge {
+		attributes = append(attributes, "Enlarge")
+	}
+	if o.Force {
+		attributes = append(attributes, "Force")
+	}
+	if o.Width > 0 {
+		attributes = append(attributes, fmt.Sprintf("Width=%d", o.Width))
+	}
+	if o.Height > 0 {
+		attributes = append(attributes, fmt.Sprintf("Height=%d", o.Height))
+	}
+
+	return fmt.Sprintf("Options{%s}", strings.Join(attributes, ","))
+}
+
 func TestResizeVerticalImage(t *testing.T) {
 	tests := []Options{
 		{Width: 800, Height: 600},
@@ -51,51 +74,50 @@ func TestResizeVerticalImage(t *testing.T) {
 		{Force: true, Width: 2000, Height: 2000},
 	}
 
-	bufJpeg, err := Read("testdata/vertical.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-	bufWebp, err := Read("testdata/vertical.webp")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	images := []struct {
 		format ImageType
-		buf    []byte
+		file   string
 	}{
-		{JPEG, bufJpeg},
-		{WEBP, bufWebp},
+		{JPEG, "testdata/vertical.jpg"},
+		{WEBP, "testdata/vertical.webp"},
 	}
 
 	for _, source := range images {
-		for _, options := range tests {
-			image, err := Resize(source.buf, options)
+		t.Run(source.file, func(t *testing.T) {
+			buf, err := Read(source.file)
 			if err != nil {
-				t.Fatalf("Resize(imgData, %#v) error: %#v", options, err)
+				t.Fatal(err)
 			}
+			for _, options := range tests {
+				t.Run(formatOptions(options), func(t *testing.T) {
+					image, err := Resize(buf, options)
+					if err != nil {
+						t.Fatalf("Resize(imgData, %#v) error: %#v", options, err)
+					}
 
-			format := DetermineImageType(image)
-			if format != source.format {
-				t.Fatalf("Image format is invalid. Expected: %#v got %v", ImageTypeName(source.format), ImageTypeName(format))
-			}
+					format := DetermineImageType(image)
+					if format != source.format {
+						t.Fatalf("Image format is invalid. Expected: %#v got %v", ImageTypeName(source.format), ImageTypeName(format))
+					}
 
-			size, _ := Size(image)
-			if options.Height > 0 && size.Height != options.Height {
-				t.Fatalf("Invalid height: %d", size.Height)
-			}
-			if options.Width > 0 && size.Width != options.Width {
-				t.Fatalf("Invalid width: %d", size.Width)
-			}
+					size, _ := Size(image)
+					if options.Height > 0 && size.Height != options.Height {
+						t.Fatalf("Invalid height: %d", size.Height)
+					}
+					if options.Width > 0 && size.Width != options.Width {
+						t.Fatalf("Invalid width: %d", size.Width)
+					}
 
-			Write(
-				fmt.Sprintf(
-					"testdata/test_vertical_%dx%d_out.%s",
-					options.Width,
-					options.Height,
-					ImageTypeName(source.format)),
-				image)
-		}
+					Write(
+						fmt.Sprintf(
+							"testdata/test_vertical_%dx%d_out.%s",
+							options.Width,
+							options.Height,
+							ImageTypeName(source.format)),
+						image)
+				})
+			}
+		})
 	}
 }
 
@@ -114,50 +136,50 @@ func TestResizeCustomSizes(t *testing.T) {
 		{Force: true, Width: 2000, Height: 2000},
 	}
 
-	bufJpeg, err := Read("testdata/test.jpg")
-	if err != nil {
-		t.Fatal(err)
-	}
-	bufWebp, err := Read("testdata/test.webp")
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	images := []struct {
 		format ImageType
-		buf    []byte
+		file   string
 	}{
-		{JPEG, bufJpeg},
-		{WEBP, bufWebp},
+		{JPEG, "testdata/test.jpg"},
+		{WEBP, "testdata/test.webp"},
 	}
 
 	for _, source := range images {
-		for _, options := range tests {
-			image, err := Resize(source.buf, options)
+		t.Run(source.file, func(t *testing.T) {
+			buf, err := Read(source.file)
 			if err != nil {
-				t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+				t.Fatal(err)
 			}
 
-			if DetermineImageType(image) != source.format {
-				t.Fatalf("Image format is invalid. Expected: %#v", source.format)
-			}
+			for _, options := range tests {
+				t.Run(formatOptions(options), func(t *testing.T) {
+					image, err := Resize(buf, options)
+					if err != nil {
+						t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
+					}
 
-			size, _ := Size(image)
+					if DetermineImageType(image) != source.format {
+						t.Fatalf("Image format is invalid. Expected: %#v", source.format)
+					}
 
-			invalidHeight := options.Height > 0 && size.Height != options.Height
-			if !options.Crop && invalidHeight {
-				t.Fatalf("Invalid height: %d, expected %d", size.Height, options.Height)
-			}
+					size, _ := Size(image)
 
-			invalidWidth := options.Width > 0 && size.Width != options.Width
-			if !options.Crop && invalidWidth {
-				t.Fatalf("Invalid width: %d, expected %d", size.Width, options.Width)
-			}
+					invalidHeight := options.Height > 0 && size.Height != options.Height
+					if !options.Crop && invalidHeight {
+						t.Fatalf("Invalid height: %d, expected %d", size.Height, options.Height)
+					}
 
-			if options.Crop && invalidHeight && invalidWidth {
-				t.Fatalf("Invalid width or height: %dx%d, expected %dx%d (crop)", size.Width, size.Height, options.Width, options.Height)
+					invalidWidth := options.Width > 0 && size.Width != options.Width
+					if !options.Crop && invalidWidth {
+						t.Fatalf("Invalid width: %d, expected %d", size.Width, options.Width)
+					}
+
+					if options.Crop && invalidHeight && invalidWidth {
+						t.Fatalf("Invalid width or height: %dx%d, expected %dx%d (crop)", size.Width, size.Height, options.Width, options.Height)
+					}
+				})
 			}
-		}
+		})
 	}
 }
 
@@ -366,7 +388,7 @@ func TestExtractCustomAxis(t *testing.T) {
 
 func TestExtractOrEmbedImage(t *testing.T) {
 	buf, _ := Read("testdata/test.jpg")
-	input, _, err := loadImage(buf)
+	transform, err := NewImageTransformation(buf)
 	if err != nil {
 		t.Fatalf("Unable to load image %s", err)
 	}
@@ -380,20 +402,17 @@ func TestExtractOrEmbedImage(t *testing.T) {
 		// Fields to test
 		AreaHeight: 0,
 		AreaWidth:  0,
-
-		Quality: 100, /* Needs a value to satisfy libvips */
 	}
 
-	result, err := extractOrEmbedImage(input, o)
-	if err != nil {
-		if err == ErrExtractAreaParamsRequired {
+	if err := extractOrEmbedImage(transform, o); err != nil {
+		if errors.Unwrap(err) == ErrExtractAreaParamsRequired {
 			t.Fatalf("Expecting AreaWidth and AreaHeight to have been defined")
 		}
 
 		t.Fatalf("Unknown error occurred %s", err)
 	}
 
-	image, err := saveImage(result, o)
+	image, err := transform.Save(SaveOptions{Quality: 100})
 	if err != nil {
 		t.Fatalf("Failed saving image %s", err)
 	}
@@ -511,42 +530,44 @@ func TestRotationAndFlip(t *testing.T) {
 	}
 
 	for _, file := range files {
-		img, err := os.Open(fmt.Sprintf("testdata/exif/%s.jpg", file.Name))
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(file.Name, func(t *testing.T) {
+			img, err := os.Open(fmt.Sprintf("testdata/exif/%s.jpg", file.Name))
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		buf, err := ioutil.ReadAll(img)
-		if err != nil {
-			t.Fatal(err)
-		}
-		img.Close()
+			buf, err := ioutil.ReadAll(img)
+			if err != nil {
+				t.Fatal(err)
+			}
+			img.Close()
 
-		image, _, err := loadImage(buf)
-		if err != nil {
-			t.Fatal(err)
-		}
+			image, _, err := loadImage(buf)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		angle, flip := calculateRotationAndFlip(image, D0)
-		if angle != file.Angle {
-			t.Errorf("Rotation for %v expected to be %v. got %v", file.Name, file.Angle, angle)
-		}
-		if flip != file.Flip {
-			t.Errorf("Flip for %v expected to be %v. got %v", file.Name, file.Flip, flip)
-		}
+			angle, flip := calculateRotationAndFlip(image, D0)
+			if angle != file.Angle {
+				t.Errorf("Rotation for %v expected to be %v. got %v", file.Name, file.Angle, angle)
+			}
+			if flip != file.Flip {
+				t.Errorf("Flip for %v expected to be %v. got %v", file.Name, file.Flip, flip)
+			}
 
-		// Visual debugging.
-		newImg, err := Resize(buf, Options{})
-		if err != nil {
-			t.Fatal(err)
-		}
+			// Visual debugging.
+			newImg, err := Resize(buf, Options{})
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+			Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+		})
 	}
 }
 
 func TestIfBothSmartCropOptionsAreIdentical(t *testing.T) {
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion > 4) {
+	if !(vipsVersionMin(8, 5)) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s > 8.4", VipsVersion)
 	}
 

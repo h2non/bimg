@@ -184,6 +184,11 @@ vips_type_find_save_bridge(int t) {
 		return vips_type_find("VipsOperation", "heifsave_buffer");
 	}
 #endif
+#if (VIPS_MAJOR_VERSION >= 8)
+	if (t == GIF) {
+		return vips_type_find("VipsOperation", "magicksave_buffer");
+	}
+#endif
 	return 0;
 }
 
@@ -269,16 +274,9 @@ vips_zoom_bridge(VipsImage *in, VipsImage **out, int xfac, int yfac) {
 }
 
 int
-vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend, double r, double g, double b) {
+vips_embed_bridge(VipsImage *in, VipsImage **out, int left, int top, int width, int height, int extend, VipsArrayDouble *background) {
 	if (extend == VIPS_EXTEND_BACKGROUND) {
-	if (has_alpha_channel(in) == 1) {
-		double background[4] = {r, g, b, 0.0};
-  	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 4);
-  	return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);
-	} else {
-		double background[3] = {r, g, b};
-  	VipsArrayDouble *vipsBackground = vips_array_double_new(background, 3);
-  	return vips_embed(in, out, left, top, width, height, "extend", extend, "background", vipsBackground, NULL);}
+		return vips_embed(in, out, left, top, width, height, "extend", extend, "background", background, NULL);
 	}
 	return vips_embed(in, out, left, top, width, height, "extend", extend, NULL);
 }
@@ -329,13 +327,13 @@ vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 7)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 7))
 	return vips_pngsave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
 		"compression", compression,
 		"interlace", INT_TO_GBOOLEAN(interlace),
 		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
-	        "palette", INT_TO_GBOOLEAN(palette),
+		"palette", INT_TO_GBOOLEAN(palette),
 		NULL
 	);
 #else
@@ -360,7 +358,7 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 5))
 	return vips_tiffsave_buffer(in, buf, len, NULL);
 #else
 	return 0;
@@ -374,6 +372,19 @@ vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 		"strip", INT_TO_GBOOLEAN(strip),
 		"Q", quality,
 		"lossless", INT_TO_GBOOLEAN(lossless),
+		NULL
+	);
+#else
+	return 0;
+#endif
+}
+
+int
+vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len, const char *format, int quality) {
+#if (VIPS_MAJOR_VERSION >= 8)
+	return vips_magicksave_buffer(in, buf, len,
+		"format", format,
+		"quality", quality,
 		NULL
 	);
 #else
@@ -417,7 +428,7 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == TIFF) {
 		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #if (VIPS_MAJOR_VERSION >= 8)
-#if (VIPS_MINOR_VERSION >= 3)
+#if (VIPS_MAJOR_VERSION > 8 || VIPS_MINOR_VERSION >= 3)
 	} else if (imageType == GIF) {
 		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == PDF) {
@@ -532,7 +543,7 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 
 int
 vips_add_band(VipsImage *in, VipsImage **out, double c) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 2))
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 2))
 	return vips_bandjoin_const1(in, out, c, NULL);
 #else
 	VipsImage *base = vips_image_new();
@@ -600,7 +611,7 @@ vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkIm
 
 int
 vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 5))
 	return vips_smartcrop(in, out, width, height, NULL);
 #else
 	return 0;
@@ -608,7 +619,7 @@ vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
 }
 
 int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *height, double r, double g, double b, double threshold) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 6)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 6))
 	if (vips_is_16bit(in->Type)) {
 		r = 65535 * r / 255;
 		g = 65535 * g / 255;
@@ -623,7 +634,10 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 #endif
 }
 
-int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
-{
-  return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent) {
+	return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+}
+
+int vips_addalpha_bridge(VipsImage *in, VipsImage **out) {
+	return vips_addalpha(in, out);
 }

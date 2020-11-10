@@ -275,25 +275,45 @@ bimg.Write("new.jpg", newImage)
 
 #### Fluent interface
 
+If you intend to apply multiple transformations to the same image, you
+should use the `ImageTransformation` system which will decode the image
+once and lets you work on this decoded image as long as you please.
+
 ```go
+// read the raw data
 buffer, err := bimg.Read("image.jpg")
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
+  return
 }
 
-image := bimg.NewImage(buffer)
-
-// first crop image
-_, err := image.CropByWidth(300)
+// decode the image and prepare our transformation chain
+it, err := bimg.NewImageTransformation(buffer)
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
+  return
+}
+
+// crop the image to a specific width
+err = it.Crop(bimg.CropOptions{Width: 300})
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+  return
 }
 
 // then flip it
-newImage, err := image.Flip()
+err = it.Rotate(bimg.RotateOptions{Flip: true})
 if err != nil {
   fmt.Fprintln(os.Stderr, err)
+  return
 }
+
+// encode the image
+newImage, err := it.Save(bimg.SaveOptions{})
+if err != nil {
+  fmt.Fprintln(os.Stderr, err)
+  return
+} 
 
 // save the cropped and flipped image
 bimg.Write("new.jpg", newImage)
