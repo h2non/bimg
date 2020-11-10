@@ -327,7 +327,7 @@ vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 7)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 7))
 	return vips_pngsave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
 		"compression", compression,
@@ -358,7 +358,7 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 5))
 	return vips_tiffsave_buffer(in, buf, len, NULL);
 #else
 	return 0;
@@ -543,7 +543,7 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 
 int
 vips_add_band(VipsImage *in, VipsImage **out, double c) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 2))
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 2))
 	return vips_bandjoin_const1(in, out, c, NULL);
 #else
 	VipsImage *base = vips_image_new();
@@ -611,7 +611,7 @@ vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkIm
 
 int
 vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 5)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 5))
 	return vips_smartcrop(in, out, width, height, NULL);
 #else
 	return 0;
@@ -619,7 +619,7 @@ vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
 }
 
 int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *height, double r, double g, double b, double threshold) {
-#if (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 6)
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 6))
 	if (vips_is_16bit(in->Type)) {
 		r = 65535 * r / 255;
 		g = 65535 * g / 255;
