@@ -22,130 +22,142 @@ var (
 func resizer(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
-	image, imageType, err := loadImage(buf)
+	t, err := NewImageTransformation(buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot load image: %w", err)
 	}
 
 	// Clone and define default options
-	o = applyDefaults(o, imageType)
+	o = applyDefaults(o, t.imageType)
+	saveOptions := buildSaveOptions(o)
 
 	// Ensure supported type
 	if !IsTypeSupported(o.Type) {
-		return nil, errors.New("Unsupported image output type")
+		return nil, errors.New("unsupported image output type")
 	}
 
-	// Autorate only
+	// Autorotate only
 	if o.autoRotateOnly {
-		image, err = vipsAutoRotate(image)
-		if err != nil {
+		if err := t.Rotate(RotateOptions{}); err != nil {
 			return nil, err
 		}
-		return saveImage(image, o)
+		return t.Save(saveOptions)
 	}
 
 	// Auto rotate image based on EXIF orientation header
-	image, rotated, err := rotateAndFlipImage(image, o)
-	if err != nil {
+	if err := t.Rotate(RotateOptions{
+		Angle:        o.Rotate,
+		Flip:         o.Flip,
+		Flop:         o.Flop,
+		NoAutoRotate: o.NoAutoRotate,
+	}); err != nil {
+		return nil, fmt.Errorf("cannot rotate image: %w", err)
+	}
+
+	if err := resizeIfNecessary(t, o); err != nil {
 		return nil, err
 	}
 
-	// If JPEG or HEIF image, retrieve the buffer
-	if rotated && (imageType == JPEG || imageType == HEIF) && !o.NoAutoRotate {
-		buf, err = getImageBuffer(image)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	inWidth := int(image.Xsize)
-	inHeight := int(image.Ysize)
-
-	// Infer the required operation based on the in/out image sizes for a coherent transformation
-	normalizeOperation(&o, inWidth, inHeight)
-
-	// image calculations
-	factor := imageCalculations(&o, inWidth, inHeight)
-	shrink := calculateShrink(factor, o.Interpolator)
-	residual := calculateResidual(factor, shrink)
-
-	// Do not enlarge the output if the input width or height
-	// are already less than the required dimensions
-	if !o.Enlarge && !o.Force {
-		if inWidth < o.Width && inHeight < o.Height {
-			factor = 1.0
-			shrink = 1
-			residual = 0
-			o.Width = inWidth
-			o.Height = inHeight
-		}
-	}
-
-	// Try to use libjpeg/libwebp shrink-on-load
-	supportsShrinkOnLoad := imageType == WEBP && VipsMajorVersion >= 8 && VipsMinorVersion >= 3
-	supportsShrinkOnLoad = supportsShrinkOnLoad || imageType == JPEG
-	if supportsShrinkOnLoad && shrink >= 2 {
-		tmpImage, factor, err := shrinkOnLoad(buf, image, imageType, factor, shrink)
-		if err != nil {
-			return nil, err
-		}
-
-		image = tmpImage
-		factor = math.Max(factor, 1.0)
-		shrink = int(math.Floor(factor))
-		residual = float64(shrink) / factor
-	}
-
-	// Zoom image, if necessary
-	image, err = zoomImage(image, o.Zoom)
-	if err != nil {
-		return nil, err
-	}
-
-	// Transform image, if necessary
-	if shouldTransformImage(o, inWidth, inHeight) {
-		image, err = transformImage(image, o, shrink, residual)
-		if err != nil {
-			return nil, err
-		}
+	if err := extractOrEmbedImage(t, o); err != nil {
+		return nil, fmt.Errorf("cannot extract or embed: %w", err)
 	}
 
 	// Apply effects, if necessary
-	if shouldApplyEffects(o) {
-		image, err = applyEffects(image, o)
-		if err != nil {
-			return nil, err
+	if o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 {
+		if err := t.Blur(o.GaussianBlur); err != nil {
+			return nil, fmt.Errorf("cannot apply blur: %w", err)
+		}
+	}
+	if o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0 {
+		if err := t.Sharpen(o.Sharpen); err != nil {
+			return nil, fmt.Errorf("cannot sharpen image: %w", err)
 		}
 	}
 
 	// Add watermark, if necessary
-	image, err = watermarkImageWithText(image, o.Watermark)
-	if err != nil {
-		return nil, err
+	if err := t.WatermarkText(o.Watermark); err != nil {
+		return nil, fmt.Errorf("cannot add watermark text: %w", err)
 	}
 
 	// Add watermark, if necessary
-	image, err = watermarkImageWithAnotherImage(image, o.WatermarkImage)
-	if err != nil {
-		return nil, err
+	if len(o.WatermarkImage.Buf) > 0 {
+		watermarkImage, err := NewImageTransformation(o.WatermarkImage.Buf)
+		if err != nil {
+			return nil, fmt.Errorf("cannot decode watermark image: %w", err)
+		}
+		if err := t.WatermarkImage(WatermarkImageOptions{
+			Left:    o.WatermarkImage.Left,
+			Top:     o.WatermarkImage.Top,
+			Image:   watermarkImage,
+			Opacity: o.WatermarkImage.Opacity,
+		}); err != nil {
+			return nil, fmt.Errorf("cannot add watermark image: %w", err)
+		}
 	}
 
 	// Flatten image on a background, if necessary
-	image, err = imageFlatten(image, imageType, o)
-	if err != nil {
-		return nil, err
+	if shouldFlatten(o) {
+		if err := t.Flatten(o.Background); err != nil {
+			return nil, fmt.Errorf("cannot flatten image: %w", err)
+		}
 	}
 
 	// Apply Gamma filter, if necessary
-	image, err = applyGamma(image, o)
-	if err != nil {
-		return nil, err
+	if o.Gamma > 0 {
+		if err := t.Gamma(o.Gamma); err != nil {
+			return nil, fmt.Errorf("cannot apply gamma: %w", err)
+		}
 	}
 
-	return saveImage(image, o)
+	return t.Save(saveOptions)
 }
 
-func loadImage(buf []byte) (*C.VipsImage, ImageType, error) {
+func resizeIfNecessary(t *ImageTransformation, o Options) error {
+	imageSize := t.Size()
+
+	if o.Crop || o.Embed {
+		if o.Width == 0 {
+			o.Width = imageSize.Width
+		}
+		if o.Height == 0 {
+			o.Height = imageSize.Height
+		}
+
+		if !o.Force && !o.Enlarge && imageSize.Width < o.Width && imageSize.Height < o.Height {
+			// Nothing to do.
+			return nil
+		}
+	}
+
+	var resizeMode ResizeMode
+
+	switch {
+	case o.Force:
+		resizeMode = ResizeModeForce
+	case o.Crop, o.Embed, o.Trim:
+		resizeMode = ResizeModeFitUp
+	case o.Zoom > 0, o.Left > 0, o.Top > 0, o.AreaHeight > 0, o.AreaWidth > 0:
+		resizeMode = ResizeModeFit
+	default:
+		resizeMode = ResizeModeForce
+	}
+
+	if err := t.Resize(ResizeOptions{
+		Height:         o.Height,
+		Width:          o.Width,
+		Top:            o.Top,
+		Left:           o.Left,
+		Zoom:           o.Zoom,
+		Mode:           resizeMode,
+		Interpolator:   o.Interpolator,
+		Interpretation: o.Interpretation,
+	}); err != nil {
+		return fmt.Errorf("cannot resize image: %w", err)
+	}
+	return nil
+}
+
+func loadImage(buf []byte) (*vipsImage, ImageType, error) {
 	if len(buf) == 0 {
 		return nil, JPEG, errors.New("Image buffer is empty")
 	}
@@ -171,11 +183,14 @@ func applyDefaults(o Options, imageType ImageType) Options {
 	if o.Interpretation == 0 {
 		o.Interpretation = InterpretationSRGB
 	}
+	if o.SmartCrop {
+		o.Gravity = GravitySmart
+	}
 	return o
 }
 
-func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
-	saveOptions := vipsSaveOptions{
+func buildSaveOptions(o Options) SaveOptions {
+	return SaveOptions{
 		Quality:        o.Quality,
 		Type:           o.Type,
 		Compression:    o.Compression,
@@ -188,27 +203,9 @@ func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
 		Lossless:       o.Lossless,
 		Palette:        o.Palette,
 	}
-	// Finally get the resultant buffer
-	return vipsSave(image, saveOptions)
 }
 
-func normalizeOperation(o *Options, inWidth, inHeight int) {
-	if !o.Force && !o.Crop && !o.Embed && !o.Enlarge && o.Rotate == 0 && (o.Width > 0 || o.Height > 0) {
-		o.Force = true
-	}
-}
-
-func shouldTransformImage(o Options, inWidth, inHeight int) bool {
-	return o.Force || (o.Width > 0 && o.Width != inWidth) ||
-		(o.Height > 0 && o.Height != inHeight) || o.AreaWidth > 0 || o.AreaHeight > 0 ||
-		o.Trim
-}
-
-func shouldApplyEffects(o Options) bool {
-	return o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 || o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0
-}
-
-func transformImage(image *C.VipsImage, o Options, shrink int, residual float64) (*C.VipsImage, error) {
+func transformImage(image *vipsImage, o ResizeOptions, shrink int, residual float64) (*vipsImage, error) {
 	var err error
 	// Use vips_shrink with the integral reduction
 	if shrink > 1 {
@@ -219,91 +216,59 @@ func transformImage(image *C.VipsImage, o Options, shrink int, residual float64)
 	}
 
 	residualx, residualy := residual, residual
-	if o.Force {
-		residualx = float64(o.Width) / float64(image.Xsize)
-		residualy = float64(o.Height) / float64(image.Ysize)
+	if o.Mode == ResizeModeForce {
+		residualx = float64(o.Width) / float64(image.c.Xsize)
+		residualy = float64(o.Height) / float64(image.c.Ysize)
 	}
 
-	if o.Force || residual != 0 {
+	if o.Mode == ResizeModeForce || residual != 0 {
 		if residualx < 1 && residualy < 1 {
 			image, err = vipsReduce(image, 1/residualx, 1/residualy)
 		} else {
-			image, err = vipsAffine(image, residualx, residualy, o.Interpolator, o.Extend)
+			// TODO extend configurable?
+			image, err = vipsAffine(image, residualx, residualy, o.Interpolator, ExtendBlack)
 		}
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	return image, nil
+}
+
+func extractOrEmbedImage(it *ImageTransformation, o Options) error {
 	if o.Force {
 		o.Crop = false
 		o.Embed = false
 	}
-
-	image, err = extractOrEmbedImage(image, o)
-	if err != nil {
-		return nil, err
+	// If (one of) the size values are not given, assume they stay
+	// as in the current state of transformation.
+	if o.Width == 0 {
+		o.Width = int(it.image.c.Xsize)
 	}
-
-	return image, nil
-}
-
-func applyEffects(image *C.VipsImage, o Options) (*C.VipsImage, error) {
-	var err error
-
-	if o.GaussianBlur.Sigma > 0 || o.GaussianBlur.MinAmpl > 0 {
-		image, err = vipsGaussianBlur(image, o.GaussianBlur)
-		if err != nil {
-			return nil, err
-		}
+	if o.Height == 0 {
+		o.Height = int(it.image.c.Ysize)
 	}
-
-	if o.Sharpen.Radius > 0 && o.Sharpen.Y2 > 0 || o.Sharpen.Y3 > 0 {
-		image, err = vipsSharpen(image, o.Sharpen)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return image, nil
-}
-
-func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
-	var err error
-	inWidth := int(image.Xsize)
-	inHeight := int(image.Ysize)
 
 	switch {
-	case o.Gravity == GravitySmart, o.SmartCrop:
-		// it's already at an appropriate size, return immediately
-		if inWidth <= o.Width && inHeight <= o.Height {
-			break
-		}
-		width := int(math.Min(float64(inWidth), float64(o.Width)))
-		height := int(math.Min(float64(inHeight), float64(o.Height)))
-		image, err = vipsSmartCrop(image, width, height)
-		break
-	case o.Crop:
-		// it's already at an appropriate size, return immediately
-		if inWidth <= o.Width && inHeight <= o.Height {
-			break
-		}
-		width := int(math.Min(float64(inWidth), float64(o.Width)))
-		height := int(math.Min(float64(inHeight), float64(o.Height)))
-		left, top := calculateCrop(inWidth, inHeight, o.Width, o.Height, o.Gravity)
-		left, top = int(math.Max(float64(left), 0)), int(math.Max(float64(top), 0))
-		image, err = vipsExtract(image, left, top, width, height)
-		break
+	case o.Crop || o.Gravity == GravitySmart:
+		return it.Crop(CropOptions{
+			Width:   o.Width,
+			Height:  o.Height,
+			Gravity: o.Gravity,
+		})
 	case o.Embed:
-		left, top := (o.Width-inWidth)/2, (o.Height-inHeight)/2
-		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend, o.Background)
-		break
+		return it.Embed(EmbedOptions{
+			Width:      o.Width,
+			Height:     o.Height,
+			Extend:     o.Extend,
+			Background: o.Background,
+		})
 	case o.Trim:
-		left, top, width, height, err := vipsTrim(image, o.Background, o.Threshold)
-		if err == nil {
-			image, err = vipsExtract(image, left, top, width, height)
-		}
-		break
+		return it.Trim(TrimOptions{
+			Background: o.Background,
+			Threshold:  o.Threshold,
+		})
 	case o.Top != 0 || o.Left != 0 || o.AreaWidth != 0 || o.AreaHeight != 0:
 		if o.AreaWidth == 0 {
 			o.AreaWidth = o.Width
@@ -311,48 +276,36 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		if o.AreaHeight == 0 {
 			o.AreaHeight = o.Height
 		}
-		if o.AreaWidth == 0 || o.AreaHeight == 0 {
-			return nil, errors.New("Extract area width/height params are required")
-		}
-		image, err = vipsExtract(image, o.Left, o.Top, o.AreaWidth, o.AreaHeight)
-		break
+		return it.Extract(ExtractOptions{
+			Left:   o.Left,
+			Top:    o.Top,
+			Width:  o.AreaWidth,
+			Height: o.AreaHeight,
+		})
+	}
+
+	return nil
+}
+
+func rotateAndFlipImage(image *vipsImage, o RotateOptions) (*vipsImage, error) {
+	var err error
+
+	if o.Angle > 0 {
+		image, err = vipsRotate(image, getAngle(o.Angle))
+	}
+
+	if o.Flip {
+		image, err = vipsFlip(image, Horizontal)
+	}
+
+	if o.Flop {
+		image, err = vipsFlip(image, Vertical)
 	}
 
 	return image, err
 }
 
-func rotateAndFlipImage(image *C.VipsImage, o Options) (*C.VipsImage, bool, error) {
-	var err error
-	var rotated bool
-
-	if o.NoAutoRotate == false {
-		rotation, flip := calculateRotationAndFlip(image, o.Rotate)
-		if flip {
-			o.Flip = flip
-		}
-		if rotation > 0 && o.Rotate == 0 {
-			o.Rotate = rotation
-		}
-	}
-
-	if o.Rotate > 0 {
-		rotated = true
-		image, err = vipsRotate(image, getAngle(o.Rotate))
-	}
-
-	if o.Flip {
-		rotated = true
-		image, err = vipsFlip(image, Horizontal)
-	}
-
-	if o.Flop {
-		rotated = true
-		image, err = vipsFlip(image, Vertical)
-	}
-	return image, rotated, err
-}
-
-func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+func watermarkImageWithText(image *vipsImage, w Watermark) (*vipsImage, error) {
 	if w.Text == "" {
 		return image, nil
 	}
@@ -362,7 +315,7 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 		w.Font = WatermarkFont
 	}
 	if w.Width == 0 {
-		w.Width = int(math.Floor(float64(image.Xsize / 6)))
+		w.Width = int(math.Floor(float64(image.c.Xsize / 6)))
 	}
 	if w.DPI == 0 {
 		w.DPI = 150
@@ -384,16 +337,21 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 	return image, nil
 }
 
-func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.VipsImage, error) {
-	if len(w.Buf) == 0 {
-		return image, nil
+func watermarkImageWithAnotherImage(image *vipsImage, w WatermarkImageOptions) (*vipsImage, error) {
+	if w.Image == nil || w.Image.image == nil {
+		return image, errors.New("no image to watermark with given")
 	}
 
 	if w.Opacity == 0.0 {
 		w.Opacity = 1.0
 	}
 
-	image, err := vipsDrawWatermark(image, w)
+	image, err := vipsDrawWatermark(image, drawWatermarkOptions{
+		Left:    w.Left,
+		Top:     w.Top,
+		Image:   w.Image.image,
+		Opacity: w.Opacity,
+	})
 
 	if err != nil {
 		return nil, err
@@ -402,32 +360,30 @@ func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.Vi
 	return image, nil
 }
 
-func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsImage, error) {
-	if o.Background == ColorBlack {
-		return image, nil
+func shouldFlatten(o Options) bool {
+	// If no background is set, we cannot flatten anything. Just skip.
+	if o.Background == nil {
+		return false
 	}
-	return vipsFlattenBackground(image, o.Background)
+
+	// If an alpha channel is set, but is not full opacity, we should not flatten, since it would
+	// purge the alpha channel.
+	_, _, _, a := o.Background.RGBA()
+	if a < 0xFF {
+		return false
+	}
+
+	return true
 }
 
-func applyGamma(image *C.VipsImage, o Options) (*C.VipsImage, error) {
-	var err error
-	if o.Gamma > 0 {
-		image, err = vipsGamma(image, o.Gamma)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return image, nil
-}
-
-func zoomImage(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
+func zoomImage(image *vipsImage, zoom int) (*vipsImage, error) {
 	if zoom == 0 {
 		return image, nil
 	}
 	return vipsZoom(image, zoom+1)
 }
 
-func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*C.VipsImage, float64, error) {
+func shrinkImage(image *vipsImage, o ResizeOptions, residual float64, shrink int) (*vipsImage, float64, error) {
 	// Use vips_shrink with the integral reduction
 	image, err := vipsShrink(image, shrink)
 	if err != nil {
@@ -435,10 +391,10 @@ func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*
 	}
 
 	// Recalculate residual float based on dimensions of required vs shrunk images
-	residualx := float64(o.Width) / float64(image.Xsize)
-	residualy := float64(o.Height) / float64(image.Ysize)
+	residualx := float64(o.Width) / float64(image.c.Xsize)
+	residualy := float64(o.Height) / float64(image.c.Ysize)
 
-	if o.Crop {
+	if o.Mode == ResizeModeFit {
 		residual = math.Max(residualx, residualy)
 	} else {
 		residual = math.Min(residualx, residualy)
@@ -447,8 +403,8 @@ func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*
 	return image, residual, nil
 }
 
-func shrinkOnLoad(buf []byte, input *C.VipsImage, imageType ImageType, factor float64, shrink int) (*C.VipsImage, float64, error) {
-	var image *C.VipsImage
+func shrinkOnLoad(buf []byte, imageType ImageType, factor float64, shrink int) (*vipsImage, float64, error) {
+	var image *vipsImage
 	var err error
 
 	// Reload input using shrink-on-load
@@ -467,53 +423,14 @@ func shrinkOnLoad(buf []byte, input *C.VipsImage, imageType ImageType, factor fl
 			shrinkOnLoad = 2
 		}
 
-		image, err = vipsShrinkJpeg(buf, input, shrinkOnLoad)
+		image, err = vipsShrinkJpeg(buf, shrinkOnLoad)
 	} else if imageType == WEBP {
-		image, err = vipsShrinkWebp(buf, input, shrink)
+		image, err = vipsShrinkWebp(buf, shrink)
 	} else {
 		return nil, 0, fmt.Errorf("%v doesn't support shrink on load", ImageTypeName(imageType))
 	}
 
 	return image, factor, err
-}
-
-func imageCalculations(o *Options, inWidth, inHeight int) float64 {
-	factor := 1.0
-	xfactor := float64(inWidth) / float64(o.Width)
-	yfactor := float64(inHeight) / float64(o.Height)
-
-	switch {
-	// Fixed width and height
-	case o.Width > 0 && o.Height > 0:
-		if o.Crop {
-			factor = math.Min(xfactor, yfactor)
-		} else {
-			factor = math.Max(xfactor, yfactor)
-		}
-	// Fixed width, auto height
-	case o.Width > 0:
-		if o.Crop {
-			o.Height = inHeight
-		} else {
-			factor = xfactor
-			o.Height = roundFloat(float64(inHeight) / factor)
-		}
-	// Fixed height, auto width
-	case o.Height > 0:
-		if o.Crop {
-			o.Width = inWidth
-		} else {
-			factor = yfactor
-			o.Width = roundFloat(float64(inWidth) / factor)
-		}
-	// Identity transform
-	default:
-		o.Width = inWidth
-		o.Height = inHeight
-		break
-	}
-
-	return factor
 }
 
 func roundFloat(f float64) int {
@@ -545,7 +462,7 @@ func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) 
 	return left, top
 }
 
-func calculateRotationAndFlip(image *C.VipsImage, angle Angle) (Angle, bool) {
+func calculateRotationAndFlip(image *vipsImage, angle Angle) (Angle, bool) {
 	rotate := D0
 	flip := false
 
