@@ -352,8 +352,8 @@ func TestImageAutoRotate(t *testing.T) {
 	}
 
 	tests := []struct {
-		file         string
-		orientation  int
+		file        string
+		orientation int
 	}{
 		{"exif/Landscape_1.jpg", 1},
 		{"exif/Landscape_2.jpg", 1},

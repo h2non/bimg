@@ -34,6 +34,7 @@ enum types {
 	SVG,
 	MAGICK,
 	HEIF,
+	AVIF
 };
 
 typedef struct {
@@ -335,7 +336,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 		"compression", compression,
 		"interlace", INT_TO_GBOOLEAN(interlace),
 		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
-	        "palette", INT_TO_GBOOLEAN(palette),
+		"palette", INT_TO_GBOOLEAN(palette),
 		NULL
 	);
 #else
@@ -364,6 +365,30 @@ vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 	return vips_tiffsave_buffer(in, buf, len, NULL);
 #else
 	return 0;
+#endif
+}
+
+int
+vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless, int speed) {
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION > 10) || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 10 && VIPS_MICRO_VERSION >= 2))
+    return vips_heifsave_buffer(in, buf, len,
+    "strip", INT_TO_GBOOLEAN(strip),
+    "Q", quality,
+    "lossless", INT_TO_GBOOLEAN(lossless),
+    "compression", VIPS_FOREIGN_HEIF_COMPRESSION_AV1,
+    "speed", speed,
+    NULL
+    );
+#elif (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9))
+    return vips_heifsave_buffer(in, buf, len,
+    "strip", INT_TO_GBOOLEAN(strip),
+    "Q", quality,
+    "lossless", INT_TO_GBOOLEAN(lossless),
+    "compression", VIPS_FOREIGN_HEIF_COMPRESSION_AV1,
+    NULL
+    );
+#else
+    return 0;
 #endif
 }
 
@@ -430,6 +455,10 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 #endif
 #if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
 	} else if (imageType == HEIF) {
+		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
+#if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9)
+	} else if (imageType == AVIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
 	}

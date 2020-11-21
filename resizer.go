@@ -31,7 +31,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	o = applyDefaults(o, imageType)
 
 	// Ensure supported type
-	if !IsTypeSupported(o.Type) {
+	if !IsTypeSupportedSave(o.Type) {
 		return nil, errors.New("Unsupported image output type")
 	}
 
@@ -51,7 +51,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	}
 
 	// If JPEG or HEIF image, retrieve the buffer
-	if rotated && (imageType == JPEG || imageType == HEIF) && !o.NoAutoRotate {
+	if rotated && (imageType == JPEG || imageType == HEIF || imageType == AVIF) && !o.NoAutoRotate {
 		buf, err = getImageBuffer(image)
 		if err != nil {
 			return nil, err
@@ -187,6 +187,7 @@ func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
 		StripMetadata:  o.StripMetadata,
 		Lossless:       o.Lossless,
 		Palette:        o.Palette,
+		Speed:          o.Speed,
 	}
 	// Finally get the resultant buffer
 	return vipsSave(image, saveOptions)
