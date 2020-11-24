@@ -104,3 +104,80 @@ func TestImageTransformation_Resize(t *testing.T) {
 		}
 	})
 }
+
+func TestImageTransformation_Embed(t *testing.T) {
+	t.Run("B/W on grey", func(t *testing.T) {
+		imageTrans, err := NewImageTransformation(readImage("test_bw.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 1 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      200,
+			Height:     200,
+			Extend:     ExtendBackground,
+			Background: Color{R: 255, G: 0, B: 255},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 1 {
+			t.Fatalf("image should still have one channel")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			Write("testdata/transformation_embed_bw_grey_out.png", out)
+		}
+	})
+
+	t.Run("B/W with alpha on grey", func(t *testing.T) {
+		imageTrans, err := NewImageTransformation(readImage("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      200,
+			Height:     200,
+			Extend:     ExtendBackground,
+			Background: Color{R: 255, G: 0, B: 0},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("image should still have two channels")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			Write("testdata/transformation_embed_bwa_grey_out.png", out)
+		}
+	})
+}
+
+func TestImageTransformation_Flatten(t *testing.T) {
+	t.Run("B/W with alpha", func(t *testing.T) {
+		imageTrans, err := NewImageTransformation(readImage("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Flatten(Color{R: 255, G: 0, B: 0}); err != nil {
+			t.Fatalf("flatten returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 1 {
+			t.Fatalf("image should still have just one channel")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			Write("testdata/transformation_flatten_bwa_out.png", out)
+		}
+	})
+}
