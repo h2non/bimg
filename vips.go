@@ -714,7 +714,7 @@ func vipsAdjustColourspaceToColour(input *vipsImage, color RGBAProvider) (*vipsI
 	// In case it's grayscale image but our desired color is not grayscale, we need to convert
 	// to SRGB.
 	channels := input.c.Bands
-	if (channels == 1 || channels == 2) && (r != g || g != b) {
+	if (channels == 1 || channels == 2) && (r != g || g != b || r != b) {
 		image, err := vipsColourspace(result, InterpretationSRGB)
 		if err != nil {
 			return nil, fmt.Errorf("cannot adjust colourspace: %w", err)
