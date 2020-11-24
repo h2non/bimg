@@ -683,6 +683,15 @@ func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage,
 	return wrapVipsImage(image), nil
 }
 
+func vipsColourspace(input *vipsImage, interpretation Interpretation) (*vipsImage, error) {
+	var out *C.VipsImage
+	err := C.vips_colourspace_bridge(input.c, &out, C.VipsInterpretation(interpretation))
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+	return wrapVipsImage(out), nil
+}
+
 func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, background RGBAProvider) (*vipsImage, error) {
 	var image *C.VipsImage
 
@@ -701,6 +710,8 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 		vipsBackground = nil
 	} else {
 		r, g, b, a := background.RGBA()
+		channels := input.c.Bands
+
 		hasAlpha := vipsHasAlpha(input)
 		if !hasAlpha && a < 0xFF {
 			// No alpha channel but the background color is not opaque? Try to add an alpha channel then.
@@ -710,11 +721,35 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 		}
 
 		if hasAlpha || a < 0xFF {
-			bgArray := [4]C.double{C.double(r), C.double(g), C.double(b), C.double(a)}
-			vipsBackground = C.vips_array_double_new(&bgArray[0], 4)
+			if channels == 2 && r == g && g == b {
+				bgArray := [2]C.double{C.double(r), C.double(a)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 2)
+			} else {
+				if channels == 2 {
+					image, err := vipsColourspace(input, InterpretationSRGB)
+					if err != nil {
+						return nil, fmt.Errorf("cannot adjust colourspace: %w", err)
+					}
+					input = image
+				}
+				bgArray := [4]C.double{C.double(r), C.double(g), C.double(b), C.double(a)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 4)
+			}
 		} else {
-			bgArray := [3]C.double{C.double(r), C.double(g), C.double(b)}
-			vipsBackground = C.vips_array_double_new(&bgArray[0], 3)
+			if channels == 1 && r == g && g == b {
+				bgArray := [1]C.double{C.double(r)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 1)
+			} else {
+				if channels == 1 {
+					image, err := vipsColourspace(input, InterpretationSRGB)
+					if err != nil {
+						return nil, fmt.Errorf("cannot adjust colourspace: %w", err)
+					}
+					input = image
+				}
+				bgArray := [3]C.double{C.double(r), C.double(g), C.double(b)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 3)
+			}
 		}
 	}
 

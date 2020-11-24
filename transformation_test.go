@@ -118,7 +118,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 			Width:      200,
 			Height:     200,
 			Extend:     ExtendBackground,
-			Background: Color{R: 255, G: 0, B: 255},
+			Background: Color{R: 50, G: 50, B: 50},
 		}); err != nil {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
@@ -144,7 +144,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 			Width:      200,
 			Height:     200,
 			Extend:     ExtendBackground,
-			Background: Color{R: 255, G: 0, B: 0},
+			Background: Color{R: 120, G: 120, B: 120},
 		}); err != nil {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
@@ -155,6 +155,32 @@ func TestImageTransformation_Embed(t *testing.T) {
 			t.Errorf("cannot save image: %v", err)
 		} else {
 			Write("testdata/transformation_embed_bwa_grey_out.png", out)
+		}
+	})
+
+	t.Run("B/W with alpha on red", func(t *testing.T) {
+		imageTrans, err := NewImageTransformation(readImage("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      200,
+			Height:     200,
+			Extend:     ExtendBackground,
+			Background: Color{R: 255, G: 0, B: 0},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 4 {
+			t.Fatalf("image should still have four channels now")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			Write("testdata/transformation_embed_bwa_red_out.png", out)
 		}
 	})
 }
