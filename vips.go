@@ -711,7 +711,7 @@ func vipsAdjustColourspaceToColour(input *vipsImage, color RGBAProvider) (*vipsI
 		result = wrapVipsImage(withAlpha)
 	}
 
-	// In case it's grayscale image but our desired color is not grayscale, we need to convert
+	// In case it's a grayscale image but our desired color is not grayscale, we need to convert
 	// to SRGB.
 	channels := input.c.Bands
 	if (channels == 1 || channels == 2) && (r != g || g != b || r != b) {
