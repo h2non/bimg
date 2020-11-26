@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -801,6 +802,8 @@ func vipsAffine(input *vipsImage, residualx, residualy float64, i Interpolator, 
 	return wrapVipsImage(image), nil
 }
 
+var magickBufferMatch = regexp.MustCompile(`Magick(\d+)?Buffer$`)
+
 func vipsImageType(buf []byte) ImageType {
 	if len(buf) < 12 {
 		return UNKNOWN
@@ -839,7 +842,7 @@ func vipsImageType(buf []byte) ImageType {
 	}
 
 	// If nothing matched directly, try to fallback to imagemagick (if available).
-	if IsTypeSupported(MAGICK) && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
+	if IsTypeSupported(MAGICK) && magickBufferMatch.MatchString(readImageType(buf)) {
 		return MAGICK
 	}
 
