@@ -185,7 +185,7 @@ vips_type_find_save_bridge(int t) {
 	}
 #endif
 #if (VIPS_MAJOR_VERSION >= 8)
-	if (t == GIF) {
+	if (t == MAGICK) {
 		return vips_type_find("VipsOperation", "magicksave_buffer");
 	}
 #endif

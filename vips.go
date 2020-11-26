@@ -54,6 +54,7 @@ type vipsSaveOptions struct {
 	Quality        int
 	Compression    int
 	Type           ImageType
+	MagickFormat   string // Format to use when saving using the ImageType MAGICK
 	Interlace      bool
 	NoProfile      bool
 	StripMetadata  bool
@@ -239,7 +240,9 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 	case HEIF:
 		return int(C.vips_type_find_save_bridge(C.HEIF)) != 0
 	case GIF:
-		return int(C.vips_type_find_save_bridge(C.GIF)) != 0
+		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
+	case MAGICK:
+		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
 	default:
 		return false
 	}
@@ -529,6 +532,10 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case GIF:
 		formatString := C.CString("GIF")
+		defer C.free(unsafe.Pointer(formatString))
+		saveErr = C.vips_magicksave_bridge(image.c, &ptr, &length, formatString, quality)
+	case MAGICK:
+		formatString := C.CString(o.MagickFormat)
 		defer C.free(unsafe.Pointer(formatString))
 		saveErr = C.vips_magicksave_bridge(image.c, &ptr, &length, formatString, quality)
 	default:
