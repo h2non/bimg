@@ -175,7 +175,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
 		if imageTrans.Metadata().Channels != 4 {
-			t.Fatalf("image should still have four channels now")
+			t.Fatalf("image should have four channels now")
 		}
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
@@ -198,7 +198,7 @@ func TestImageTransformation_Flatten(t *testing.T) {
 			t.Fatalf("flatten returned unexpected error: %v", err)
 		}
 		if imageTrans.Metadata().Channels != 1 {
-			t.Errorf("image should still have just one channel")
+			t.Errorf("image should have just one channel now (no alpha)")
 		}
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
@@ -219,12 +219,12 @@ func TestImageTransformation_Flatten(t *testing.T) {
 			t.Fatalf("flatten returned unexpected error: %v", err)
 		}
 		if imageTrans.Metadata().Channels != 3 {
-			t.Errorf("image should have three channels now")
+			t.Errorf("image should have three channels now (RGB without alpha)")
 		}
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_flatten_bwa_out.png", out)
+			Write("testdata/transformation_flatten_bwa_on_red_out.png", out)
 		}
 	})
 }
