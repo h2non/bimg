@@ -427,6 +427,12 @@ func vipsFlattenBackground(image *vipsImage, background RGBAProvider) (*vipsImag
 		return image, nil
 	}
 
+	if newImage, err := vipsAdjustColourspaceToColour(image, background); err != nil {
+		return nil, err
+	} else {
+		image = newImage
+	}
+
 	r, g, b, _ := background.RGBA()
 	backgroundC := [3]C.double{
 		C.double(r),
@@ -683,6 +689,42 @@ func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage,
 	return wrapVipsImage(image), nil
 }
 
+func vipsColourspace(input *vipsImage, interpretation Interpretation) (*vipsImage, error) {
+	var out *C.VipsImage
+	err := C.vips_colourspace_bridge(input.c, &out, C.VipsInterpretation(interpretation))
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+	return wrapVipsImage(out), nil
+}
+
+func vipsAdjustColourspaceToColour(input *vipsImage, color RGBAProvider) (*vipsImage, error) {
+	var result = input
+
+	r, g, b, a := color.RGBA()
+
+	hasAlpha := vipsHasAlpha(input)
+	if !hasAlpha && a < 0xFF {
+		// No alpha channel but the background color is not opaque? Try to add an alpha channel then.
+		var withAlpha *C.VipsImage = C.vips_image_new()
+		C.vips_addalpha_bridge(result.c, &withAlpha)
+		result = wrapVipsImage(withAlpha)
+	}
+
+	// In case it's a grayscale image but our desired color is not grayscale, we need to convert
+	// to SRGB.
+	channels := input.c.Bands
+	if (channels == 1 || channels == 2) && (r != g || g != b || r != b) {
+		image, err := vipsColourspace(result, InterpretationSRGB)
+		if err != nil {
+			return nil, fmt.Errorf("cannot adjust colourspace: %w", err)
+		}
+		result = image
+	}
+
+	return result, nil
+}
+
 func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, background RGBAProvider) (*vipsImage, error) {
 	var image *C.VipsImage
 
@@ -700,21 +742,33 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 	if background == nil {
 		vipsBackground = nil
 	} else {
-		r, g, b, a := background.RGBA()
-		hasAlpha := vipsHasAlpha(input)
-		if !hasAlpha && a < 0xFF {
-			// No alpha channel but the background color is not opaque? Try to add an alpha channel then.
-			var withAlpha *C.VipsImage = C.vips_image_new()
-			C.vips_addalpha_bridge(input.c, &withAlpha)
-			input = wrapVipsImage(withAlpha)
+		if image, err := vipsAdjustColourspaceToColour(input, background); err != nil {
+			return nil, err
+		} else {
+			input = image
 		}
 
+		r, g, b, a := background.RGBA()
+		channels := input.c.Bands
+		hasAlpha := vipsHasAlpha(input)
+
 		if hasAlpha || a < 0xFF {
-			bgArray := [4]C.double{C.double(r), C.double(g), C.double(b), C.double(a)}
-			vipsBackground = C.vips_array_double_new(&bgArray[0], 4)
+			if channels == 2 {
+				bgArray := [2]C.double{C.double(r), C.double(a)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 2)
+			} else {
+				bgArray := [4]C.double{C.double(r), C.double(g), C.double(b), C.double(a)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 4)
+			}
+
 		} else {
-			bgArray := [3]C.double{C.double(r), C.double(g), C.double(b)}
-			vipsBackground = C.vips_array_double_new(&bgArray[0], 3)
+			if channels == 1 {
+				bgArray := [1]C.double{C.double(r)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 1)
+			} else {
+				bgArray := [3]C.double{C.double(r), C.double(g), C.double(b)}
+				vipsBackground = C.vips_array_double_new(&bgArray[0], 3)
+			}
 		}
 	}
 
