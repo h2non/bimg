@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -53,6 +54,7 @@ type vipsSaveOptions struct {
 	Quality        int
 	Compression    int
 	Type           ImageType
+	MagickFormat   string // Format to use when saving using the ImageType MAGICK
 	Interlace      bool
 	NoProfile      bool
 	StripMetadata  bool
@@ -238,7 +240,9 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 	case HEIF:
 		return int(C.vips_type_find_save_bridge(C.HEIF)) != 0
 	case GIF:
-		return int(C.vips_type_find_save_bridge(C.GIF)) != 0
+		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
+	case MAGICK:
+		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
 	default:
 		return false
 	}
@@ -530,6 +534,10 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 		formatString := C.CString("GIF")
 		defer C.free(unsafe.Pointer(formatString))
 		saveErr = C.vips_magicksave_bridge(image.c, &ptr, &length, formatString, quality)
+	case MAGICK:
+		formatString := C.CString(o.MagickFormat)
+		defer C.free(unsafe.Pointer(formatString))
+		saveErr = C.vips_magicksave_bridge(image.c, &ptr, &length, formatString, quality)
 	default:
 		saveErr = C.vips_jpegsave_bridge(image.c, &ptr, &length, strip, quality, interlace)
 	}
@@ -801,6 +809,8 @@ func vipsAffine(input *vipsImage, residualx, residualy float64, i Interpolator, 
 	return wrapVipsImage(image), nil
 }
 
+var magickBufferMatch = regexp.MustCompile(`Magick(\d+)?Buffer$`)
+
 func vipsImageType(buf []byte) ImageType {
 	if len(buf) < 12 {
 		return UNKNOWN
@@ -839,7 +849,7 @@ func vipsImageType(buf []byte) ImageType {
 	}
 
 	// If nothing matched directly, try to fallback to imagemagick (if available).
-	if IsTypeSupported(MAGICK) && strings.HasSuffix(readImageType(buf), "MagickBuffer") {
+	if IsTypeSupported(MAGICK) && magickBufferMatch.MatchString(readImageType(buf)) {
 		return MAGICK
 	}
 

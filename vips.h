@@ -185,7 +185,7 @@ vips_type_find_save_bridge(int t) {
 	}
 #endif
 #if (VIPS_MAJOR_VERSION >= 8)
-	if (t == GIF) {
+	if (t == MAGICK) {
 		return vips_type_find("VipsOperation", "magicksave_buffer");
 	}
 #endif
@@ -472,6 +472,7 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 
 	VipsImage *base = vips_image_new();
 	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
+	g_object_ref(in);
 	t[0] = in;
 
 	// Make the mask.
@@ -562,6 +563,9 @@ int
 vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkImageOptions *o) {
 	VipsImage *base = vips_image_new();
 	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
+
+	g_object_ref(in);
+	g_object_ref(sub);
 
   // add in and sub for unreffing and later use
 	t[0] = in;

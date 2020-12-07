@@ -18,10 +18,11 @@ func TestDeterminateImageType(t *testing.T) {
 		{"test.gif", GIF},
 		{"test.pdf", PDF},
 		{"test.svg", SVG},
-		// {"test.jp2", MAGICK},
+		{"test.jp2", MAGICK},
 		{"test.heic", HEIF},
 		{"test2.heic", HEIF},
 		{"test3.heic", HEIF},
+		{"test.bmp", MAGICK},
 	}
 
 	for _, file := range files {
@@ -52,8 +53,9 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		{"test.gif", "gif", true},
 		{"test.pdf", "pdf", true},
 		{"test.svg", "svg", true},
-		// {"test.jp2", "magick"},
+		{"test.jp2", "magick", true},
 		{"test.heic", "heif", vipsVersionMin(8, 8)},
+		{"test.bmp", "magick", true},
 	}
 
 	for _, file := range files {

@@ -228,3 +228,17 @@ func TestImageTransformation_Flatten(t *testing.T) {
 		}
 	})
 }
+
+func TestImageTransformation_Save(t *testing.T) {
+	t.Run("save bitmap", func(t *testing.T) {
+		imageTrans, err := NewImageTransformation(readImage("test.bmp"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if out, err := imageTrans.Save(SaveOptions{MagickFormat: "bmp"}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			Write("testdata/transformation_save_bmp_out.bmp", out)
+		}
+	})
+}
