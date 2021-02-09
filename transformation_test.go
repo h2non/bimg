@@ -183,6 +183,38 @@ func TestImageTransformation_Embed(t *testing.T) {
 			Write("testdata/transformation_embed_bwa_red_out.png", out)
 		}
 	})
+
+	t.Run("CMYK", func(t *testing.T) {
+		imageTrans, err := NewImageTransformation(readImage("test_cmyk.jpeg"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 4 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if imageTrans.Metadata().Interpretation != InterpretationCMYK {
+			t.Fatalf("source image has unexpected interpretation (should be CMYK)")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      1000,
+			Height:     1000,
+			Extend:     ExtendBackground,
+			Background: ColorWithAlpha{Color: Color{R: 255, G: 0, B: 0}, A: 100},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 4 {
+			t.Fatalf("image should still have four channels now")
+		}
+		if imageTrans.Metadata().Interpretation != InterpretationSRGB {
+			t.Fatalf("image should be sRGB now")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			Write("testdata/transformation_embed_cmyk_on_alpha_out.jpeg", out)
+		}
+	})
 }
 
 func TestImageTransformation_Flatten(t *testing.T) {
