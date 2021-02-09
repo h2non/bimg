@@ -51,9 +51,9 @@ type vipsImage struct {
 
 // vipsSaveOptions represents the internal option used to talk with libvips.
 type vipsSaveOptions struct {
-	Speed          int
 	Quality        int
 	Compression    int
+	Speed          int // Speed defines the AVIF encoders CPU effort. Valid values are 0-8.
 	Type           ImageType
 	MagickFormat   string // Format to use when saving using the ImageType MAGICK
 	Interlace      bool
@@ -461,19 +461,13 @@ func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
 		C.remove_profile(image.c)
 	}
 
-	// Use a default interpretation and cast it to C type
-	if o.Interpretation == 0 {
-		o.Interpretation = InterpretationSRGB
-	}
-	interpretation := C.VipsInterpretation(o.Interpretation)
-
-	// Apply the proper colour space
-	if vipsColourspaceIsSupported(image) {
-		err := C.vips_colourspace_bridge(image.c, &outImage, interpretation)
-		if int(err) != 0 {
-			return nil, catchVipsError()
+	if o.Interpretation > 0 && vipsColourspaceIsSupported(image) {
+		// Apply the proper color space.
+		if newImage, err := vipsColourspace(image, o.Interpretation); err != nil {
+			return nil, err
+		} else {
+			image = newImage
 		}
-		image = wrapVipsImage(outImage)
 	}
 
 	if o.OutputICC != "" && o.InputICC != "" {
