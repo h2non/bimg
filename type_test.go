@@ -22,6 +22,7 @@ func TestDeterminateImageType(t *testing.T) {
 		{"test.heic", HEIF},
 		{"test2.heic", HEIF},
 		{"test3.heic", HEIF},
+		{"test.avif", AVIF},
 		{"test.bmp", MAGICK},
 	}
 
@@ -55,6 +56,7 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		{"test.svg", "svg", true},
 		{"test.jp2", "magick", true},
 		{"test.heic", "heif", vipsVersionMin(8, 8)},
+		{"test.avif", "avif", vipsVersionMin(8, 9)},
 		{"test.bmp", "magick", true},
 	}
 
@@ -88,6 +90,7 @@ func TestIsTypeSupported(t *testing.T) {
 		{GIF, true},
 		{PDF, true},
 		{HEIF, vipsVersionMin(8, 8)},
+		{AVIF, vipsVersionMin(8, 9)},
 	}
 
 	for _, typ := range types {
@@ -111,6 +114,7 @@ func TestIsTypeNameSupported(t *testing.T) {
 		{"gif", true, true},
 		{"pdf", true, true},
 		{"heif", true, vipsVersionMin(8, 8)},
+		{"avif", true, vipsVersionMin(8, 9)},
 	}
 
 	for _, n := range types {
@@ -137,6 +141,9 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	if vipsVersionMin(8, 8) {
 		types = append(types, struct{ name ImageType }{HEIF})
 	}
+	if VipsVersion >= "8.9.0" {
+		types = append(types, struct{ name ImageType }{AVIF})
+	}
 
 	for _, n := range types {
 		if IsTypeSupportedSave(n.name) == false {
@@ -157,6 +164,7 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"pdf", false},
 		{"tiff", vipsVersionMin(8, 5)},
 		{"heif", vipsVersionMin(8, 8)},
+		{"avif", vipsVersionMin(8, 9)},
 	}
 
 	for _, n := range types {

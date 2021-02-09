@@ -30,6 +30,8 @@ const (
 	MAGICK
 	// HEIF represents the HEIC/HEIF/HVEC image type
 	HEIF
+	// AVIF represents the AVIF image type.
+	AVIF
 )
 
 var (
@@ -47,6 +49,7 @@ var ImageTypes = map[ImageType]string{
 	PDF:    "pdf",
 	SVG:    "svg",
 	HEIF:   "heif",
+	AVIF:   "avif",
 	MAGICK: "magick",
 }
 

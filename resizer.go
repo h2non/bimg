@@ -32,7 +32,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	saveOptions := buildSaveOptions(o)
 
 	// Ensure supported type
-	if !IsTypeSupported(o.Type) {
+	if !IsTypeSupportedSave(o.Type) {
 		return nil, errors.New("unsupported image output type")
 	}
 
@@ -202,6 +202,7 @@ func buildSaveOptions(o Options) SaveOptions {
 		StripMetadata:  o.StripMetadata,
 		Lossless:       o.Lossless,
 		Palette:        o.Palette,
+		Speed:          o.Speed,
 	}
 }
 

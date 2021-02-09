@@ -51,6 +51,7 @@ type vipsImage struct {
 
 // vipsSaveOptions represents the internal option used to talk with libvips.
 type vipsSaveOptions struct {
+	Speed          int
 	Quality        int
 	Compression    int
 	Type           ImageType
@@ -217,7 +218,7 @@ func VipsIsTypeSupported(t ImageType) bool {
 		return int(C.vips_type_find_bridge(C.TIFF)) != 0
 	case MAGICK:
 		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
-	case HEIF:
+	case HEIF, AVIF:
 		return int(C.vips_type_find_bridge(C.HEIF)) != 0
 	default:
 		return false
@@ -237,7 +238,7 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 		return int(C.vips_type_find_save_bridge(C.PNG)) != 0
 	case TIFF:
 		return int(C.vips_type_find_save_bridge(C.TIFF)) != 0
-	case HEIF:
+	case HEIF, AVIF:
 		return int(C.vips_type_find_save_bridge(C.HEIF)) != 0
 	case GIF:
 		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
@@ -516,6 +517,7 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 	strip := C.int(boolToInt(o.StripMetadata))
 	lossless := C.int(boolToInt(o.Lossless))
 	palette := C.int(boolToInt(o.Palette))
+	speed := C.int(o.Speed)
 
 	if o.Type != 0 && !IsTypeSupportedSave(o.Type) {
 		return nil, fmt.Errorf("VIPS cannot save to %#v", ImageTypes[o.Type])
@@ -530,6 +532,8 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_tiffsave_bridge(image.c, &ptr, &length)
 	case HEIF:
 		saveErr = C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
+	case AVIF:
+		saveErr = C.vips_avifsave_bridge(image.c, &ptr, &length, strip, quality, lossless, speed)
 	case GIF:
 		formatString := C.CString("GIF")
 		defer C.free(unsafe.Pointer(formatString))
@@ -851,6 +855,10 @@ func vipsImageType(buf []byte) ImageType {
 	// If nothing matched directly, try to fallback to imagemagick (if available).
 	if IsTypeSupported(MAGICK) && magickBufferMatch.MatchString(readImageType(buf)) {
 		return MAGICK
+	}
+	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
+		buf[8] == 0x61 && buf[9] == 0x76 && buf[10] == 0x69 && buf[11] == 0x66 {
+		return AVIF
 	}
 
 	return UNKNOWN
