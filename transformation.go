@@ -477,13 +477,14 @@ func (it *ImageTransformation) Metadata() ImageMetadata {
 	orientation := vipsExifIntTag(it.image, Orientation)
 
 	return ImageMetadata{
-		Size:        size,
-		Channels:    int(it.image.c.Bands),
-		Orientation: orientation,
-		Alpha:       vipsHasAlpha(it.image),
-		Profile:     vipsHasProfile(it.image),
-		Space:       vipsSpace(it.image),
-		Type:        ImageTypeName(it.imageType),
+		Size:           size,
+		Channels:       int(it.image.c.Bands),
+		Orientation:    orientation,
+		Alpha:          vipsHasAlpha(it.image),
+		Profile:        vipsHasProfile(it.image),
+		Space:          vipsSpace(it.image),
+		Interpretation: vipsInterpretation(it.image),
+		Type:           ImageTypeName(it.imageType),
 		EXIF: EXIF{
 			Make:                    vipsExifStringTag(it.image, Make),
 			Model:                   vipsExifStringTag(it.image, Model),
