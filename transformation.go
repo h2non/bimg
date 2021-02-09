@@ -439,6 +439,16 @@ func (it *ImageTransformation) Gamma(gamma float64) error {
 	}
 }
 
+// Change (or enforce) the given interpretation/colorspace.
+func (it *ImageTransformation) ChangeColorspace(interpretation Interpretation) error {
+	if image, err := vipsColourspace(it.image, interpretation); err != nil {
+		return err
+	} else {
+		it.updateImage(image)
+		return nil
+	}
+}
+
 type SaveOptions vipsSaveOptions
 
 // Save the image to a buffer, encoding it in the process. If no image type
