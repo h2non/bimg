@@ -439,6 +439,16 @@ func (it *ImageTransformation) Gamma(gamma float64) error {
 	}
 }
 
+// Change (or enforce) the given interpretation/colorspace.
+func (it *ImageTransformation) ChangeColorspace(interpretation Interpretation) error {
+	if image, err := vipsColourspace(it.image, interpretation); err != nil {
+		return err
+	} else {
+		it.updateImage(image)
+		return nil
+	}
+}
+
 type SaveOptions vipsSaveOptions
 
 // Save the image to a buffer, encoding it in the process. If no image type
@@ -477,13 +487,14 @@ func (it *ImageTransformation) Metadata() ImageMetadata {
 	orientation := vipsExifIntTag(it.image, Orientation)
 
 	return ImageMetadata{
-		Size:        size,
-		Channels:    int(it.image.c.Bands),
-		Orientation: orientation,
-		Alpha:       vipsHasAlpha(it.image),
-		Profile:     vipsHasProfile(it.image),
-		Space:       vipsSpace(it.image),
-		Type:        ImageTypeName(it.imageType),
+		Size:           size,
+		Channels:       int(it.image.c.Bands),
+		Orientation:    orientation,
+		Alpha:          vipsHasAlpha(it.image),
+		Profile:        vipsHasProfile(it.image),
+		Space:          vipsSpace(it.image),
+		Interpretation: vipsInterpretation(it.image),
+		Type:           ImageTypeName(it.imageType),
 		EXIF: EXIF{
 			Make:                    vipsExifStringTag(it.image, Make),
 			Model:                   vipsExifStringTag(it.image, Model),

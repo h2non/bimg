@@ -69,15 +69,15 @@ type ImageSize struct {
 
 // ImageMetadata represents the basic metadata fields
 type ImageMetadata struct {
-	Orientation int
-	Channels    int
-	Alpha       bool
-	Profile     bool
-	Type        string
-	Space       string
-	Colourspace string
-	Size        ImageSize
-	EXIF        EXIF
+	Orientation    int
+	Channels       int
+	Alpha          bool
+	Profile        bool
+	Type           string
+	Space          string
+	Size           ImageSize
+	Interpretation Interpretation
+	EXIF           EXIF
 }
 
 // EXIF image metadata

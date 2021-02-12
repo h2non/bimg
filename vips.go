@@ -51,9 +51,9 @@ type vipsImage struct {
 
 // vipsSaveOptions represents the internal option used to talk with libvips.
 type vipsSaveOptions struct {
-	Speed          int
 	Quality        int
 	Compression    int
+	Speed          int // Speed defines the AVIF encoders CPU effort. Valid values are 0-8.
 	Type           ImageType
 	MagickFormat   string // Format to use when saving using the ImageType MAGICK
 	Interlace      bool
@@ -461,19 +461,13 @@ func vipsPreSave(image *vipsImage, o *vipsSaveOptions) (*vipsImage, error) {
 		C.remove_profile(image.c)
 	}
 
-	// Use a default interpretation and cast it to C type
-	if o.Interpretation == 0 {
-		o.Interpretation = InterpretationSRGB
-	}
-	interpretation := C.VipsInterpretation(o.Interpretation)
-
-	// Apply the proper colour space
-	if vipsColourspaceIsSupported(image) {
-		err := C.vips_colourspace_bridge(image.c, &outImage, interpretation)
-		if int(err) != 0 {
-			return nil, catchVipsError()
+	if o.Interpretation > 0 && vipsColourspaceIsSupported(image) {
+		// Apply the proper color space.
+		if newImage, err := vipsColourspace(image, o.Interpretation); err != nil {
+			return nil, err
+		} else {
+			image = newImage
 		}
-		image = wrapVipsImage(outImage)
 	}
 
 	if o.OutputICC != "" && o.InputICC != "" {
@@ -723,15 +717,18 @@ func vipsAdjustColourspaceToColour(input *vipsImage, color RGBAProvider) (*vipsI
 		result = wrapVipsImage(withAlpha)
 	}
 
-	// In case it's a grayscale image but our desired color is not grayscale, we need to convert
-	// to SRGB.
+	// In case it's a grayscale image and our desired color is also grayscale, we can keep the
+	// colorspace intact.
 	channels := input.c.Bands
-	if (channels == 1 || channels == 2) && (r != g || g != b || r != b) {
-		image, err := vipsColourspace(result, InterpretationSRGB)
-		if err != nil {
-			return nil, fmt.Errorf("cannot adjust colourspace: %w", err)
-		}
-		result = image
+	if (channels == 1 || channels == 2) && (r == g && g == b && r == b) {
+		return result, nil
+	}
+
+	// Make sure it's sRGB, since we are dealing with RGB colors. This ensures we don't
+	// accidentally work in CMYK or something even weirder instead.
+	result, err := vipsColourspace(result, InterpretationSRGB)
+	if err != nil {
+		return nil, fmt.Errorf("cannot adjust colourspace: %w", err)
 	}
 
 	return result, nil
