@@ -1,0 +1,211 @@
+diff --git a/image.go b/image.go
+index 093d5a5..aa1a45d 100644
+--- a/image.go
++++ b/image.go
+@@ -172,6 +172,12 @@ func (i *Image) Convert(t ImageType) ([]byte, error) {
+ 	return i.Process(options)
+ }
+ 
++// ConvertPage converts the specified page from a multi-page image to another format.
++func (i *Image) ConvertPage(t ImageType, page int) ([]byte, error) {
++	options := Options{Type: t, PageNum: page}
++	return i.Process(options)
++}
++
+ // Colourspace performs a color space conversion bsaed on the given interpretation.
+ func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
+ 	options := Options{Interpretation: c}
+diff --git a/image_test.go b/image_test.go
+index 5af0431..b4d9b36 100644
+--- a/image_test.go
++++ b/image_test.go
+@@ -71,6 +71,34 @@ func TestImagePdfToJpeg(t *testing.T) {
+ 	}
+ }
+ 
++func TestConvertPage(t *testing.T) {
++	i := initImage("test.gif")
++	buf, err := i.ConvertPage(JPEG, 7)
++	if err != nil {
++		t.Errorf("Cannot process the image: %#v", err)
++	}
++
++	Write("testdata/test_convert_multipage_gif.jpg", buf)
++
++	i = initImage("test.tiff")
++	buf, err = i.ConvertPage(JPEG, 0)
++	if err != nil {
++		t.Errorf("Cannot process the image: %#v", err)
++	}
++
++	Write("testdata/test_convert_multipage_tiff.jpg", buf)
++
++	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
++		i := initImage("test2.pdf")
++		buf, err := i.ConvertPage(JPEG, 0)
++		if err != nil {
++			t.Errorf("Cannot process the image: %#v", err)
++		}
++
++		Write("testdata/test_convert_multipage_pdf.jpg", buf)
++	}
++}
++
+ func TestImageSvgToJpeg(t *testing.T) {
+ 	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+ 		i := initImage("test.svg")
+diff --git a/options.go b/options.go
+index 17a1cb4..4dd873b 100644
+--- a/options.go
++++ b/options.go
+@@ -197,6 +197,7 @@ type Options struct {
+ 	Quality        int
+ 	Compression    int
+ 	Zoom           int
++	PageNum        int
+ 	Crop           bool
+ 	SmartCrop      bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
+ 	Enlarge        bool
+diff --git a/resizer.go b/resizer.go
+index 98a95ae..ed870d3 100644
+--- a/resizer.go
++++ b/resizer.go
+@@ -17,7 +17,7 @@ import (
+ func resizer(buf []byte, o Options) ([]byte, error) {
+ 	defer C.vips_thread_shutdown()
+ 
+-	image, imageType, err := loadImage(buf)
++	image, imageType, err := loadImageWithOptions(buf, o)
+ 	if err != nil {
+ 		return nil, err
+ 	}
+@@ -125,18 +125,22 @@ func resizer(buf []byte, o Options) ([]byte, error) {
+ }
+ 
+ func loadImage(buf []byte) (*C.VipsImage, ImageType, error) {
++	return loadImageWithOptions(buf, Options{})
++}
++
++func loadImageWithOptions(buf []byte, o Options) (*C.VipsImage, ImageType, error) {
+ 	if len(buf) == 0 {
+ 		return nil, JPEG, errors.New("Image buffer is empty")
+ 	}
+ 
+-	image, imageType, err := vipsRead(buf)
++	image, imageType, err := vipsReadWithOptions(buf, o)
++
+ 	if err != nil {
+ 		return nil, JPEG, err
+ 	}
+ 
+ 	return image, imageType, nil
+ }
+-
+ func applyDefaults(o Options, imageType ImageType) Options {
+ 	if o.Quality == 0 {
+ 		o.Quality = Quality
+diff --git a/testdata/test.tiff b/testdata/test.tiff
+new file mode 100644
+index 0000000..52fb893
+Binary files /dev/null and b/testdata/test.tiff differ
+diff --git a/testdata/test2.pdf b/testdata/test2.pdf
+new file mode 100644
+index 0000000..2b02e86
+Binary files /dev/null and b/testdata/test2.pdf differ
+diff --git a/testdata/test_convert_multipage.jpg b/testdata/test_convert_multipage.jpg
+new file mode 100644
+index 0000000..24d54dc
+Binary files /dev/null and b/testdata/test_convert_multipage.jpg differ
+diff --git a/testdata/test_convert_multipage_gif.jpg b/testdata/test_convert_multipage_gif.jpg
+new file mode 100644
+index 0000000..0adb0cf
+Binary files /dev/null and b/testdata/test_convert_multipage_gif.jpg differ
+diff --git a/testdata/test_convert_multipage_pdf.jpg b/testdata/test_convert_multipage_pdf.jpg
+new file mode 100644
+index 0000000..24d54dc
+Binary files /dev/null and b/testdata/test_convert_multipage_pdf.jpg differ
+diff --git a/testdata/test_convert_multipage_tiff.jpg b/testdata/test_convert_multipage_tiff.jpg
+new file mode 100644
+index 0000000..6a342ca
+Binary files /dev/null and b/testdata/test_convert_multipage_tiff.jpg differ
+diff --git a/testdata/test_multipage.tiff b/testdata/test_multipage.tiff
+new file mode 100644
+index 0000000..42f94fd
+Binary files /dev/null and b/testdata/test_multipage.tiff differ
+diff --git a/vips.go b/vips.go
+index fb17901..b081f6a 100644
+--- a/vips.go
++++ b/vips.go
+@@ -76,6 +76,10 @@ type vipsWatermarkTextOptions struct {
+ 	Font *C.char
+ }
+ 
++type vipsOptions struct {
++	PageNum C.int
++}
++
+ func init() {
+ 	Initialize()
+ }
+@@ -293,6 +297,10 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
+ }
+ 
+ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
++	return vipsReadWithOptions(buf, Options{})
++}
++
++func vipsReadWithOptions(buf []byte, o Options) (*C.VipsImage, ImageType, error) {
+ 	var image *C.VipsImage
+ 	imageType := vipsImageType(buf)
+ 
+@@ -303,7 +311,8 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
+ 	length := C.size_t(len(buf))
+ 	imageBuf := unsafe.Pointer(&buf[0])
+ 
+-	err := C.vips_init_image(imageBuf, length, C.int(imageType), &image)
++	opts := vipsOptions{PageNum: C.int(o.PageNum)}
++	err := C.vips_init_image(imageBuf, length, C.int(imageType), &image, (*C.Options)(unsafe.Pointer(&opts)))
+ 	if err != 0 {
+ 		return nil, UNKNOWN, catchVipsError()
+ 	}
+diff --git a/vips.h b/vips.h
+index 29a2e63..e95b38c 100644
+--- a/vips.h
++++ b/vips.h
+@@ -55,6 +55,10 @@ typedef struct {
+ 	float    Opacity;
+ } WatermarkImageOptions;
+ 
++typedef struct {
++	int PageNum;
++} Options;
++
+ static unsigned long
+ has_profile_embed(VipsImage *image) {
+ 	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
+@@ -348,7 +352,7 @@ vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double
+ }
+ 
+ int
+-vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
++vips_init_image (void *buf, size_t len, int imageType, VipsImage **out, Options *opts) {
+ 	int code = 1;
+ 
+ 	if (imageType == JPEG) {
+@@ -358,13 +362,13 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
+ 	} else if (imageType == WEBP) {
+ 		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+ 	} else if (imageType == TIFF) {
+-		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
++		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "page", opts->PageNum, NULL);
+ #if (VIPS_MAJOR_VERSION >= 8)
+ #if (VIPS_MINOR_VERSION >= 3)
+ 	} else if (imageType == GIF) {
+-		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
++		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "page", opts->PageNum, NULL);
+ 	} else if (imageType == PDF) {
+-		code = vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
++		code = vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "page", opts->PageNum, NULL);
+ 	} else if (imageType == SVG) {
+ 		code = vips_svgload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+ #endif

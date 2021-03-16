@@ -177,6 +177,12 @@ func (i *Image) Convert(t ImageType) ([]byte, error) {
 	return i.Process(options)
 }
 
+// ConvertPage converts the specified page from a multi-page image to another format.
+func (i *Image) ConvertPage(t ImageType, page int) ([]byte, error) {
+	options := Options{Type: t, PageNum: page}
+	return i.Process(options)
+}
+
 // Colourspace performs a color space conversion bsaed on the given interpretation.
 func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
 	options := Options{Interpretation: c}

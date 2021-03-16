@@ -71,6 +71,34 @@ func TestImagePdfToJpeg(t *testing.T) {
 	}
 }
 
+func TestConvertPage(t *testing.T) {
+	i := initImage("test.gif")
+	buf, err := i.ConvertPage(JPEG, 7)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	Write("testdata/test_convert_multipage_gif.jpg", buf)
+
+	i = initImage("test.tiff")
+	buf, err = i.ConvertPage(JPEG, 0)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	Write("testdata/test_convert_multipage_tiff.jpg", buf)
+
+	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+		i := initImage("test2.pdf")
+		buf, err := i.ConvertPage(JPEG, 0)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		Write("testdata/test_convert_multipage_pdf.jpg", buf)
+	}
+}
+
 func TestImageSvgToJpeg(t *testing.T) {
 	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
 		i := initImage("test.svg")
