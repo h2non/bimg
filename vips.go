@@ -388,8 +388,9 @@ func vipsInterpretationBuffer(buf []byte) (Interpretation, error) {
 	if err != nil {
 		return InterpretationError, err
 	}
+	interp := vipsInterpretation(image)
 	C.g_object_unref(C.gpointer(image))
-	return vipsInterpretation(image), nil
+	return interp, nil
 }
 
 func vipsInterpretation(image *C.VipsImage) Interpretation {
