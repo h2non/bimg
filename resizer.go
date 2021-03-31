@@ -69,6 +69,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	shrink := calculateShrink(factor, o.Interpolator)
 	residual := calculateResidual(factor, shrink)
 
+	fmt.Printf("size=%vx%v, factor=%v, shrink=%v, residual=%v, opts=%+v\n", inWidth, inHeight, factor, shrink, residual, o)
 	// Do not enlarge the output if the input width or height
 	// are already less than the required dimensions
 	if !o.Enlarge && !o.Force {
@@ -449,29 +450,36 @@ func shrinkImage(image *C.VipsImage, o Options, residual float64, shrink int) (*
 }
 
 func shrinkOnLoad(buf []byte, input *C.VipsImage, imageType ImageType, factor float64, shrink int) (*C.VipsImage, float64, error) {
-	var image *C.VipsImage
-	var err error
+	var (
+		image *C.VipsImage
+		err   error
+	)
+
+	if shrink < 2 {
+		return nil, 0, fmt.Errorf("only available for shrink >=2")
+	}
+
+	shrinkOnLoad := 1
+	// Recalculate integral shrink and double residual
+	switch {
+	case shrink >= 8:
+		factor = factor / 8
+		shrinkOnLoad = 8
+	case shrink >= 4:
+		factor = factor / 4
+		shrinkOnLoad = 4
+	case shrink >= 2:
+		factor = factor / 2
+		shrinkOnLoad = 2
+	}
 
 	// Reload input using shrink-on-load
-	if imageType == JPEG && shrink >= 2 {
-		shrinkOnLoad := 1
-		// Recalculate integral shrink and double residual
-		switch {
-		case shrink >= 8:
-			factor = factor / 8
-			shrinkOnLoad = 8
-		case shrink >= 4:
-			factor = factor / 4
-			shrinkOnLoad = 4
-		case shrink >= 2:
-			factor = factor / 2
-			shrinkOnLoad = 2
-		}
-
+	switch imageType {
+	case JPEG:
 		image, err = vipsShrinkJpeg(buf, input, shrinkOnLoad)
-	} else if imageType == WEBP {
-		image, err = vipsShrinkWebp(buf, input, shrink)
-	} else {
+	case WEBP:
+		image, err = vipsShrinkWebp(buf, input, shrinkOnLoad)
+	default:
 		return nil, 0, fmt.Errorf("%v doesn't support shrink on load", ImageTypeName(imageType))
 	}
 
