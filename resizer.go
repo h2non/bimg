@@ -69,7 +69,6 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	shrink := calculateShrink(factor, o.Interpolator)
 	residual := calculateResidual(factor, shrink)
 
-	fmt.Printf("size=%vx%v, factor=%v, shrink=%v, residual=%v, opts=%+v\n", inWidth, inHeight, factor, shrink, residual, o)
 	// Do not enlarge the output if the input width or height
 	// are already less than the required dimensions
 	if !o.Enlarge && !o.Force {
