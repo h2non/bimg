@@ -656,3 +656,32 @@ int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
 {
   return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
 }
+
+int
+vips_arrayjoin_bridge(VipsImage **in, VipsImage **out, int n, int across, int shim, int hspacing, int vspacing) {
+	
+	if (hspacing != 0 && vspacing != 0) {
+		return vips_arrayjoin(in, out, n, "across", across, "shim", shim, "hspacing", hspacing, "vspacing", vspacing, NULL);
+	} else if (hspacing != 0) {
+		return vips_arrayjoin(in, out, n, "across", across, "shim", shim, "hspacing", hspacing, NULL);
+	} else if (vspacing != 0) {
+		return vips_arrayjoin(in, out, n, "across", across, "shim", shim, "vspacing", vspacing, NULL);
+	}
+
+	return vips_arrayjoin(in, out, n, "across", across, "shim", shim, NULL);
+}
+
+int
+vips_mosaic_bridge(VipsImage *ref, VipsImage *sec, VipsImage **out, int direction, int xref, int yref, int xsec, int ysec) {
+	return vips_mosaic(ref, sec, out, direction, xref, yref, xsec, ysec, NULL);
+};
+
+int 
+vips_composite_bridge(VipsImage **in, VipsImage **out, int n, int *mode) {
+	return vips_composite(in, out, n, mode, NULL);
+}
+
+int 
+vips_composite2_bridge(VipsImage *base, VipsImage *overlay, VipsImage **out,	int mode) {
+	return vips_composite2(base, overlay, out, mode, NULL);
+}

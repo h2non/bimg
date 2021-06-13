@@ -830,3 +830,62 @@ func vipsGamma(image *C.VipsImage, Gamma float64) (*C.VipsImage, error) {
 	}
 	return out, nil
 }
+
+func vipsArrayJoin(images []*C.VipsImage, o ArrayJoin) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	for _, val := range images {
+		defer C.g_object_unref(C.gpointer(val))
+	}
+
+	err := C.vips_arrayjoin_bridge((**C.VipsImage)(&images[0]), &out, C.int(o.Num), C.int(o.Across), C.int(o.Shim), C.int(o.HSpacing), C.int(o.VSpacing))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
+func vipsMosaic(imageRef *C.VipsImage, imageSec *C.VipsImage, o Mosaic) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(imageRef))
+	defer C.g_object_unref(C.gpointer(imageSec))
+
+	err := C.vips_mosaic_bridge(imageRef, imageSec, &out, C.int(o.Direction), C.int(o.Xref), C.int(o.Yref), C.int(o.Xsec), C.int(o.Ysec))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
+func vipsComposite(images []*C.VipsImage, o Composite) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	for _, val := range images {
+		defer C.g_object_unref(C.gpointer(val))
+	}
+
+	var mode []C.int
+	for _, value := range o.Mode {
+		mode = append(mode, C.int(value))
+	}
+
+	err := C.vips_composite_bridge((**C.VipsImage)(&images[0]), &out, C.int(o.Num), (*C.int)(&mode[0]))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
+func vipsComposite2(base *C.VipsImage, overlay *C.VipsImage, o Composite2) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(base))
+	defer C.g_object_unref(C.gpointer(overlay))
+
+	err := C.vips_composite2_bridge(base, overlay, &out, C.int(o.Mode))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
