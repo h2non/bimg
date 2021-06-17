@@ -223,6 +223,8 @@ type Options struct {
 	Sharpen        Sharpen
 	Threshold      float64
 	Gamma          float64
+	Brightness     float64
+	Contrast       float64
 	OutputICC      string
 	InputICC       string
 	Palette        bool
