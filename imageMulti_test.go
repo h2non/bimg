@@ -7,7 +7,7 @@ import (
 func TestArrayJoin(t *testing.T) {
 	var images [][]byte
 
-	for _, file := range []string{"test.jpg","test_smart_crop.jpg", "vertical.jpg","test.jpg"} {
+	for _, file := range []string{"test.jpg","northern_cardinal_bird.jpg", "test_exif.jpg","test_bad_extract_area.jpg"} {
 		buf := initImage(file).Image()
 		images = append(images, buf)
 	}
@@ -36,7 +36,7 @@ func TestArrayJoin(t *testing.T) {
 func TestMosaic(t *testing.T) {
 	var images [][]byte
 
-	for _, file := range []string{"test.jpg","test_smart_crop.jpg"} {
+	for _, file := range []string{"test.jpg","northern_cardinal_bird.jpg"} {
 		buf := initImage(file).Image()
 		images = append(images, buf)
 	}
@@ -57,7 +57,7 @@ func TestMosaic(t *testing.T) {
 func TestComposite(t *testing.T) {
 	var images [][]byte
 
-	for _, file := range []string{"test.jpg", "test_smart_crop.jpg", "transparent.png"} {
+	for _, file := range []string{"test.jpg", "northern_cardinal_bird.jpg", "transparent.png"} {
 		buf := initImage(file).Image()
 		images = append(images, buf)
 	}

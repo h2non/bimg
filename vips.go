@@ -66,6 +66,7 @@ type vipsWatermarkOptions struct {
 	NoReplicate C.int
 	Opacity     C.float
 	Background  [3]C.double
+	Placement	CompassDirection
 }
 
 type vipsWatermarkImageOptions struct {
@@ -75,8 +76,10 @@ type vipsWatermarkImageOptions struct {
 }
 
 type vipsWatermarkTextOptions struct {
-	Text *C.char
-	Font *C.char
+	Text		*C.char
+	Font		*C.char
+	Spacing	C.int
+	Align		C.int
 }
 
 func init() {
@@ -335,10 +338,13 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 
 	text := C.CString(w.Text)
 	font := C.CString(w.Font)
-	background := [3]C.double{C.double(w.Background.R), C.double(w.Background.G), C.double(w.Background.B)}
+	spacing := C.int(w.LineSpacing)
+	align := C.int(w.TextAlign)
+	textOpts := vipsWatermarkTextOptions{text, font, spacing, align}
 
-	textOpts := vipsWatermarkTextOptions{text, font}
-	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
+	background := [3]C.double{C.double(w.Background.R), C.double(w.Background.G), C.double(w.Background.B)}
+	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), 
+		C.int(noReplicate), C.float(w.Opacity), background, w.Placement}
 
 	defer C.free(unsafe.Pointer(text))
 	defer C.free(unsafe.Pointer(font))

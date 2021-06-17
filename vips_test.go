@@ -18,6 +18,11 @@ func TestVipsRead(t *testing.T) {
 	}
 
 	for _, file := range files {
+		if !IsTypeSupported(file.expected) {
+			t.Skip("Skip test in TestVipsSave: " + ImageTypes[file.expected] + " is not supported.")
+			continue
+		}
+
 		image, imageType, _ := vipsRead(readImage(file.name))
 		if image == nil {
 			t.Fatal("Empty image")
@@ -32,6 +37,12 @@ func TestVipsSave(t *testing.T) {
 	types := [...]ImageType{JPEG, PNG, WEBP}
 
 	for _, typ := range types {
+
+		if !IsTypeSupportedSave(typ) {
+			t.Skip("Skip test in TestVipsSave: " + ImageTypes[typ] + " is not supported.")
+			continue
+		}
+
 		image, _, _ := vipsRead(readImage("test.jpg"))
 		options := vipsSaveOptions{Quality: 95, Type: typ, StripMetadata: true}
 

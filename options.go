@@ -31,6 +31,20 @@ const (
 	GravitySmart
 )
 
+type CompassDirection int
+
+const (
+	CompassCenter		CompassDirection = C.VIPS_COMPASS_DIRECTION_CENTRE
+	CompassNorth		CompassDirection = C.VIPS_COMPASS_DIRECTION_NORTH
+	CompassSouth		CompassDirection = C.VIPS_COMPASS_DIRECTION_SOUTH
+	CompassEast			CompassDirection = C.VIPS_COMPASS_DIRECTION_EAST
+	CompassWest			CompassDirection = C.VIPS_COMPASS_DIRECTION_WEST
+	CompassNorthEast	CompassDirection = C.VIPS_COMPASS_DIRECTION_NORTH_EAST
+	CompassSouthEast	CompassDirection = C.VIPS_COMPASS_DIRECTION_SOUTH_EAST
+	CompassSouthWest	CompassDirection = C.VIPS_COMPASS_DIRECTION_SOUTH_WEST
+	CompassNorthWest	CompassDirection = C.VIPS_COMPASS_DIRECTION_NORTH_WEST
+)
+
 // Interpolator represents the image interpolation value.
 type Interpolator int
 
@@ -139,9 +153,6 @@ const (
 	ExtendLast Extend = C.VIPS_EXTEND_LAST
 )
 
-// WatermarkFont defines the default watermark font to be used.
-var WatermarkFont = "sans 10"
-
 // Color represents a traditional RGB color scheme.
 type Color struct {
 	R, G, B uint8
@@ -150,16 +161,24 @@ type Color struct {
 // ColorBlack is a shortcut to black RGB color representation.
 var ColorBlack = Color{0, 0, 0}
 
+// WatermarkFont defines the default watermark font to be used.
+var WatermarkFont = "sans 10"
+
 // Watermark represents the text-based watermark supported options.
 type Watermark struct {
 	Width       int
-	DPI         int
 	Margin      int
 	Opacity     float32
 	NoReplicate bool
-	Text        string
-	Font        string
 	Background  Color
+	Placement	CompassDirection
+
+	// vips text
+	Text        string
+	DPI         int
+	Font        string
+	LineSpacing int
+	TextAlign   Align // Low == Left, High == Right
 }
 
 // WatermarkImage represents the image-based watermark supported options.
