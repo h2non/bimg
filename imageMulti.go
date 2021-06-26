@@ -122,6 +122,9 @@ func (x *ImageMulti) process(om OptionsMulti, process string) ([]byte, error) {
 
 func arrayjoin(images []*C.VipsImage, o ArrayJoin) (*C.VipsImage, error) {
 	o.Num = len(images)
+	if o.Num <= 1 {
+		return nil, errors.New("arrayjoin requires at least one image")
+	}
 	if (o.Across == 0) {
 		o.Across = o.Num
 	}

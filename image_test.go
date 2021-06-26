@@ -253,7 +253,6 @@ func TestImageWatermark(t *testing.T) {
 }
 
 func TestImageWatermark2(t *testing.T) {
-
 	options := Options{
 		Width: 800,
 		Height: 600, 
