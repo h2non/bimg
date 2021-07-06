@@ -155,7 +155,7 @@ func VipsVectorSetEnabled(enable bool) {
 		flag = 1
 	}
 
-	C.vips_vector_set_enabled(flag)
+	C.vips_vector_set_enabled(C.int(flag))
 }
 
 // VipsDebugInfo outputs to stdout libvips collected data. Useful for debugging.
