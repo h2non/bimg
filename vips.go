@@ -1,7 +1,8 @@
 package bimg
 
 /*
-#cgo pkg-config: vips
+#cgo CFLAGS: -I. -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/libpng16 -I/usr/include -I/usr/include/png
+#cgo LDFLAGS: -lvips -lgobject-2.0 -lglib-2.0
 #include "vips.h"
 */
 import "C"
