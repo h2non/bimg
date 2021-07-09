@@ -263,7 +263,7 @@ func TestNoColorProfile(t *testing.T) {
 }
 
 func TestEmbedExtendColor(t *testing.T) {
-	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: ExtendWhite, Background: Color{255, 20, 10}}
+	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: ExtendWhite, Background: Color{255, 20, 10, 255}}
 	buf, _ := Read("testdata/test_issue.jpg")
 
 	newImg, err := Resize(buf, options)
@@ -280,7 +280,7 @@ func TestEmbedExtendColor(t *testing.T) {
 }
 
 func TestEmbedExtendWithCustomColor(t *testing.T) {
-	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: 5, Background: Color{255, 20, 10}}
+	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: 5, Background: Color{255, 20, 10, 255}}
 	buf, _ := Read("testdata/test_issue.jpg")
 
 	newImg, err := Resize(buf, options)
@@ -790,7 +790,7 @@ func BenchmarkWatermarkJpeg(b *testing.B) {
 			DPI:        100,
 			Margin:     150,
 			Font:       "sans bold 12",
-			Background: Color{255, 255, 255},
+			Background: Color{255, 255, 255, 255},
 		},
 	}
 	runBenchmarkResize("test.jpg", options, b)
@@ -805,7 +805,7 @@ func BenchmarkWatermarkPng(b *testing.B) {
 			DPI:        100,
 			Margin:     150,
 			Font:       "sans bold 12",
-			Background: Color{255, 255, 255},
+			Background: Color{255, 255, 255, 255},
 		},
 	}
 	runBenchmarkResize("test.png", options, b)
@@ -820,7 +820,7 @@ func BenchmarkWatermarkWebp(b *testing.B) {
 			DPI:        100,
 			Margin:     150,
 			Font:       "sans bold 12",
-			Background: Color{255, 255, 255},
+			Background: Color{255, 255, 255, 255},
 		},
 	}
 	runBenchmarkResize("test.webp", options, b)

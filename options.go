@@ -142,13 +142,15 @@ const (
 // WatermarkFont defines the default watermark font to be used.
 var WatermarkFont = "sans 10"
 
-// Color represents a traditional RGB color scheme.
+// Color represents a traditional RGBA color scheme.
 type Color struct {
-	R, G, B uint8
+	R, G, B, A uint8
 }
 
 // ColorBlack is a shortcut to black RGB color representation.
-var ColorBlack = Color{0, 0, 0}
+var ColorBlack = Color{0x00, 0x00, 0x00, 0xFF}
+// ColorWhite is a shortcut to white RGB color representation.
+var ColorWhite = Color{0xFF, 0xFF, 0xFF, 0xFF}
 
 // Watermark represents the text-based watermark supported options.
 type Watermark struct {

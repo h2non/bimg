@@ -163,7 +163,7 @@ func TestVipsWatermark(t *testing.T) {
 		Width:      200,
 		DPI:        100,
 		Margin:     100,
-		Background: Color{255, 255, 255},
+		Background: Color{255, 255, 255, 255},
 	}
 
 	newImg, err := vipsWatermark(image, watermark)

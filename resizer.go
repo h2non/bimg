@@ -404,7 +404,9 @@ func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.Vi
 }
 
 func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsImage, error) {
-	if o.Background == ColorBlack {
+	// If the background is not opaque (alpha channel maxed), we should not flatten, as this
+	// would remove the alpha channel.
+	if o.Background.A < 0xFF {
 		return image, nil
 	}
 	return vipsFlattenBackground(image, o.Background)
