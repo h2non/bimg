@@ -246,8 +246,9 @@ func vipsExifOrientation(image *C.VipsImage) int {
 }
 
 func vipsExifShort(s string) string {
-	if strings.Contains(s, " (") {
-		return s[:strings.Index(s, "(")-1]
+	i := strings.Index(s, " (")
+	if i > 0 {
+		return s[:i]
 	}
 	return s
 }

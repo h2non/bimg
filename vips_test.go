@@ -105,8 +105,8 @@ func TestVipsAutoRotate(t *testing.T) {
 	}
 
 	files := []struct {
-		name         string
-		orientation  int
+		name        string
+		orientation int
 	}{
 		{"test.jpg", 0},
 		{"test_exif.jpg", 0},
@@ -216,6 +216,33 @@ func TestVipsMemory(t *testing.T) {
 	}
 	if mem.Allocations == 0 {
 		t.Fatal("Invalid memory allocations")
+	}
+}
+
+func TestVipsExifShort(t *testing.T) {
+	tt := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    `( ()`,
+			expected: `(`,
+		},
+		{
+			input:    ` ()`,
+			expected: ` ()`,
+		},
+		{
+			input:    `sRGB`,
+			expected: `sRGB`,
+		},
+	}
+
+	for _, tc := range tt {
+		got := vipsExifShort(tc.input)
+		if got != tc.expected {
+			t.Fatalf("expected: %s; got: %s", tc.expected, got)
+		}
 	}
 }
 
