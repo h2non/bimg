@@ -657,3 +657,13 @@ int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
 {
   return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
 }
+
+int vips_brightness_bridge(VipsImage *in, VipsImage **out, double k)
+{
+    return vips_linear1(in, out, 1.0 , k, NULL);
+}
+
+int vips_contrast_bridge(VipsImage *in, VipsImage **out, double k)
+{
+    return vips_linear1(in, out, k , 0.0, NULL);
+}
