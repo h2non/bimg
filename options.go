@@ -152,6 +152,8 @@ var ColorBlack = Color{0, 0, 0}
 
 // Watermark represents the text-based watermark supported options.
 type Watermark struct {
+	Left        int
+	Top         int
 	Width       int
 	DPI         int
 	Margin      int

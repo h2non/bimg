@@ -60,6 +60,8 @@ type vipsSaveOptions struct {
 }
 
 type vipsWatermarkOptions struct {
+	Left        C.int
+	Top         C.int
 	Width       C.int
 	DPI         C.int
 	Margin      C.int
@@ -349,8 +351,7 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	background := [3]C.double{C.double(w.Background.R), C.double(w.Background.G), C.double(w.Background.B)}
 
 	textOpts := vipsWatermarkTextOptions{text, font}
-	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
-
+	opts := vipsWatermarkOptions{C.int(w.Left), C.int(w.Top), C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
 	defer C.free(unsafe.Pointer(text))
 	defer C.free(unsafe.Pointer(font))
 
