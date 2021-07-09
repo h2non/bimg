@@ -147,6 +147,17 @@ func VipsCacheDropAll() {
 	C.vips_cache_drop_all()
 }
 
+// VipsVectorSetEnabled enables or disables SIMD vector instructions. This can give speed-up,
+// but can also be unstable on some systems and versions.
+func VipsVectorSetEnabled(enable bool) {
+	flag := 0
+	if enable {
+		flag = 1
+	}
+
+	C.vips_vector_set_enabled(C.int(flag))
+}
+
 // VipsDebugInfo outputs to stdout libvips collected data. Useful for debugging.
 func VipsDebugInfo() {
 	C.im__print_all()
