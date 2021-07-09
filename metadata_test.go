@@ -10,14 +10,19 @@ import (
 func TestSize(t *testing.T) {
 	files := []struct {
 		name   string
+		format string
 		width  int
 		height int
 	}{
-		{"test.jpg", 1680, 1050},
-		{"test.png", 400, 300},
-		{"test.webp", 550, 368},
+		{"test.jpg", "jepg", 1680, 1050},
+		{"test.png", "png", 400, 300},
+		{"test.webp", "webp", 550, 368},
 	}
 	for _, file := range files {
+		if !IsTypeNameSupported(file.format) {
+			t.Skip("Skip test in TestSize: " + file.format + " is not supported.")
+			continue
+		}
 		size, err := Size(readFile(file.name))
 		if err != nil {
 			t.Fatalf("Cannot read the image: %#v", err)
@@ -46,6 +51,11 @@ func TestMetadata(t *testing.T) {
 	}
 
 	for _, file := range files {
+		if !IsTypeNameSupported(file.format) {
+			t.Skip("Skip test in TestMetadata: " + file.format + " is not supported.")
+			continue
+		}
+
 		metadata, err := Metadata(readFile(file.name))
 		if err != nil {
 			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
@@ -71,14 +81,19 @@ func TestMetadata(t *testing.T) {
 func TestImageInterpretation(t *testing.T) {
 	files := []struct {
 		name           string
+		format         string
 		interpretation Interpretation
 	}{
-		{"test.jpg", InterpretationSRGB},
-		{"test.png", InterpretationSRGB},
-		{"test.webp", InterpretationSRGB},
+		{"test.jpg", "jpeg", InterpretationSRGB},
+		{"test.png", "png",  InterpretationSRGB},
+		{"test.webp", "webp", InterpretationSRGB},
 	}
 
 	for _, file := range files {
+		if !IsTypeNameSupported(file.format) {
+			t.Skip("Skip test in TestImageInterpretation: " + file.format + " is not supported.")
+			continue
+		}
 		interpretation, err := ImageInterpretation(readFile(file.name))
 		if err != nil {
 			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
@@ -375,13 +390,18 @@ func TestEXIF(t *testing.T) {
 func TestColourspaceIsSupported(t *testing.T) {
 	files := []struct {
 		name string
+		format string
 	}{
-		{"test.jpg"},
-		{"test.png"},
-		{"test.webp"},
+		{"test.jpg", "jpeg"},
+		{"test.png", "png"},
+		{"test.webp", "webp"},
 	}
 
 	for _, file := range files {
+		if !IsTypeNameSupported(file.format) {
+			t.Skip("Skip test in TestColourspaceIsSupported: " + file.format + " is not supported.")
+			continue
+		}
 		supported, err := ColourspaceIsSupported(readFile(file.name))
 		if err != nil {
 			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)

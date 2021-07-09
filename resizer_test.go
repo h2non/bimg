@@ -69,6 +69,11 @@ func TestResizeVerticalImage(t *testing.T) {
 	}
 
 	for _, source := range images {
+		if !IsTypeSupported(source.format) {
+			t.Skip("Skip test in TestResizeVerticalImage: " + ImageTypeName(source.format) + " is not supported.")
+			continue
+		}
+
 		for _, options := range tests {
 			image, err := Resize(source.buf, options)
 			if err != nil {
@@ -132,6 +137,11 @@ func TestResizeCustomSizes(t *testing.T) {
 	}
 
 	for _, source := range images {
+		if !IsTypeSupported(source.format) {
+			t.Skip("Skip test in TestResizeCustomSizes: " + ImageTypeName(source.format) + " is not supported.")
+			continue
+		}
+
 		for _, options := range tests {
 			image, err := Resize(source.buf, options)
 			if err != nil {
@@ -435,6 +445,11 @@ func TestConvert(t *testing.T) {
 		img.Close()
 
 		for _, format := range formats {
+			if !IsTypeSupported(format) {
+				t.Skip("Skip test in TestResizeCustomSizes: " + ImageTypeName(format) + " is not supported.")
+				continue
+			}
+
 			options := Options{Width: width, Height: height, Crop: true, Type: format}
 
 			newImg, err := Resize(buf, options)

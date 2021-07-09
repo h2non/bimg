@@ -376,6 +376,9 @@ func watermarkImageWithText(image *C.VipsImage, w Watermark) (*C.VipsImage, erro
 	} else if w.Opacity > 1 {
 		w.Opacity = 1
 	}
+	if w.LineSpacing == 0 {
+		w.LineSpacing = 10 
+	}
 
 	image, err := vipsWatermark(image, w)
 	if err != nil {
