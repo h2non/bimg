@@ -105,8 +105,8 @@ func TestVipsAutoRotate(t *testing.T) {
 	}
 
 	files := []struct {
-		name         string
-		orientation  int
+		name        string
+		orientation int
 	}{
 		{"test.jpg", 0},
 		{"test_exif.jpg", 0},
