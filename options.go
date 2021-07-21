@@ -62,11 +62,11 @@ type Angle int
 const (
 	// D0 represents the rotation angle 0 degrees.
 	D0 Angle = 0
-	// D45 represents the rotation angle 90 degrees.
+	// D45 represents the rotation angle 45 degrees.
 	D45 Angle = 45
 	// D90 represents the rotation angle 90 degrees.
 	D90 Angle = 90
-	// D135 represents the rotation angle 90 degrees.
+	// D135 represents the rotation angle 135 degrees.
 	D135 Angle = 135
 	// D180 represents the rotation angle 180 degrees.
 	D180 Angle = 180
@@ -74,7 +74,7 @@ const (
 	D235 Angle = 235
 	// D270 represents the rotation angle 270 degrees.
 	D270 Angle = 270
-	// D315 represents the rotation angle 180 degrees.
+	// D315 represents the rotation angle 315 degrees.
 	D315 Angle = 315
 )
 
@@ -227,7 +227,7 @@ type Options struct {
 	InputICC       string
 	Palette        bool
 	// Speed defines the AVIF encoders CPU effort. Valid values are 0-8.
-	Speed          int
+	Speed int
 
 	// private fields
 	autoRotateOnly bool
