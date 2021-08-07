@@ -219,6 +219,33 @@ func TestVipsMemory(t *testing.T) {
 	}
 }
 
+func TestVipsExifShort(t *testing.T) {
+	tt := []struct {
+		input    string
+		expected string
+	}{
+		{
+			input:    `( ()`,
+			expected: `(`,
+		},
+		{
+			input:    ` ()`,
+			expected: ` ()`,
+		},
+		{
+			input:    `sRGB`,
+			expected: `sRGB`,
+		},
+	}
+
+	for _, tc := range tt {
+		got := vipsExifShort(tc.input)
+		if got != tc.expected {
+			t.Fatalf("expected: %s; got: %s", tc.expected, got)
+		}
+	}
+}
+
 func readImage(file string) []byte {
 	img, _ := os.Open(path.Join("testdata", file))
 	buf, _ := ioutil.ReadAll(img)
