@@ -301,7 +301,7 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		break
 	case o.Trim:
 		background := o.Background
-		if o.TrimBackground != ColorBlack && o.Background != ColorBlack {
+		if o.TrimBackground != ColorBlack {
 			background = o.TrimBackground
 		}
 		left, top, width, height, err := vipsTrim(image, background, o.Threshold)
