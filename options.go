@@ -170,6 +170,12 @@ type WatermarkImage struct {
 	Opacity float32
 }
 
+// represents percentage of padding on an image trim extract
+type TrimPaddingPercent struct {
+	X int
+	Y int
+}
+
 // GaussianBlur represents the gaussian image transformation values.
 type GaussianBlur struct {
 	Sigma   float64
@@ -228,6 +234,10 @@ type Options struct {
 	Palette        bool
 	// Speed defines the AVIF encoders CPU effort. Valid values are 0-8.
 	Speed int
+	// color of the background when trimming an alpha based image
+	TrimBackground Color
+
+	TrimPaddingPercent
 
 	// private fields
 	autoRotateOnly bool
