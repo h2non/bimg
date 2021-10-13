@@ -575,7 +575,7 @@ func calculatePadding(inLeft, inTop, areaWidth, areaHeight, inWidth, inHeight in
 		top = int(math.Max(0, float64(inTop)-yBorder))
 		height = int(math.Min(float64(inHeight)-float64(inTop), float64(areaHeight)+2*yBorder))
 	}
-	return
+	return left, top, width, height
 }
 
 func calculateRotationAndFlip(image *C.VipsImage, angle Angle) (Angle, bool) {
