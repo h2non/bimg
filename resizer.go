@@ -300,15 +300,16 @@ func extractOrEmbedImage(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 		image, err = vipsEmbed(image, left, top, o.Width, o.Height, o.Extend, o.Background)
 		break
 	case o.Trim:
-		background := o.Background
-		if o.TrimBackground != ColorBlack {
-			background = o.TrimBackground
+		// keeps compatibility with old APIs that only use Background
+		if o.TrimBackground == ColorBlack {
+			o.TrimBackground = o.Background
 		}
-		left, top, width, height, err := vipsTrim(image, background, o.Threshold)
+		left, top, width, height, err := vipsTrim(image, o.TrimBackground, o.Threshold)
 		if err == nil {
 			if o.TrimPaddingPercent.X > 0 || o.TrimPaddingPercent.Y > 0 {
 				left, top, width, height = calculatePadding(left, top, width, height, inWidth, inHeight, o.TrimPaddingPercent)
 			}
+
 			image, err = vipsExtract(image, left, top, width, height)
 		}
 		break
@@ -560,18 +561,20 @@ func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) 
 	return left, top
 }
 
-func calculatePadding(inLeft, inTop, areaWidth, areaHeight, inWidth, inHeight int, trimPaddingPercent TrimPaddingPercent) (left int, top int, width int, height int) {
-	top = inTop
-	left = inLeft
-	width = areaWidth
-	height = areaHeight
+func calculatePadding(inLeft, inTop, areaWidth, areaHeight, inWidth, inHeight int, trimPaddingPercent TrimPaddingPercent) (int, int, int, int) {
+	top := inTop
+	left := inLeft
+	width := areaWidth
+	height := areaHeight
 	if trimPaddingPercent.X > 0 {
-		xBorder := math.Round(float64(inWidth) * float64(trimPaddingPercent.X/100))
+		paddingPercent := (float64(trimPaddingPercent.X) / 100)
+		xBorder := math.Round(float64(areaWidth) * paddingPercent)
 		left = int(math.Max(0, float64(inLeft)-xBorder))
 		width = int(math.Min(float64(inWidth)-float64(inLeft), float64(areaWidth)+2*xBorder))
 	}
 	if trimPaddingPercent.Y > 0 {
-		yBorder := math.Round(float64(inHeight) * float64(trimPaddingPercent.X/100))
+		paddingPercent := (float64(trimPaddingPercent.Y) / 100)
+		yBorder := math.Round(float64(inHeight) * paddingPercent)
 		top = int(math.Max(0, float64(inTop)-yBorder))
 		height = int(math.Min(float64(inHeight)-float64(inTop), float64(areaHeight)+2*yBorder))
 	}

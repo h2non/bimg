@@ -237,7 +237,7 @@ type Options struct {
 	// color of the background when trimming an alpha based image
 	TrimBackground Color
 
-	TrimPaddingPercent
+	TrimPaddingPercent TrimPaddingPercent
 
 	// private fields
 	autoRotateOnly bool

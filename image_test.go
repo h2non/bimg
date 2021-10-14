@@ -533,28 +533,102 @@ func TestImageTrim(t *testing.T) {
 }
 
 func TestImageTrimParameters(t *testing.T) {
+	t.Run("When trim parameters include Background", func(t *testing.T) {
+		if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+			t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
+		}
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
-		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
-	}
+		i := initImage("test.png")
+		options := Options{
+			Trim:       true,
+			Background: Color{0.0, 0.0, 0.0},
+			Threshold:  10.0,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
 
-	i := initImage("test.png")
-	options := Options{
-		Trim:       true,
-		Background: Color{0.0, 0.0, 0.0},
-		Threshold:  10.0,
-	}
-	buf, err := i.Process(options)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
+		err = assertSize(buf, 400, 257)
+		if err != nil {
+			t.Errorf("The image wasn't trimmed. %s", err)
+		}
 
-	err = assertSize(buf, 400, 257)
-	if err != nil {
-		t.Errorf("The image wasn't trimmed.")
-	}
+		Write("testdata/parameter_trim.png", buf)
+	})
+	t.Run("When trim parameters include TrimBackground Transparent PNG", func(t *testing.T) {
+		if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+			t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
+		}
 
-	Write("testdata/parameter_trim.png", buf)
+		i := initImage("transparent.png")
+		options := Options{
+			Trim:           true,
+			TrimBackground: Color{0, 0, 0},
+			Threshold:      10.0,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		err = assertSize(buf, 247, 206)
+		if err != nil {
+			t.Errorf("The image wasn't trimmed. %s", err)
+		}
+
+		Write("testdata/trim_background.png", buf)
+	})
+	t.Run("When trim parameters include TrimBackground Background JPEG", func(t *testing.T) {
+		if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+			t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
+		}
+
+		i := initImage("test_1000_yeezy_additional_photo.jpeg")
+		options := Options{
+			Trim:           true,
+			TrimBackground: Color{255, 255, 255},
+			Threshold:      20.0,
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		err = assertSize(buf, 535, 274)
+		if err != nil {
+			t.Errorf("The image wasn't trimmed. %s", err)
+		}
+
+		Write("testdata/trimmed_product_additional_photo.jpeg", buf)
+	})
+	t.Run("When trim parameters include TrimBackground Background And Padding", func(t *testing.T) {
+		if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+			t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
+		}
+
+		i := initImage("test_1000_yeezy_additional_photo.jpeg")
+		options := Options{
+			Trim:           true,
+			TrimBackground: Color{255, 255, 255},
+			Threshold:      20.0,
+			TrimPaddingPercent: TrimPaddingPercent{
+				X: 1,
+				Y: 1,
+			},
+		}
+		buf, err := i.Process(options)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		err = assertSize(buf, 545, 288)
+		if err != nil {
+			t.Errorf("The image wasn't trimmed. %s", err)
+		}
+
+		Write("testdata/trimmed_product_additional_photo_padded.jpeg", buf)
+	})
 }
 
 func TestImageLength(t *testing.T) {
