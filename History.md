@@ -42,6 +42,7 @@ v1.1.6 / 2022-01-28
   * add test
   * fix panic on reading Exif
 
+
 v1.1.5 / 2020-11-21
 ===================
 
