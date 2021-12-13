@@ -69,15 +69,15 @@ type ImageSize struct {
 
 // ImageMetadata represents the basic metadata fields
 type ImageMetadata struct {
-	Orientation int
-	Channels    int
-	Alpha       bool
-	Profile     bool
-	Type        string
-	Space       string
-	Colourspace string
-	Size        ImageSize
-	EXIF        EXIF
+	Orientation    int
+	Channels       int
+	Alpha          bool
+	Profile        bool
+	Type           string
+	Space          string
+	Size           ImageSize
+	Interpretation Interpretation
+	EXIF           EXIF
 }
 
 // EXIF image metadata
@@ -137,15 +137,14 @@ type EXIF struct {
 
 // Size returns the image size by width and height pixels.
 func Size(buf []byte) (ImageSize, error) {
-	metadata, err := Metadata(buf)
+	defer C.vips_thread_shutdown()
+
+	t, err := NewImageTransformation(buf)
 	if err != nil {
 		return ImageSize{}, err
 	}
-
-	return ImageSize{
-		Width:  int(metadata.Size.Width),
-		Height: int(metadata.Size.Height),
-	}, nil
+	defer t.Close()
+	return t.Size(), nil
 }
 
 // ColourspaceIsSupported checks if the image colourspace is supported by libvips.
@@ -163,81 +162,10 @@ func ImageInterpretation(buf []byte) (Interpretation, error) {
 func Metadata(buf []byte) (ImageMetadata, error) {
 	defer C.vips_thread_shutdown()
 
-	image, imageType, err := vipsRead(buf)
+	t, err := NewImageTransformation(buf)
 	if err != nil {
 		return ImageMetadata{}, err
 	}
-	defer C.g_object_unref(C.gpointer(image))
-
-	size := ImageSize{
-		Width:  int(image.Xsize),
-		Height: int(image.Ysize),
-	}
-
-	orientation := vipsExifIntTag(image, Orientation)
-
-	metadata := ImageMetadata{
-		Size:        size,
-		Channels:    int(image.Bands),
-		Orientation: orientation,
-		Alpha:       vipsHasAlpha(image),
-		Profile:     vipsHasProfile(image),
-		Space:       vipsSpace(image),
-		Type:        ImageTypeName(imageType),
-		EXIF: EXIF{
-			Make:                    vipsExifStringTag(image, Make),
-			Model:                   vipsExifStringTag(image, Model),
-			Orientation:             orientation,
-			XResolution:             vipsExifStringTag(image, XResolution),
-			YResolution:             vipsExifStringTag(image, YResolution),
-			ResolutionUnit:          vipsExifIntTag(image, ResolutionUnit),
-			Software:                vipsExifStringTag(image, Software),
-			Datetime:                vipsExifStringTag(image, Datetime),
-			YCbCrPositioning:        vipsExifIntTag(image, YCbCrPositioning),
-			Compression:             vipsExifIntTag(image, Compression),
-			ExposureTime:            vipsExifStringTag(image, ExposureTime),
-			FNumber:                 vipsExifStringTag(image, FNumber),
-			ExposureProgram:         vipsExifIntTag(image, ExposureProgram),
-			ISOSpeedRatings:         vipsExifIntTag(image, ISOSpeedRatings),
-			ExifVersion:             vipsExifStringTag(image, ExifVersion),
-			DateTimeOriginal:        vipsExifStringTag(image, DateTimeOriginal),
-			DateTimeDigitized:       vipsExifStringTag(image, DateTimeDigitized),
-			ComponentsConfiguration: vipsExifStringTag(image, ComponentsConfiguration),
-			ShutterSpeedValue:       vipsExifStringTag(image, ShutterSpeedValue),
-			ApertureValue:           vipsExifStringTag(image, ApertureValue),
-			BrightnessValue:         vipsExifStringTag(image, BrightnessValue),
-			ExposureBiasValue:       vipsExifStringTag(image, ExposureBiasValue),
-			MeteringMode:            vipsExifIntTag(image, MeteringMode),
-			Flash:                   vipsExifIntTag(image, Flash),
-			FocalLength:             vipsExifStringTag(image, FocalLength),
-			SubjectArea:             vipsExifStringTag(image, SubjectArea),
-			MakerNote:               vipsExifStringTag(image, MakerNote),
-			SubSecTimeOriginal:      vipsExifStringTag(image, SubSecTimeOriginal),
-			SubSecTimeDigitized:     vipsExifStringTag(image, SubSecTimeDigitized),
-			ColorSpace:              vipsExifIntTag(image, ColorSpace),
-			PixelXDimension:         vipsExifIntTag(image, PixelXDimension),
-			PixelYDimension:         vipsExifIntTag(image, PixelYDimension),
-			SensingMethod:           vipsExifIntTag(image, SensingMethod),
-			SceneType:               vipsExifStringTag(image, SceneType),
-			ExposureMode:            vipsExifIntTag(image, ExposureMode),
-			WhiteBalance:            vipsExifIntTag(image, WhiteBalance),
-			FocalLengthIn35mmFilm:   vipsExifIntTag(image, FocalLengthIn35mmFilm),
-			SceneCaptureType:        vipsExifIntTag(image, SceneCaptureType),
-			GPSLatitudeRef:          vipsExifStringTag(image, GPSLatitudeRef),
-			GPSLatitude:             vipsExifStringTag(image, GPSLatitude),
-			GPSLongitudeRef:         vipsExifStringTag(image, GPSLongitudeRef),
-			GPSLongitude:            vipsExifStringTag(image, GPSLongitude),
-			GPSAltitudeRef:          vipsExifStringTag(image, GPSAltitudeRef),
-			GPSAltitude:             vipsExifStringTag(image, GPSAltitude),
-			GPSSpeedRef:             vipsExifStringTag(image, GPSSpeedRef),
-			GPSSpeed:                vipsExifStringTag(image, GPSSpeed),
-			GPSImgDirectionRef:      vipsExifStringTag(image, GPSImgDirectionRef),
-			GPSImgDirection:         vipsExifStringTag(image, GPSImgDirection),
-			GPSDestBearingRef:       vipsExifStringTag(image, GPSDestBearingRef),
-			GPSDestBearing:          vipsExifStringTag(image, GPSDestBearing),
-			GPSDateStamp:            vipsExifStringTag(image, GPSDateStamp),
-		},
-	}
-
-	return metadata, nil
+	defer t.Close()
+	return t.Metadata(), nil
 }

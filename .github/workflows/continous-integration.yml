@@ -1,0 +1,26 @@
+name: Continous Integration
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+    paths-ignore:
+      - 'History.md'
+      - 'README.md'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        libvips: ["8.10.1", "8.10.2"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build test-executor
+        run: docker build -t h2non/bimg:ci --build-arg LIBVIPS_VERSION=${{ matrix.libvips }} .
+      - name: Run tests
+        run: docker run h2non/bimg:ci sh -c 'export LD_LIBRARY_PATH=/vips/lib:/usr/local/lib:$LD_LIBRARY_PATH; export PKG_CONFIG_PATH=/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig;  go vet . && golint . && go test -v -race -covermode=atomic -coverprofile=coverage.out'

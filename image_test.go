@@ -21,10 +21,18 @@ func TestImageResize(t *testing.T) {
 }
 
 func TestImageGifResize(t *testing.T) {
-	_, err := initImage("test.gif").Resize(300, 240)
-	if err == nil {
-		t.Errorf("GIF shouldn't be saved within VIPS")
+	buf, err := initImage("test.gif").Resize(300, 240)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+		return
 	}
+
+	err = assertSize(buf, 300, 240)
+	if err != nil {
+		t.Error(err)
+	}
+
+	Write("testdata/test_resize_out.gif", buf)
 }
 
 func TestImagePdfResize(t *testing.T) {
@@ -42,7 +50,7 @@ func TestImageSvgResize(t *testing.T) {
 }
 
 func TestImageGifToJpeg(t *testing.T) {
-	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+	if vipsVersionMin(8, 3) {
 		i := initImage("test.gif")
 		options := Options{
 			Type: JPEG,
@@ -57,7 +65,7 @@ func TestImageGifToJpeg(t *testing.T) {
 }
 
 func TestImagePdfToJpeg(t *testing.T) {
-	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+	if vipsVersionMin(8, 3) {
 		i := initImage("test.pdf")
 		options := Options{
 			Type: JPEG,
@@ -72,7 +80,7 @@ func TestImagePdfToJpeg(t *testing.T) {
 }
 
 func TestImageSvgToJpeg(t *testing.T) {
-	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+	if vipsVersionMin(8, 3) {
 		i := initImage("test.svg")
 		options := Options{
 			Type: JPEG,
@@ -346,7 +354,7 @@ func TestImageRotate(t *testing.T) {
 }
 
 func TestImageAutoRotate(t *testing.T) {
-	if VipsMajorVersion <= 8 && VipsMinorVersion < 10 {
+	if !vipsVersionMin(8, 10) {
 		t.Skip("Skip test in libvips < 8.10")
 		return
 	}
@@ -365,20 +373,22 @@ func TestImageAutoRotate(t *testing.T) {
 	}
 
 	for index, test := range tests {
-		img := initImage(test.file)
-		buf, err := img.AutoRotate()
-		if err != nil {
-			t.Errorf("Cannot process the image: %#v", err)
-		}
-		Write(fmt.Sprintf("testdata/test_autorotate_%d_out.jpg", index), buf)
+		t.Run(test.file, func(t *testing.T) {
+			img := initImage(test.file)
+			buf, err := img.AutoRotate()
+			if err != nil {
+				t.Errorf("Cannot process the image: %#v", err)
+			}
+			Write(fmt.Sprintf("testdata/test_autorotate_%d_out.jpg", index), buf)
 
-		meta, err := img.Metadata()
-		if err != nil {
-			t.Errorf("Cannot read image metadata: %#v", err)
-		}
-		if meta.Orientation != test.orientation {
-			t.Errorf("Invalid image orientation for %s: %d != %d", test.file, meta.Orientation, test.orientation)
-		}
+			meta, err := img.Metadata()
+			if err != nil {
+				t.Errorf("Cannot read image metadata: %#v", err)
+			}
+			if meta.Orientation != test.orientation {
+				t.Errorf("Invalid image orientation for %s: %d != %d", test.file, meta.Orientation, test.orientation)
+			}
+		})
 	}
 }
 
@@ -494,7 +504,7 @@ func TestFluentInterface(t *testing.T) {
 
 func TestImageSmartCrop(t *testing.T) {
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 5) {
+	if !(vipsVersionMin(8, 5)) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.5", VipsVersion)
 	}
 
@@ -514,7 +524,7 @@ func TestImageSmartCrop(t *testing.T) {
 
 func TestImageTrim(t *testing.T) {
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+	if !vipsVersionMin(8, 6) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
 	}
 
@@ -534,14 +544,14 @@ func TestImageTrim(t *testing.T) {
 
 func TestImageTrimParameters(t *testing.T) {
 
-	if !(VipsMajorVersion >= 8 && VipsMinorVersion >= 6) {
+	if !vipsVersionMin(8, 6) {
 		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
 	}
 
 	i := initImage("test.png")
 	options := Options{
 		Trim:       true,
-		Background: Color{0.0, 0.0, 0.0},
+		Background: Color{0, 0, 0},
 		Threshold:  10.0,
 	}
 	buf, err := i.Process(options)
@@ -566,6 +576,85 @@ func TestImageLength(t *testing.T) {
 	if expected != actual {
 		t.Errorf("Size in Bytes of the image doesn't correspond. %d != %d", expected, actual)
 	}
+}
+
+func TestRGBAEmbed(t *testing.T) {
+	t.Run("transparent on background", func(t *testing.T) {
+		i := initImage("transparent.png")
+		buf, err := i.Process(Options{
+			Width:      500,
+			Height:     500,
+			Enlarge:    true,
+			Embed:      true,
+			Extend:     ExtendBackground,
+			Background: ColorWithAlpha{Color{255, 255, 255}, 255},
+		})
+		if err != nil {
+			t.Errorf("The image could not be put on background: %v", err)
+		}
+
+		if metadata, err := i.Metadata(); err != nil {
+			t.Errorf("Cannot read metadata from target image: %v", err)
+		} else if metadata.Alpha {
+			t.Errorf("Target image shouldn't have an alpha channel!")
+		}
+
+		Write("testdata/transparent_on_background_out.png", buf)
+	})
+
+	t.Run("transparent on transparent", func(t *testing.T) {
+		i := initImage("transparent.png")
+		buf, err := i.Process(Options{
+			Width:      500,
+			Height:     500,
+			Enlarge:    true,
+			Embed:      true,
+			Extend:     ExtendBackground,
+			Background: ColorWithAlpha{Color{0, 0, 0}, 0},
+		})
+		if err != nil {
+			t.Errorf("The image could not be put on background: %v", err)
+		}
+
+		if metadata, err := i.Metadata(); err != nil {
+			t.Errorf("Cannot read metadata from target image: %v", err)
+		} else if !metadata.Alpha {
+			t.Errorf("Target image should have an alpha channel!")
+		}
+
+		Write("testdata/transparent_on_transparent_out.png", buf)
+	})
+
+	t.Run("opaque on transparent", func(t *testing.T) {
+		i := initImage("test.jpg")
+
+		if metadata, err := i.Metadata(); err != nil {
+			t.Fatalf("Cannot read metadata from source image: %v", err)
+		} else if metadata.Alpha {
+			t.Fatalf("Source image should not have an alpha channel.")
+		}
+
+		buf, err := i.Process(Options{
+			Type:       PNG,
+			Width:      500,
+			Height:     500,
+			Enlarge:    true,
+			Embed:      true,
+			Extend:     ExtendBackground,
+			Background: ColorWithAlpha{Color{0, 0, 0}, 0},
+		})
+		if err != nil {
+			t.Errorf("The image could not be put on background: %v", err)
+		}
+
+		if metadata, err := i.Metadata(); err != nil {
+			t.Errorf("Cannot read metadata from target image: %v", err)
+		} else if !metadata.Alpha {
+			t.Errorf("Target image should have an alpha channel!")
+		}
+
+		Write("testdata/opaque_on_transparent_out.png", buf)
+	})
 }
 
 func initImage(file string) *Image {

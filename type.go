@@ -48,9 +48,9 @@ var ImageTypes = map[ImageType]string{
 	GIF:    "gif",
 	PDF:    "pdf",
 	SVG:    "svg",
-	MAGICK: "magick",
 	HEIF:   "heif",
 	AVIF:   "avif",
+	MAGICK: "magick",
 }
 
 // imageMutex is used to provide thread-safe synchronization
