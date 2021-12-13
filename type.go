@@ -32,6 +32,8 @@ const (
 	HEIF
 	// AVIF represents the AVIF image type.
 	AVIF
+	// JP2K represents the JPEG 2000 image type.
+	JP2K
 )
 
 var (
@@ -51,6 +53,7 @@ var ImageTypes = map[ImageType]string{
 	HEIF:   "heif",
 	AVIF:   "avif",
 	MAGICK: "magick",
+	JP2K:   "jp2k",
 }
 
 // imageMutex is used to provide thread-safe synchronization

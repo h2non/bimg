@@ -35,7 +35,8 @@ enum types {
 	SVG,
 	MAGICK,
 	HEIF,
-	AVIF
+	AVIF,
+	JP2K
 };
 
 typedef struct {
@@ -164,6 +165,11 @@ vips_type_find_bridge(int t) {
 		return vips_type_find("VipsOperation", "heifload");
 	}
 #endif
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+	if (t == JP2K) {
+		return vips_type_find("VipsOperation", "jp2kload");
+	}
+#endif
 	return 0;
 }
 
@@ -189,6 +195,11 @@ vips_type_find_save_bridge(int t) {
 #if (VIPS_MAJOR_VERSION >= 8)
 	if (t == MAGICK) {
 		return vips_type_find("VipsOperation", "magicksave_buffer");
+	}
+#endif
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+	if (t == JP2K) {
+		return vips_type_find("VipsOperation", "jp2ksave_buffer");
 	}
 #endif
 	return 0;
@@ -419,12 +430,26 @@ vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len, const char *forma
 }
 
 int
+vips_jp2ksave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+	return vips_jp2ksave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"Q", quality,
+		"lossless", INT_TO_GBOOLEAN(lossless),
+		NULL
+	);
+#else
+	return 0;
+#endif
+}
+
+int
 vips_is_16bit (VipsInterpretation interpretation) {
 	return interpretation == VIPS_INTERPRETATION_RGB16 || interpretation == VIPS_INTERPRETATION_GREY16;
 }
 
 int
-vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double g, double b) {
+vips_flatten_background_bridge(VipsImage *in, VipsImage **out, double r, double g, double b) {
 	if (vips_is_16bit(in->Type)) {
 		r = 65535 * r / 255;
 		g = 65535 * g / 255;
@@ -472,6 +497,10 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 #if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9)
 	} else if (imageType == AVIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
+#if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11)
+	} else if (imageType == JP2K) {
+		code = vips_jp2kload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
 	}
 

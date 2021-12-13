@@ -274,3 +274,55 @@ func TestImageTransformation_Save(t *testing.T) {
 		}
 	})
 }
+
+func TestFormatSupport(t *testing.T) {
+	t.Run("jpeg2000", func(t *testing.T) {
+		if !vipsVersionMin(8, 11) {
+			t.Skip("requires libvips >= 8.11")
+		}
+
+		t.Run("can load", func(t *testing.T) {
+			buf, err := Read("testdata/test.jp2")
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			img, err := NewImageTransformation(buf)
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			metadata := img.Metadata()
+			if metadata.Type != "jp2k" {
+				t.Errorf("unexpected image type %q", metadata.Type)
+			}
+			if metadata.Size.Width != 1680 {
+				t.Errorf("unexpected width: %d", metadata.Size.Width)
+			}
+			if metadata.Size.Height != 1050 {
+				t.Errorf("unexpected height: %d", metadata.Size.Height)
+			}
+		})
+
+		t.Run("can save", func(t *testing.T) {
+			buf, err := Read("testdata/test.jpg")
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			img, err := NewImageTransformation(buf)
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			err = img.Resize(ResizeOptions{Width: 100})
+			if err != nil {
+				t.Fatalf("cannot resize image: %v", err)
+			}
+			outBuf, err := img.Save(SaveOptions{Type: JP2K})
+			if err != nil {
+				t.Fatalf("cannot save image: %v", err)
+			}
+			outType := vipsImageType(outBuf)
+			if outType != JP2K {
+				t.Errorf("output has unexpected type: %d", outType)
+			}
+		})
+	})
+}

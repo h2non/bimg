@@ -231,6 +231,8 @@ func VipsIsTypeSupported(t ImageType) bool {
 		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
 	case HEIF, AVIF:
 		return int(C.vips_type_find_bridge(C.HEIF)) != 0
+	case JP2K:
+		return int(C.vips_type_find_bridge(C.JP2K)) != 0
 	default:
 		return false
 	}
@@ -255,6 +257,8 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
 	case MAGICK:
 		return int(C.vips_type_find_save_bridge(C.MAGICK)) != 0
+	case JP2K:
+		return int(C.vips_type_find_save_bridge(C.JP2K)) != 0
 	default:
 		return false
 	}
@@ -441,7 +445,7 @@ func vipsFlattenBackground(image *vipsImage, background RGBAProvider) (*vipsImag
 	}
 
 	var outImage *C.VipsImage
-	err := C.vips_flatten_background_brigde(image.c, &outImage,
+	err := C.vips_flatten_background_bridge(image.c, &outImage,
 		backgroundC[0], backgroundC[1], backgroundC[2])
 	if int(err) != 0 {
 		return nil, catchVipsError()
@@ -523,6 +527,8 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case AVIF:
 		saveErr = C.vips_avifsave_bridge(image.c, &ptr, &length, strip, quality, lossless, speed)
+	case JP2K:
+		saveErr = C.vips_jp2ksave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case GIF:
 		formatString := C.CString("GIF")
 		defer C.free(unsafe.Pointer(formatString))
@@ -801,6 +807,10 @@ func vipsImageType(buf []byte) ImageType {
 		case "heic", "mif1", "msf1", "heis", "hevc":
 			return HEIF
 		}
+	}
+	if IsTypeSupported(JP2K) && (bytes.HasPrefix(buf, []byte{0x0, 0x0, 0x0, 0xC, 0x6A, 0x50, 0x20, 0x20, 0xD, 0xA, 0x87, 0xA}) ||
+		bytes.HasPrefix(buf, []byte{0xFF, 0x4F, 0xFF, 0x51})) {
+		return JP2K
 	}
 
 	// If nothing matched directly, try to fallback to imagemagick (if available).
