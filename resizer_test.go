@@ -32,7 +32,7 @@ func TestResize(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_out.jpg", newImg)
+	_ = Write("testdata/test_out.jpg", newImg)
 }
 
 func formatOptions(o Options) string {
@@ -108,7 +108,7 @@ func TestResizeVerticalImage(t *testing.T) {
 						t.Fatalf("Invalid width: %d", size.Width)
 					}
 
-					Write(
+					_ = Write(
 						fmt.Sprintf(
 							"testdata/test_vertical_%dx%d_out.%s",
 							options.Width,
@@ -187,7 +187,7 @@ func TestResizePrecision(t *testing.T) {
 	// see https://github.com/h2non/bimg/issues/99
 	img := image.NewGray16(image.Rect(0, 0, 1920, 1080))
 	input := &bytes.Buffer{}
-	jpeg.Encode(input, img, nil)
+	_ = jpeg.Encode(input, img, nil)
 
 	opts := Options{Width: 300}
 	newImg, err := Resize(input.Bytes(), opts)
@@ -219,7 +219,7 @@ func TestRotate(t *testing.T) {
 		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_rotate_out.jpg", newImg)
+	_ = Write("testdata/test_rotate_out.jpg", newImg)
 }
 
 func TestInvalidRotateDegrees(t *testing.T) {
@@ -240,7 +240,7 @@ func TestInvalidRotateDegrees(t *testing.T) {
 		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_rotate_invalid_out.jpg", newImg)
+	_ = Write("testdata/test_rotate_invalid_out.jpg", newImg)
 }
 
 func TestCorruptedImage(t *testing.T) {
@@ -261,7 +261,7 @@ func TestCorruptedImage(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_corrupt_out.jpg", newImg)
+	_ = Write("testdata/test_corrupt_out.jpg", newImg)
 }
 
 func TestNoColorProfile(t *testing.T) {
@@ -274,6 +274,9 @@ func TestNoColorProfile(t *testing.T) {
 	}
 
 	metadata, err := Metadata(newImg)
+	if err != nil {
+		t.Fatalf("cannot get metadata: %v", err)
+	}
 	if metadata.Profile == true {
 		t.Fatal("Invalid profile data")
 	}
@@ -298,7 +301,7 @@ func TestEmbedExtendColor(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extend_white_out.jpg", newImg)
+	_ = Write("testdata/test_extend_white_out.jpg", newImg)
 }
 
 func TestEmbedExtendWithCustomColor(t *testing.T) {
@@ -315,7 +318,7 @@ func TestEmbedExtendWithCustomColor(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extend_background_out.jpg", newImg)
+	_ = Write("testdata/test_extend_background_out.jpg", newImg)
 }
 
 func TestGaussianBlur(t *testing.T) {
@@ -332,7 +335,7 @@ func TestGaussianBlur(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_gaussian_out.jpg", newImg)
+	_ = Write("testdata/test_gaussian_out.jpg", newImg)
 }
 
 func TestSharpen(t *testing.T) {
@@ -349,7 +352,7 @@ func TestSharpen(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_sharpen_out.jpg", newImg)
+	_ = Write("testdata/test_sharpen_out.jpg", newImg)
 }
 
 func TestExtractWithDefaultAxis(t *testing.T) {
@@ -366,7 +369,7 @@ func TestExtractWithDefaultAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extract_defaults_out.jpg", newImg)
+	_ = Write("testdata/test_extract_defaults_out.jpg", newImg)
 }
 
 func TestExtractCustomAxis(t *testing.T) {
@@ -383,7 +386,7 @@ func TestExtractCustomAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extract_custom_axis_out.jpg", newImg)
+	_ = Write("testdata/test_extract_custom_axis_out.jpg", newImg)
 }
 
 func TestExtractOrEmbedImage(t *testing.T) {
@@ -502,7 +505,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	Write("testdata/transparent_out.png", newImg)
+	_ = Write("testdata/transparent_out.png", newImg)
 }
 
 func TestRotationAndFlip(t *testing.T) {
@@ -561,7 +564,7 @@ func TestRotationAndFlip(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+			_ = Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
 		})
 	}
 }
@@ -685,7 +688,7 @@ func runBenchmarkResize(file string, o Options, b *testing.B) {
 	buf, _ := Read(path.Join("testdata", file))
 
 	for n := 0; n < b.N; n++ {
-		Resize(buf, o)
+		_, _ = Resize(buf, o)
 	}
 }
 

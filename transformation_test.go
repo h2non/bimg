@@ -79,7 +79,7 @@ func TestImageTransformation_Resize(t *testing.T) {
 			if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
 				t.Errorf("cannot save image: %v", err)
 			} else {
-				Write(fmt.Sprintf("testdata/transformation_resize_%s_out.jpeg", name), out)
+				_ = Write(fmt.Sprintf("testdata/transformation_resize_%s_out.jpeg", name), out)
 			}
 		})
 	}
@@ -100,7 +100,7 @@ func TestImageTransformation_Resize(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_resize_upscale_out.jpeg", out)
+			_ = Write("testdata/transformation_resize_upscale_out.jpeg", out)
 		}
 	})
 }
@@ -128,7 +128,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_embed_bw_grey_out.png", out)
+			_ = Write("testdata/transformation_embed_bw_grey_out.png", out)
 		}
 	})
 
@@ -154,7 +154,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_embed_bwa_grey_out.png", out)
+			_ = Write("testdata/transformation_embed_bwa_grey_out.png", out)
 		}
 	})
 
@@ -180,7 +180,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_embed_bwa_red_out.png", out)
+			_ = Write("testdata/transformation_embed_bwa_red_out.png", out)
 		}
 	})
 
@@ -212,7 +212,7 @@ func TestImageTransformation_Embed(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_embed_cmyk_on_alpha_out.jpeg", out)
+			_ = Write("testdata/transformation_embed_cmyk_on_alpha_out.jpeg", out)
 		}
 	})
 }
@@ -235,7 +235,7 @@ func TestImageTransformation_Flatten(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_flatten_bwa_out.png", out)
+			_ = Write("testdata/transformation_flatten_bwa_out.png", out)
 		}
 	})
 
@@ -256,7 +256,7 @@ func TestImageTransformation_Flatten(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_flatten_bwa_on_red_out.png", out)
+			_ = Write("testdata/transformation_flatten_bwa_on_red_out.png", out)
 		}
 	})
 }
@@ -270,7 +270,7 @@ func TestImageTransformation_Save(t *testing.T) {
 		if out, err := imageTrans.Save(SaveOptions{MagickFormat: "bmp"}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
-			Write("testdata/transformation_save_bmp_out.bmp", out)
+			_ = Write("testdata/transformation_save_bmp_out.bmp", out)
 		}
 	})
 }

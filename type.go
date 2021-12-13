@@ -10,7 +10,7 @@ import (
 type ImageType int
 
 const (
-	// UNKNOWN represents an unknow image type value.
+	// UNKNOWN represents an unknown image type value.
 	UNKNOWN ImageType = iota
 	// JPEG represents the JPEG image type.
 	JPEG
@@ -35,7 +35,7 @@ const (
 )
 
 var (
-	htmlCommentRegex = regexp.MustCompile("(?i)<!--([\\s\\S]*?)-->")
+	htmlCommentRegex = regexp.MustCompile(`(?i)<!--([\s\S]*?)-->`)
 	svgRegex         = regexp.MustCompile(`(?i)^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
 )
 

@@ -162,7 +162,6 @@ func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
 	default:
 		opts.Width = inWidth
 		opts.Height = inHeight
-		break
 	}
 
 	return factor

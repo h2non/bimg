@@ -320,22 +320,6 @@ func vipsAutoRotate(image *vipsImage) (*vipsImage, error) {
 	return wrapVipsImage(out), nil
 }
 
-func vipsTransformICC(image *vipsImage, inputICC string, outputICC string) (*vipsImage, error) {
-	var out *C.VipsImage
-
-	outputIccPath := C.CString(outputICC)
-	defer C.free(unsafe.Pointer(outputIccPath))
-	inputIccPath := C.CString(inputICC)
-	defer C.free(unsafe.Pointer(inputIccPath))
-	err := C.vips_icc_transform_with_default_bridge(image.c, &out, outputIccPath, inputIccPath)
-	//err := C.vips_icc_transform_bridge2(image, &outImage, outputIccPath, inputIccPath)
-	if int(err) != 0 {
-		return nil, catchVipsError()
-	}
-
-	return wrapVipsImage(out), nil
-}
-
 func vipsFlip(image *vipsImage, direction Direction) (*vipsImage, error) {
 	var out *C.VipsImage
 
@@ -375,8 +359,7 @@ func vipsWatermark(image *vipsImage, w Watermark) (*vipsImage, error) {
 		r, g, b, _ = w.Background.RGBA()
 	}
 
-	var background [3]C.double
-	background = [3]C.double{C.double(r), C.double(g), C.double(b)}
+	background := [3]C.double{C.double(r), C.double(g), C.double(b)}
 
 	textOpts := vipsWatermarkTextOptions{text, font}
 	opts := vipsWatermarkOptions{C.int(w.Width), C.int(w.DPI), C.int(w.Margin), C.int(noReplicate), C.float(w.Opacity), background}
@@ -563,47 +546,6 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 	C.vips_error_clear()
 
 	return buf, nil
-}
-
-func getImageBuffer(image *vipsImage, imageType ImageType) ([]byte, error) {
-	if imageType != JPEG && imageType != HEIF && imageType != PNG {
-		return nil, fmt.Errorf("retrieving buffer not supported for the given type")
-	}
-
-	var ptr unsafe.Pointer
-	length := C.size_t(0)
-	err := C.int(0)
-
-	switch imageType {
-	case JPEG:
-		strip := C.int(1)
-		quality := C.int(100)
-		interlace := C.int(0)
-		err = C.vips_jpegsave_bridge(image.c, &ptr, &length, strip, quality, interlace)
-	case HEIF:
-		strip := C.int(1)
-		quality := C.int(100)
-		lossless := C.int(1)
-		C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
-	case PNG:
-		strip := C.int(1)
-		compression := C.int(7)
-		quality := C.int(100)
-		interlace := C.int(0)
-		palette := C.int(0)
-		err = C.vips_pngsave_bridge(image.c, &ptr, &length, strip, compression, quality, interlace, palette)
-	default:
-		return nil, fmt.Errorf("retrieving buffer not supported for the given type")
-	}
-
-	if int(err) != 0 {
-		return nil, catchVipsError()
-	}
-
-	defer C.g_free(C.gpointer(ptr))
-	defer C.vips_error_clear()
-
-	return C.GoBytes(ptr, C.int(length)), nil
 }
 
 func vipsExtract(image *vipsImage, left, top, width, height int) (*vipsImage, error) {

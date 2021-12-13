@@ -210,7 +210,7 @@ func transformImage(image *vipsImage, o ResizeOptions, shrink int, residual floa
 	var err error
 	// Use vips_shrink with the integral reduction
 	if shrink > 1 {
-		image, residual, err = shrinkImage(image, o, residual, shrink)
+		image, residual, err = shrinkImage(image, o, shrink)
 		if err != nil {
 			return nil, err
 		}
@@ -316,7 +316,7 @@ func watermarkImageWithText(image *vipsImage, w Watermark) (*vipsImage, error) {
 		w.Font = WatermarkFont
 	}
 	if w.Width == 0 {
-		w.Width = int(math.Floor(float64(image.c.Xsize / 6)))
+		w.Width = int(image.c.Xsize) / 6
 	}
 	if w.DPI == 0 {
 		w.DPI = 150
@@ -370,11 +370,8 @@ func shouldFlatten(o Options) bool {
 	// If an alpha channel is set, but is not full opacity, we should not flatten, since it would
 	// purge the alpha channel.
 	_, _, _, a := o.Background.RGBA()
-	if a < 0xFF {
-		return false
-	}
 
-	return true
+	return a == 0xFF
 }
 
 func zoomImage(image *vipsImage, zoom int) (*vipsImage, error) {
@@ -384,7 +381,7 @@ func zoomImage(image *vipsImage, zoom int) (*vipsImage, error) {
 	return vipsZoom(image, zoom+1)
 }
 
-func shrinkImage(image *vipsImage, o ResizeOptions, residual float64, shrink int) (*vipsImage, float64, error) {
+func shrinkImage(image *vipsImage, o ResizeOptions, shrink int) (*vipsImage, float64, error) {
 	// Use vips_shrink with the integral reduction
 	image, err := vipsShrink(image, shrink)
 	if err != nil {
@@ -395,6 +392,7 @@ func shrinkImage(image *vipsImage, o ResizeOptions, residual float64, shrink int
 	residualx := float64(o.Width) / float64(image.c.Xsize)
 	residualy := float64(o.Height) / float64(image.c.Ysize)
 
+	var residual float64
 	if o.Mode == ResizeModeFit {
 		residual = math.Max(residualx, residualy)
 	} else {
@@ -479,28 +477,25 @@ func calculateRotationAndFlip(image *vipsImage, angle Angle) (Angle, bool) {
 	switch vipsExifOrientation(image) {
 	case 6:
 		rotate = D90
-		break
 	case 3:
 		rotate = D180
-		break
 	case 8:
 		rotate = D270
-		break
 	case 2:
 		flip = true
-		break // flip 1
+		// flip 1
 	case 7:
 		flip = true
 		rotate = D270
-		break // flip 6
+		// flip 6
 	case 4:
 		flip = true
 		rotate = D180
-		break // flip 3
+		// flip 3
 	case 5:
 		flip = true
 		rotate = D90
-		break // flip 8
+		// flip 8
 	}
 
 	return rotate, flip
