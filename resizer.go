@@ -398,9 +398,9 @@ func shrinkOnLoad(buf []byte, imageType ImageType, factor float64, shrink float6
 
 func roundFloat(f float64) int {
 	if f < 0 {
-		return int(math.Ceil(f))
+		return int(math.Ceil(f - 0.5))
 	}
-	return int(math.Floor(f))
+	return int(math.Floor(f + 0.5))
 }
 
 func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) (int, int) {

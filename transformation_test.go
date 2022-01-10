@@ -22,7 +22,7 @@ func TestImageTransformation_Resize(t *testing.T) {
 			mode:     ResizeModeFit,
 			width:    300,
 			height:   400,
-			expected: ImageSize{300, 187},
+			expected: ImageSize{300, 188},
 		},
 		{
 			mode:     ResizeModeFit,
