@@ -633,10 +633,10 @@ func vipsShrinkWebp(buf []byte, shrink int) (*vipsImage, error) {
 	return wrapVipsImage(image), nil
 }
 
-func vipsShrink(input *vipsImage, shrink int) (*vipsImage, error) {
+func vipsShrink(input *vipsImage, shrink float64) (*vipsImage, error) {
 	var image *C.VipsImage
 
-	err := C.vips_shrink_bridge(input.c, &image, C.double(float64(shrink)), C.double(float64(shrink)))
+	err := C.vips_shrink_bridge(input.c, &image, C.double(shrink), C.double(shrink))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -648,6 +648,16 @@ func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage,
 	var image *C.VipsImage
 
 	err := C.vips_reduce_bridge(input.c, &image, C.double(xshrink), C.double(yshrink))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return wrapVipsImage(image), nil
+}
+
+func vipsResize(input *vipsImage, xscale, yscale float64) (*vipsImage, error) {
+	var image *C.VipsImage
+	err := C.vips_resize_bridge(input.c, &image, C.double(xscale), C.double(yscale))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

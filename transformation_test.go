@@ -110,7 +110,7 @@ func TestImageTransformation_Resize(t *testing.T) {
 				if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
 					t.Errorf("cannot save image: %v", err)
 				} else {
-					_ = Write(fmt.Sprintf("testdata/transformation_resize_%s_out.jpeg", name), out)
+					_ = Write(fmt.Sprintf("testdata/transformation_resize_tainted_%s_out.jpeg", name), out)
 				}
 			})
 		}

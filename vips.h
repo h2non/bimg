@@ -135,6 +135,11 @@ vips_reduce_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrin
 }
 
 int
+vips_resize_bridge(VipsImage *in, VipsImage **out, double xscale, double yscale) {
+	return vips_resize(in, out, xscale, "vscale", yscale, NULL);
+}
+
+int
 vips_type_find_bridge(int t) {
 	if (t == GIF) {
 		return vips_type_find("VipsOperation", "gifload");

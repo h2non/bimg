@@ -136,7 +136,14 @@ func resizeIfNecessary(t *ImageTransformation, o Options) error {
 		resizeMode = ResizeModeForce
 	case o.Crop, o.Embed, o.Trim:
 		resizeMode = ResizeModeFitUp
-	case o.Zoom > 0, o.Left > 0, o.Top > 0, o.AreaHeight > 0, o.AreaWidth > 0:
+	case o.Zoom > 0:
+		resizeMode = ResizeModeFit
+		if o.Width == 0 && o.Height == 0 {
+			size := t.Size()
+			o.Width = size.Width * (o.Zoom + 1)
+			o.Height = size.Height * (o.Zoom + 1)
+		}
+	case o.Left > 0, o.Top > 0, o.AreaHeight > 0, o.AreaWidth > 0:
 		resizeMode = ResizeModeFit
 	default:
 		resizeMode = ResizeModeForce
@@ -206,35 +213,11 @@ func buildSaveOptions(o Options) SaveOptions {
 	}
 }
 
-func transformImage(image *vipsImage, o ResizeOptions, shrink int, residual float64) (*vipsImage, error) {
-	var err error
-	// Use vips_shrink with the integral reduction
-	if shrink > 1 {
-		image, residual, err = shrinkImage(image, o, shrink)
-		if err != nil {
-			return nil, err
-		}
-	}
+func resizeImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) {
+	xscale := float64(o.Width) / float64(image.c.Xsize)
+	yscale := float64(o.Height) / float64(image.c.Ysize)
 
-	residualx, residualy := residual, residual
-	if o.Mode == ResizeModeForce {
-		residualx = float64(o.Width) / float64(image.c.Xsize)
-		residualy = float64(o.Height) / float64(image.c.Ysize)
-	}
-
-	if o.Mode == ResizeModeForce || residual != 0 {
-		if residualx < 1 && residualy < 1 {
-			image, err = vipsReduce(image, 1/residualx, 1/residualy)
-		} else {
-			// TODO extend configurable?
-			image, err = vipsAffine(image, residualx, residualy, o.Interpolator, ExtendBlack)
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return image, nil
+	return vipsResize(image, xscale, yscale)
 }
 
 func extractOrEmbedImage(it *ImageTransformation, o Options) error {
@@ -381,46 +364,22 @@ func zoomImage(image *vipsImage, zoom int) (*vipsImage, error) {
 	return vipsZoom(image, zoom+1)
 }
 
-func shrinkImage(image *vipsImage, o ResizeOptions, shrink int) (*vipsImage, float64, error) {
-	// Use vips_shrink with the integral reduction
-	image, err := vipsShrink(image, shrink)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// Recalculate residual float based on dimensions of required vs shrunk images
-	residualx := float64(o.Width) / float64(image.c.Xsize)
-	residualy := float64(o.Height) / float64(image.c.Ysize)
-
-	var residual float64
-	if o.Mode == ResizeModeFit {
-		residual = math.Max(residualx, residualy)
-	} else {
-		residual = math.Min(residualx, residualy)
-	}
-
-	return image, residual, nil
-}
-
-func shrinkOnLoad(buf []byte, imageType ImageType, factor float64, shrink int) (*vipsImage, float64, error) {
+func shrinkOnLoad(buf []byte, imageType ImageType, factor float64, shrink float64) (*vipsImage, error) {
 	var image *vipsImage
 	var err error
 
 	if shrink < 2 {
-		return nil, 0, fmt.Errorf("only available for shrink >=2")
+		return nil, fmt.Errorf("only available for shrink >=2")
 	}
 
 	shrinkOnLoad := 1
 	// Recalculate integral shrink and double residual
 	switch {
 	case shrink >= 8:
-		factor = factor / 8
 		shrinkOnLoad = 8
 	case shrink >= 4:
-		factor = factor / 4
 		shrinkOnLoad = 4
 	case shrink >= 2:
-		factor = factor / 2
 		shrinkOnLoad = 2
 	}
 
@@ -431,17 +390,17 @@ func shrinkOnLoad(buf []byte, imageType ImageType, factor float64, shrink int) (
 	case WEBP:
 		image, err = vipsShrinkWebp(buf, shrinkOnLoad)
 	default:
-		return nil, 0, fmt.Errorf("%v doesn't support shrink on load", ImageTypeName(imageType))
+		return nil, fmt.Errorf("%v doesn't support shrink on load", ImageTypeName(imageType))
 	}
 
-	return image, factor, err
+	return image, err
 }
 
 func roundFloat(f float64) int {
 	if f < 0 {
-		return int(math.Ceil(f - 0.5))
+		return int(math.Ceil(f))
 	}
-	return int(math.Floor(f + 0.5))
+	return int(math.Floor(f))
 }
 
 func calculateCrop(inWidth, inHeight, outWidth, outHeight int, gravity Gravity) (int, int) {
@@ -501,7 +460,7 @@ func calculateRotationAndFlip(image *vipsImage, angle Angle) (Angle, bool) {
 	return rotate, flip
 }
 
-func calculateShrink(factor float64, i Interpolator) int {
+func calculateShrink(factor float64, i Interpolator) float64 {
 	var shrink float64
 
 	// Calculate integral box shrink
@@ -513,11 +472,7 @@ func calculateShrink(factor float64, i Interpolator) int {
 		shrink = math.Floor(factor)
 	}
 
-	return int(math.Max(shrink, 1))
-}
-
-func calculateResidual(factor float64, shrink int) float64 {
-	return float64(shrink) / factor
+	return math.Max(shrink, 1)
 }
 
 func getAngle(angle Angle) Angle {

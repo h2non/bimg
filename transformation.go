@@ -190,7 +190,6 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	// image calculations
 	factor := calculateResizeFactor(&opts, inWidth, inHeight)
 	shrink := calculateShrink(factor, opts.Interpolator)
-	residual := calculateResidual(factor, shrink)
 
 	// Try to use libjpeg/libwebp shrink-on-load, if the buffer is still usable.
 	// If we performed "destructive" transformations already, this will no longer
@@ -200,15 +199,12 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	supportsShrinkOnLoad := !it.bufTainted && (isShrinkableWebP || isShrinkableJpeg)
 
 	if supportsShrinkOnLoad && shrink >= 2 {
-		tmpImage, factor, err := shrinkOnLoad(it.buf, it.imageType, factor, shrink)
+		tmpImage, err := shrinkOnLoad(it.buf, it.imageType, factor, shrink)
 		if err != nil {
 			return fmt.Errorf("cannot shrink-on-load: %w", err)
 		}
 
 		it.updateImage(tmpImage)
-		factor = math.Max(factor, 1.0)
-		shrink = int(math.Floor(factor))
-		residual = float64(shrink) / factor
 	}
 
 	// Zoom image, if necessary
@@ -219,7 +215,7 @@ func (it *ImageTransformation) Resize(opts ResizeOptions) error {
 	}
 
 	// Transform image, if necessary
-	if image, err := transformImage(it.image, opts, shrink, residual); err != nil {
+	if image, err := resizeImage(it.image, opts); err != nil {
 		return err
 	} else {
 		it.updateImage(image)
