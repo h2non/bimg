@@ -105,11 +105,6 @@ vips_enable_cache_set_trace() {
 }
 
 int
-vips_affine_interpolator(VipsImage *in, VipsImage **out, double a, double b, double c, double d, VipsInterpolate *interpolator, int extend) {
-	return vips_affine(in, out, a, b, c, d, "interpolate", interpolator, "extend", extend, NULL);
-}
-
-int
 vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
 	return vips_jpegload_buffer(buf, len, out, "shrink", shrink, NULL);
 }
@@ -122,16 +117,6 @@ vips_webpload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) 
 int
 vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
 	return vips_flip(in, out, direction, NULL);
-}
-
-int
-vips_shrink_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink) {
-	return vips_shrink(in, out, xshrink, yshrink, NULL);
-}
-
-int
-vips_reduce_bridge(VipsImage *in, VipsImage **out, double xshrink, double yshrink) {
-	return vips_reduce(in, out, xshrink, yshrink, NULL);
 }
 
 int

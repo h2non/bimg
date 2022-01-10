@@ -633,28 +633,6 @@ func vipsShrinkWebp(buf []byte, shrink int) (*vipsImage, error) {
 	return wrapVipsImage(image), nil
 }
 
-func vipsShrink(input *vipsImage, shrink float64) (*vipsImage, error) {
-	var image *C.VipsImage
-
-	err := C.vips_shrink_bridge(input.c, &image, C.double(shrink), C.double(shrink))
-	if err != 0 {
-		return nil, catchVipsError()
-	}
-
-	return wrapVipsImage(image), nil
-}
-
-func vipsReduce(input *vipsImage, xshrink float64, yshrink float64) (*vipsImage, error) {
-	var image *C.VipsImage
-
-	err := C.vips_reduce_bridge(input.c, &image, C.double(xshrink), C.double(yshrink))
-	if err != 0 {
-		return nil, catchVipsError()
-	}
-
-	return wrapVipsImage(image), nil
-}
-
 func vipsResize(input *vipsImage, xscale, yscale float64) (*vipsImage, error) {
 	var image *C.VipsImage
 	err := C.vips_resize_bridge(input.c, &image, C.double(xscale), C.double(yscale))
@@ -753,26 +731,6 @@ func vipsEmbed(input *vipsImage, left, top, width, height int, extend Extend, ba
 
 	err := C.vips_embed_bridge(input.c, &image, C.int(left), C.int(top), C.int(width),
 		C.int(height), C.int(extend), vipsBackground)
-	if err != 0 {
-		return nil, catchVipsError()
-	}
-
-	return wrapVipsImage(image), nil
-}
-
-func vipsAffine(input *vipsImage, residualx, residualy float64, i Interpolator, extend Extend) (*vipsImage, error) {
-	if extend > 5 {
-		extend = ExtendBackground
-	}
-
-	var image *C.VipsImage
-	cstring := C.CString(i.String())
-	interpolator := C.vips_interpolate_new(cstring)
-
-	defer C.free(unsafe.Pointer(cstring))
-	defer C.g_object_unref(C.gpointer(interpolator))
-
-	err := C.vips_affine_interpolator(input.c, &image, C.double(residualx), 0, 0, C.double(residualy), interpolator, C.int(extend))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
