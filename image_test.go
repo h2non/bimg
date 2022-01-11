@@ -21,9 +21,18 @@ func TestImageResize(t *testing.T) {
 }
 
 func TestImageGifResize(t *testing.T) {
-	_, err := initImage("test.gif").Resize(300, 240)
-	if err == nil {
-		t.Errorf("GIF shouldn't be saved within VIPS")
+	if VipsMajorVersion >= 8 && VipsMinorVersion >= 12 {
+		buf, err := initImage("test.gif").Resize(300, 240)
+		if err != nil {
+			t.Errorf("Cannot process the image: %#v", err)
+		}
+
+		err = assertSize(buf, 300, 240)
+		if err != nil {
+			t.Error(err)
+		}
+
+		Write("testdata/test_resize_out.gif", buf)
 	}
 }
 

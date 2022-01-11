@@ -125,7 +125,7 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	types := []struct {
 		name ImageType
 	}{
-		{JPEG}, {PNG}, {WEBP},
+		{JPEG}, {PNG}, {WEBP}, {GIF},
 	}
 	if VipsVersion >= "8.5.0" {
 		types = append(types, struct{ name ImageType }{TIFF})
@@ -135,6 +135,9 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	}
 	if VipsVersion >= "8.9.0" {
 		types = append(types, struct{ name ImageType }{AVIF})
+	}
+	if VipsVersion >= "8.12.0" {
+		types = append(types, struct{ name ImageType }{GIF})
 	}
 
 	for _, n := range types {
@@ -152,11 +155,11 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"jpeg", true},
 		{"png", true},
 		{"webp", true},
-		{"gif", false},
 		{"pdf", false},
 		{"tiff", VipsVersion >= "8.5.0"},
 		{"heif", VipsVersion >= "8.8.0"},
 		{"avif", VipsVersion >= "8.9.0"},
+		{"gif", VipsVersion >= "8.12.0"},
 	}
 
 	for _, n := range types {
