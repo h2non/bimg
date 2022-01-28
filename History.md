@@ -1,4 +1,23 @@
 
+v1.1.6 / 2022-01-28
+===================
+
+  * Update README.md
+  * Merge pull request #368 from exaring/fix-shrinking-on-small-webp-images
+  * Merge pull request #360 from jaberwoky/master
+  * Merge pull request #378 from kyfk/fix_typo_and_format
+  * goimports
+  * fix typo in comments
+  * Merge pull request #377 from ZloyDyadka/vector-flag
+  * Vips: cast go.int to c.INT in VipsVectorSetEnabled
+  * Vips: add VipsVectorSetEnabled
+  * Remove debug output
+  * Fix for blurry images from WEBP input and small output dimensions
+  * Merge pull request #367 from Keruspe/segv
+  * unref the image *after* we used it
+  * add test
+  * fix panic on reading Exif
+
 v1.1.5 / 2020-11-21
 ===================
 
