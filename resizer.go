@@ -171,6 +171,9 @@ func applyDefaults(o Options, imageType ImageType) Options {
 	if o.Interpretation == 0 {
 		o.Interpretation = InterpretationSRGB
 	}
+	if o.Palette {
+		o.Speed = 3
+	}
 	return o
 }
 
