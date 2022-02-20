@@ -171,6 +171,10 @@ func applyDefaults(o Options, imageType ImageType) Options {
 	if o.Interpretation == 0 {
 		o.Interpretation = InterpretationSRGB
 	}
+	if o.Palette {
+		// Default value of effort in libvips is 7.
+		o.Speed = 3
+	}
 	return o
 }
 
