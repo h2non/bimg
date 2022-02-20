@@ -520,7 +520,7 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 	case WEBP:
 		saveErr = C.vips_webpsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case PNG:
-		saveErr = C.vips_pngsave_bridge(image.c, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette)
+		saveErr = C.vips_pngsave_bridge(image.c, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette, speed)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(image.c, &ptr, &length)
 	case HEIF:

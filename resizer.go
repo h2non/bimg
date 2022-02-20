@@ -193,6 +193,10 @@ func applyDefaults(o Options, imageType ImageType) Options {
 	if o.SmartCrop {
 		o.Gravity = GravitySmart
 	}
+	if o.Palette {
+		// Default value of effort in libvips is 7.
+		o.Speed = 3
+	}
 	return o
 }
 

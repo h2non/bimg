@@ -252,7 +252,9 @@ type Options struct {
 	OutputICC      string
 	InputICC       string
 	Palette        bool
-	// Speed defines the AVIF encoders CPU effort. Valid values are 0-8.
+	// Speed defines the AVIF encoders CPU effort. Valid values are: 
+	// 0-8 for AVIF encoding.
+	// 0-9 for PNG encoding.
 	Speed int
 
 	// private fields
