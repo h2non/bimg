@@ -1,3 +1,5 @@
+# Cachebreaker: 2022020101
+
 FROM alpine:3.15
 LABEL org.opencontainers.image.authors="andreas@staffbase.com"
 
