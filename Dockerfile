@@ -6,6 +6,7 @@ LABEL org.opencontainers.image.authors="andreas@staffbase.com"
 RUN mkdir /build
 
 RUN apk add --no-cache \
+    go \
     curl \
     g++ \
     meson \
