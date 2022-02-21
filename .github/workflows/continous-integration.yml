@@ -11,8 +11,8 @@ on:
       - 'README.md'
 
 jobs:
-  warmupCache:
-    name: Warmup Cache
+  prepareTestContainer:
+    name: Prepare test container
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,7 +39,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: [ warmupCache ]
+    needs: [ prepareTestContainer ]
     strategy:
       matrix:
         libvips: ["8.10.6", "8.11.4", "8.12.2"]
