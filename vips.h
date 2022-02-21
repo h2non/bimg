@@ -339,7 +339,9 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
 		"palette", INT_TO_GBOOLEAN(palette),
 		"Q", quality,
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 12))
 		"effort", effort,
+#endif
 		NULL
 	);
 #else
