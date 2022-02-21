@@ -8,10 +8,9 @@ RUN mkdir /build
 RUN apk add --no-cache \
     go \
     curl \
-    g++ \
+    build-base \
     meson \
     ninja \
-    make \
     cfitsio-dev \
     expat-dev \
     fftw-dev \
@@ -31,6 +30,7 @@ RUN apk add --no-cache \
     pango-dev \
     poppler-dev \
     tiff-dev \
+    imagemagick \
     imagemagick-dev \
     librsvg-dev
 
@@ -41,10 +41,10 @@ RUN cd /build && \
     cd cgif-${CGIF_VERSION} && \
     meson . build && \
     meson compile -C build && \
-    meson install --no-rebuild -C build
+    DESTDIR=/usr meson install --no-rebuild -C build
 
 ARG GOLANGCILINT_VERSION=1.44.2
-RUN curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${GOLANGCILINT_VERSION}
+RUN curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/bin v${GOLANGCILINT_VERSION}
 
 ARG VIPS_VERSION=8.12.2
 RUN cd /build && \
