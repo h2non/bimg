@@ -69,4 +69,4 @@ jobs:
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       - name: Run tests
-        run: docker run --rm -v $PWD:/go/src/app h2non/bimg:ci-${{ matrix.libvips }} sh -c 'go vet . && golangci-lint run && go test -v -race -covermode=atomic -coverprofile=coverage.out'
+        run: docker run --rm -v $PWD:/build h2non/bimg:ci-${{ matrix.libvips }} sh -c 'cd /build && go vet . && golangci-lint run && go test -v -race -covermode=atomic -coverprofile=coverage.out'
