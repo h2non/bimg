@@ -339,7 +339,9 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
 		"palette", INT_TO_GBOOLEAN(palette),
 		"Q", quality,
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 12))
 		"effort", effort,
+#endif
 		NULL
 	);
 #else
@@ -487,11 +489,11 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == HEIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
-#if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9)
+#if (VIPS_MAJOR_VERSION > 8 || VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 9)
 	} else if (imageType == AVIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
-#if (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11)
+#if (VIPS_MAJOR_VERSION > 8 || VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11)
 	} else if (imageType == JP2K) {
 		code = vips_jp2kload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif

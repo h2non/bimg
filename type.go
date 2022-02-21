@@ -26,7 +26,7 @@ const (
 	PDF
 	// SVG represents the SVG image type.
 	SVG
-	// MAGICK represents the libmagick compatible genetic image type.
+	// MAGICK represents the libmagick compatible generic image type.
 	MAGICK
 	// HEIF represents the HEIC/HEIF/HVEC image type
 	HEIF

@@ -177,7 +177,7 @@ func TestEXIF(t *testing.T) {
 			FNumber:                 "9/5",
 			ExposureProgram:         2,
 			ISOSpeedRatings:         25,
-			ExifVersion:             "Unknown Exif Version",
+			ExifVersion:             "Exif Version 2.31",
 			DateTimeOriginal:        "2020:07:28 19:18:49",
 			DateTimeDigitized:       "2020:07:28 19:18:49",
 			ComponentsConfiguration: "Y Cb Cr -",
