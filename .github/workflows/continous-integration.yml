@@ -10,31 +10,27 @@ on:
       - 'History.md'
       - 'README.md'
 
+env:
+  VIPS_VERSIONS: ["8.10.6", "8.11.4", "8.12.2"]
+
 jobs:
   prepareTestContainer:
-    name: Prepare test container
+    name: Prepare test containers
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v1
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-runner-${{ hashFiles('Dockerfile') }}
+          key: testcontainers-${{ hashFiles('Dockerfile') }}
       - name: Build
-        uses: docker/build-push-action@v2
-        with:
-          builder: ${{ steps.buildx.outputs.name }}
-          push: false
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-      - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          echo ${VIPS_VERSIONS} | jq -c -r ".[]" | while read version; do
+            echo "Building for VIPS $version"
+            docker build --build-arg VIPS_VERSION=$version -t h2non/bimg:ci-$version . || exit 1
+          done
 
   test:
     name: Test
@@ -42,32 +38,14 @@ jobs:
     needs: [ prepareTestContainer ]
     strategy:
       matrix:
-        libvips: ["8.10.6", "8.11.4", "8.12.2"]
+        libvips: ${{ fromJSON(env.VIPS_VERSIONS) }}
       fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v1
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: satackey/action-docker-layer-caching@v0.0.11
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-runner-${{ hashFiles('Dockerfile') }}
-      - name: Build test-executor
-        uses: docker/build-push-action@v2
-        with:
-          builder: ${{ steps.buildx.outputs.name }}
-          build-args: |
-            "VIPS_VERSION=${{ matrix.libvips }}"
-          tags: h2non/bimg:ci-${{ matrix.libvips }}
-          load: true
-          push: false
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          key: testcontainers-${{ hashFiles('Dockerfile') }}
       - name: Run tests
         run: docker run --rm -v $PWD:/build h2non/bimg:ci-${{ matrix.libvips }} sh -c 'cd /build && go vet . && golangci-lint run && go test -v -race -covermode=atomic -coverprofile=coverage.out'
