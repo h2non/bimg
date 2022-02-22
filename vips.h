@@ -5,6 +5,8 @@
 #include <vips/vips7compat.h>
 #include <vips/vector.h>
 
+#define VIPS_VERSION_MIN(major, minor) (VIPS_MAJOR_VERSION > major || (VIPS_MAJOR_VERSION == major && VIPS_MINOR_VERSION >= minor))
+
 /**
  * Starting libvips 7.41, VIPS_ANGLE_x has been renamed to VIPS_ANGLE_Dx
  * "to help python". So we provide the macro to correctly build for versions
@@ -12,7 +14,7 @@
  * https://github.com/jcupitt/libvips/blob/master/ChangeLog#L128
  */
 
-#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+#if (!VIPS_VERSION_MIN(7, 41))
 #define VIPS_ANGLE_D0 VIPS_ANGLE_0
 #define VIPS_ANGLE_D90 VIPS_ANGLE_90
 #define VIPS_ANGLE_D180 VIPS_ANGLE_180
@@ -90,7 +92,7 @@ has_alpha_channel(VipsImage *image) {
  * creates a vips_init() method that calls VIPS_INIT().
  */
 
-#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+#if (!VIPS_VERSION_MIN(7, 41))
 #undef vips_init
 int
 vips_init(const char *argv0)
@@ -150,12 +152,12 @@ vips_type_find_bridge(int t) {
 	if (t == MAGICK) {
 		return vips_type_find("VipsOperation", "magickload");
 	}
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
+#if (VIPS_VERSION_MIN(8, 8))
 	if (t == HEIF) {
 		return vips_type_find("VipsOperation", "heifload");
 	}
 #endif
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+#if (VIPS_VERSION_MIN(8, 11))
 	if (t == JP2K) {
 		return vips_type_find("VipsOperation", "jp2kload");
 	}
@@ -177,7 +179,7 @@ vips_type_find_save_bridge(int t) {
 	if (t == JPEG) {
 		return vips_type_find("VipsOperation", "jpegsave_buffer");
 	}
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
+#if (VIPS_VERSION_MIN(8, 8))
 	if (t == HEIF) {
 		return vips_type_find("VipsOperation", "heifsave_buffer");
 	}
@@ -187,7 +189,7 @@ vips_type_find_save_bridge(int t) {
 		return vips_type_find("VipsOperation", "magicksave_buffer");
 	}
 #endif
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+#if (VIPS_VERSION_MIN(8, 11))
 	if (t == JP2K) {
 		return vips_type_find("VipsOperation", "jp2ksave_buffer");
 	}
@@ -330,7 +332,7 @@ vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette, int speed) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 7))
+#if (VIPS_VERSION_MIN(8, 7))
 	int effort = 10 - speed;
 	return vips_pngsave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
@@ -339,7 +341,7 @@ vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compr
 		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
 		"palette", INT_TO_GBOOLEAN(palette),
 		"Q", quality,
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 12))
+#if (VIPS_VERSION_MIN(8, 12))
 		"effort", effort,
 #endif
 		NULL
@@ -366,7 +368,7 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 5))
+#if (VIPS_VERSION_MIN(8, 5))
 	return vips_tiffsave_buffer(in, buf, len, NULL);
 #else
 	return 0;
@@ -399,7 +401,7 @@ vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 
 int
 vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
+#if (VIPS_VERSION_MIN(8, 8))
 	return vips_heifsave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
 		"Q", quality,
@@ -426,7 +428,7 @@ vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len, const char *forma
 
 int
 vips_jp2ksave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 11))
+#if (VIPS_VERSION_MIN(8, 11))
 	return vips_jp2ksave_buffer(in, buf, len,
 		"strip", INT_TO_GBOOLEAN(strip),
 		"Q", quality,
@@ -485,7 +487,7 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == MAGICK) {
 		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 8))
+#if (VIPS_VERSION_MIN(8, 8))
 	} else if (imageType == HEIF) {
 		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
@@ -580,7 +582,7 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 
 int
 vips_gaussblur_bridge(VipsImage *in, VipsImage **out, double sigma, double min_ampl) {
-#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+#if (!VIPS_VERSION_MIN(7, 41))
 	return vips_gaussblur(in, out, (int) sigma, NULL);
 #else
 	return vips_gaussblur(in, out, sigma, NULL, "min_ampl", min_ampl, NULL);
@@ -589,7 +591,7 @@ vips_gaussblur_bridge(VipsImage *in, VipsImage **out, double sigma, double min_a
 
 int
 vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, double y2, double y3, double m1, double m2) {
-#if (VIPS_MAJOR_VERSION == 7 && VIPS_MINOR_VERSION < 41)
+#if (!VIPS_VERSION_MIN(7, 41))
 	return vips_sharpen(in, out, radius, x1, y2, y3, m1, m2, NULL);
 #else
 	return vips_sharpen(in, out, "radius", radius, "x1", x1, "y2", y2, "y3", y3, "m1", m1, "m2", m2, NULL);
@@ -598,7 +600,7 @@ vips_sharpen_bridge(VipsImage *in, VipsImage **out, int radius, double x1, doubl
 
 int
 vips_add_band(VipsImage *in, VipsImage **out, double c) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 2))
+#if (VIPS_VERSION_MIN(8, 2))
 	return vips_bandjoin_const1(in, out, c, NULL);
 #else
 	VipsImage *base = vips_image_new();
@@ -669,7 +671,7 @@ vips_watermark_image(VipsImage *in, VipsImage *sub, VipsImage **out, WatermarkIm
 
 int
 vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 5))
+#if (VIPS_VERSION_MIN(8, 5))
 	return vips_smartcrop(in, out, width, height, NULL);
 #else
 	return 0;
@@ -677,7 +679,7 @@ vips_smartcrop_bridge(VipsImage *in, VipsImage **out, int width, int height) {
 }
 
 int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *height, double r, double g, double b, double threshold) {
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 6))
+#if (VIPS_VERSION_MIN(8, 6))
 	if (vips_is_16bit(in->Type)) {
 		r = 65535 * r / 255;
 		g = 65535 * g / 255;
