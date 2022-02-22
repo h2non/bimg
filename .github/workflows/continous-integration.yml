@@ -11,12 +11,15 @@ on:
       - 'README.md'
 
 env:
-  VIPS_VERSIONS: ["8.10.6", "8.11.4", "8.12.2"]
+  VIPS_VERSIONS: |
+    ["8.10.6", "8.11.4", "8.12.2"]
 
 jobs:
   prepareTestContainer:
     name: Prepare test containers
     runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.build.outputs.versions }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,11 +29,13 @@ jobs:
         with:
           key: testcontainers-${{ hashFiles('Dockerfile') }}
       - name: Build
+        id: build
         run: |
           echo ${VIPS_VERSIONS} | jq -c -r ".[]" | while read version; do
             echo "Building for VIPS $version"
             docker build --build-arg VIPS_VERSION=$version -t h2non/bimg:ci-$version . || exit 1
           done
+          echo ::set-output name=versions::${VIPS_VERSIONS}
 
   test:
     name: Test
@@ -38,7 +43,7 @@ jobs:
     needs: [ prepareTestContainer ]
     strategy:
       matrix:
-        libvips: ${{ fromJSON(env.VIPS_VERSIONS) }}
+        libvips: ${{ fromJSON(needs.prepareTestContainer.outputs.versions) }}
       fail-fast: false
     steps:
       - name: Checkout
