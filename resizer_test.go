@@ -391,7 +391,7 @@ func TestExtractCustomAxis(t *testing.T) {
 
 func TestExtractOrEmbedImage(t *testing.T) {
 	buf, _ := Read("testdata/test.jpg")
-	transform, err := NewImageTransformation(buf)
+	transform, err := NewImageFromBuffer(buf)
 	if err != nil {
 		t.Fatalf("Unable to load image %s", err)
 	}

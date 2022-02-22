@@ -2,680 +2,386 @@ package bimg
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"testing"
 )
 
-func TestImageResize(t *testing.T) {
-	buf, err := initImage("test.jpg").Resize(300, 240)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 300, 240)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_resize_out.jpg", buf)
+func testfile(fileName string) string {
+	return filepath.Join("testdata", fileName)
 }
 
-func TestImageGifResize(t *testing.T) {
-	buf, err := initImage("test.gif").Resize(300, 240)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-		return
-	}
-
-	err = assertSize(buf, 300, 240)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_resize_out.gif", buf)
-}
-
-func TestImagePdfResize(t *testing.T) {
-	_, err := initImage("test.pdf").Resize(300, 240)
-	if err == nil {
-		t.Errorf("PDF cannot be saved within VIPS")
-	}
-}
-
-func TestImageSvgResize(t *testing.T) {
-	_, err := initImage("test.svg").Resize(300, 240)
-	if err == nil {
-		t.Errorf("SVG cannot be saved within VIPS")
-	}
-}
-
-func TestImageGifToJpeg(t *testing.T) {
-	if vipsVersionMin(8, 3) {
-		i := initImage("test.gif")
-		options := Options{
-			Type: JPEG,
-		}
-		buf, err := i.Process(options)
-		if err != nil {
-			t.Errorf("Cannot process the image: %#v", err)
-		}
-
-		_ = Write("testdata/test_gif.jpg", buf)
-	}
-}
-
-func TestImagePdfToJpeg(t *testing.T) {
-	if vipsVersionMin(8, 3) {
-		i := initImage("test.pdf")
-		options := Options{
-			Type: JPEG,
-		}
-		buf, err := i.Process(options)
-		if err != nil {
-			t.Errorf("Cannot process the image: %#v", err)
-		}
-
-		_ = Write("testdata/test_pdf.jpg", buf)
-	}
-}
-
-func TestImageSvgToJpeg(t *testing.T) {
-	if vipsVersionMin(8, 3) {
-		i := initImage("test.svg")
-		options := Options{
-			Type: JPEG,
-		}
-		buf, err := i.Process(options)
-		if err != nil {
-			t.Errorf("Cannot process the image: %#v", err)
-		}
-
-		_ = Write("testdata/test_svg.jpg", buf)
-	}
-}
-
-func TestImageResizeAndCrop(t *testing.T) {
-	buf, err := initImage("test.jpg").ResizeAndCrop(300, 200)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 300, 200)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_resize_crop_out.jpg", buf)
-}
-
-func TestImageExtract(t *testing.T) {
-	buf, err := initImage("test.jpg").Extract(100, 100, 300, 200)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 300, 200)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_extract_out.jpg", buf)
-}
-
-func TestImageExtractZero(t *testing.T) {
-	buf, err := initImage("test.jpg").Extract(0, 0, 300, 200)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 300, 200)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_extract_zero_out.jpg", buf)
-}
-
-func TestImageEnlarge(t *testing.T) {
-	buf, err := initImage("test.png").Enlarge(500, 375)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 500, 375)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_enlarge_out.jpg", buf)
-}
-
-func TestImageEnlargeAndCrop(t *testing.T) {
-	buf, err := initImage("test.png").EnlargeAndCrop(800, 480)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 800, 480)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_enlarge_crop_out.jpg", buf)
-}
-
-func TestImageCrop(t *testing.T) {
-	buf, err := initImage("test.jpg").Crop(800, 600, GravityNorth)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 800, 600)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_crop_out.jpg", buf)
-}
-
-func TestImageCropByWidth(t *testing.T) {
-	buf, err := initImage("test.jpg").CropByWidth(600)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 600, 1050)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_crop_width_out.jpg", buf)
-}
-
-func TestImageCropByHeight(t *testing.T) {
-	buf, err := initImage("test.jpg").CropByHeight(300)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 1680, 300)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_crop_height_out.jpg", buf)
-}
-
-func TestImageThumbnail(t *testing.T) {
-	buf, err := initImage("test.jpg").Thumbnail(100)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 100, 100)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_thumbnail_out.jpg", buf)
-}
-
-func TestImageWatermark(t *testing.T) {
-	image := initImage("test.jpg")
-	_, err := image.Crop(800, 600, GravityNorth)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	buf, err := image.Watermark(Watermark{
-		Text:       "Copy me if you can",
-		Opacity:    0.5,
-		Width:      200,
-		DPI:        100,
-		Background: Color{255, 255, 255},
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = assertSize(buf, 800, 600)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if DetermineImageType(buf) != JPEG {
-		t.Fatal("Image is not jpeg")
-	}
-
-	_ = Write("testdata/test_watermark_text_out.jpg", buf)
-}
-
-func TestImageWatermarkWithImage(t *testing.T) {
-	image := initImage("test.jpg")
-	watermark, _ := imageBuf("transparent.png")
-
-	_, err := image.Crop(800, 600, GravityNorth)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	buf, err := image.WatermarkImage(WatermarkImage{Left: 100, Top: 100, Buf: watermark})
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = assertSize(buf, 800, 600)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if DetermineImageType(buf) != JPEG {
-		t.Fatal("Image is not jpeg")
-	}
-
-	_ = Write("testdata/test_watermark_image_out.jpg", buf)
-}
-
-func TestImageWatermarkNoReplicate(t *testing.T) {
-	image := initImage("test.jpg")
-	_, err := image.Crop(800, 600, GravityNorth)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	buf, err := image.Watermark(Watermark{
-		Text:        "Copy me if you can",
-		Opacity:     0.5,
-		Width:       200,
-		DPI:         100,
-		NoReplicate: true,
-		Background:  Color{255, 255, 255},
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = assertSize(buf, 800, 600)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if DetermineImageType(buf) != JPEG {
-		t.Fatal("Image is not jpeg")
-	}
-
-	_ = Write("testdata/test_watermark_replicate_out.jpg", buf)
-}
-
-func TestImageZoom(t *testing.T) {
-	image := initImage("test.jpg")
-
-	_, err := image.Extract(100, 100, 400, 300)
-	if err != nil {
-		t.Errorf("Cannot extract the image: %s", err)
-	}
-
-	buf, err := image.Zoom(1)
-	if err != nil {
-		t.Errorf("Cannot process the image: %s", err)
-	}
-
-	err = assertSize(buf, 800, 600)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_zoom_out.jpg", buf)
-}
-
-func TestImageFlip(t *testing.T) {
-	buf, err := initImage("test.jpg").Flip()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	_ = Write("testdata/test_flip_out.jpg", buf)
-}
-
-func TestImageFlop(t *testing.T) {
-	buf, err := initImage("test.jpg").Flop()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	_ = Write("testdata/test_flop_out.jpg", buf)
-}
-
-func TestImageRotate(t *testing.T) {
-	buf, err := initImage("test_flip_out.jpg").Rotate(90)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	_ = Write("testdata/test_image_rotate_out.jpg", buf)
-}
-
-func TestImageAutoRotate(t *testing.T) {
-	if !vipsVersionMin(8, 10) {
-		t.Skip("Skip test in libvips < 8.10")
-		return
-	}
-
+func TestImageTransformation_Resize(t *testing.T) {
 	tests := []struct {
-		file        string
-		orientation int
+		mode     ResizeMode
+		width    int
+		height   int
+		expected ImageSize
 	}{
-		{"exif/Landscape_1.jpg", 1},
-		{"exif/Landscape_2.jpg", 1},
-		{"exif/Landscape_3.jpg", 1},
-		{"exif/Landscape_4.jpg", 1},
-		{"exif/Landscape_5.jpg", 1},
-		{"exif/Landscape_6.jpg", 1},
-		{"exif/Landscape_7.jpg", 1},
-	}
-
-	for index, test := range tests {
-		t.Run(test.file, func(t *testing.T) {
-			img := initImage(test.file)
-			buf, err := img.AutoRotate()
-			if err != nil {
-				t.Errorf("Cannot process the image: %#v", err)
-			}
-			_ = Write(fmt.Sprintf("testdata/test_autorotate_%d_out.jpg", index), buf)
-
-			meta, err := img.Metadata()
-			if err != nil {
-				t.Errorf("Cannot read image metadata: %#v", err)
-			}
-			if meta.Orientation != test.orientation {
-				t.Errorf("Invalid image orientation for %s: %d != %d", test.file, meta.Orientation, test.orientation)
-			}
-		})
-	}
-}
-
-func TestImageConvert(t *testing.T) {
-	buf, err := initImage("test.jpg").Convert(PNG)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	_ = Write("testdata/test_image_convert_out.png", buf)
-}
-
-func TestTransparentImageConvert(t *testing.T) {
-	image := initImage("transparent.png")
-	options := Options{
-		Type:       JPEG,
-		Background: Color{255, 255, 255},
-	}
-	buf, err := image.Process(options)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	_ = Write("testdata/test_transparent_image_convert_out.jpg", buf)
-}
-
-func TestImageMetadata(t *testing.T) {
-	data, err := initImage("test.png").Metadata()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	if data.Alpha != true {
-		t.Fatal("Invalid alpha channel")
-	}
-	if data.Size.Width != 400 {
-		t.Fatal("Invalid width size")
-	}
-	if data.Type != "png" {
-		t.Fatal("Invalid image type")
-	}
-}
-
-func TestInterpretation(t *testing.T) {
-	interpretation, err := initImage("test.jpg").Interpretation()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	if interpretation != InterpretationSRGB {
-		t.Errorf("Invalid interpretation: %d", interpretation)
-	}
-}
-
-func TestImageColourspace(t *testing.T) {
-	tests := []struct {
-		file           string
-		interpretation Interpretation
-	}{
-		{"test.jpg", InterpretationSRGB},
-		{"test.jpg", InterpretationBW},
+		{
+			mode:     ResizeModeFit,
+			width:    400,
+			height:   300,
+			expected: ImageSize{400, 250},
+		},
+		{
+			mode:     ResizeModeFit,
+			width:    300,
+			height:   400,
+			expected: ImageSize{300, 188},
+		},
+		{
+			mode:     ResizeModeFit,
+			width:    800,
+			height:   400,
+			expected: ImageSize{640, 400},
+		},
+		{
+			mode:     ResizeModeFitUp,
+			width:    400,
+			height:   300,
+			expected: ImageSize{480, 300},
+		},
+		{
+			mode:     ResizeModeFitUp,
+			width:    300,
+			height:   400,
+			expected: ImageSize{640, 400},
+		},
+		{
+			mode:     ResizeModeFitUp,
+			width:    800,
+			height:   400,
+			expected: ImageSize{800, 500},
+		},
+		{
+			mode:     ResizeModeForce,
+			width:    400,
+			height:   300,
+			expected: ImageSize{400, 300},
+		},
+		{
+			mode:     ResizeModeForce,
+			width:    300,
+			height:   400,
+			expected: ImageSize{300, 400},
+		},
 	}
 
 	for _, test := range tests {
-		buf, err := initImage(test.file).Colourspace(test.interpretation)
-		if err != nil {
-			t.Errorf("Cannot process the image: %#v", err)
-		}
-
-		interpretation, err := ImageInterpretation(buf)
-		if err != nil {
-			t.Fatalf("cannot get image interpretation: %v", err)
-		}
-		if interpretation != test.interpretation {
-			t.Errorf("Invalid colourspace")
-		}
-	}
-}
-
-func TestImageColourspaceIsSupported(t *testing.T) {
-	supported, err := initImage("test.jpg").ColourspaceIsSupported()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	if supported != true {
-		t.Errorf("Non-supported colourspace")
-	}
-}
-
-func TestFluentInterface(t *testing.T) {
-	image := initImage("test.jpg")
-	_, err := image.CropByWidth(300)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	_, err = image.Flip()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	_, err = image.Convert(PNG)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	data, _ := image.Metadata()
-	if data.Alpha != false {
-		t.Fatal("Invalid alpha channel")
-	}
-	if data.Size.Width != 300 {
-		t.Fatal("Invalid width size")
-	}
-	if data.Type != "png" {
-		t.Fatal("Invalid image type")
-	}
-
-	_ = Write("testdata/test_image_fluent_out.png", image.Image())
-}
-
-func TestImageSmartCrop(t *testing.T) {
-
-	if !(vipsVersionMin(8, 5)) {
-		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.5", VipsVersion)
-	}
-
-	i := initImage("northern_cardinal_bird.jpg")
-	buf, err := i.SmartCrop(300, 300)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 300, 300)
-	if err != nil {
-		t.Error(err)
-	}
-
-	_ = Write("testdata/test_smart_crop.jpg", buf)
-}
-
-func TestImageTrim(t *testing.T) {
-
-	if !vipsVersionMin(8, 6) {
-		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
-	}
-
-	i := initImage("transparent.png")
-	buf, err := i.Trim()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 250, 208)
-	if err != nil {
-		t.Errorf("The image wasn't trimmed.")
-	}
-
-	_ = Write("testdata/transparent_trim.png", buf)
-}
-
-func TestImageTrimParameters(t *testing.T) {
-
-	if !vipsVersionMin(8, 6) {
-		t.Skipf("Skipping this test, libvips doesn't meet version requirement %s >= 8.6", VipsVersion)
-	}
-
-	i := initImage("test.png")
-	options := Options{
-		Trim:       true,
-		Background: Color{0, 0, 0},
-		Threshold:  10.0,
-	}
-	buf, err := i.Process(options)
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-
-	err = assertSize(buf, 400, 257)
-	if err != nil {
-		t.Errorf("The image wasn't trimmed.")
-	}
-
-	_ = Write("testdata/parameter_trim.png", buf)
-}
-
-func TestImageLength(t *testing.T) {
-	i := initImage("test.jpg")
-
-	actual := i.Length()
-	expected := 53653
-
-	if expected != actual {
-		t.Errorf("Size in Bytes of the image doesn't correspond. %d != %d", expected, actual)
-	}
-}
-
-func TestRGBAEmbed(t *testing.T) {
-	t.Run("transparent on background", func(t *testing.T) {
-		i := initImage("transparent.png")
-		buf, err := i.Process(Options{
-			Width:      500,
-			Height:     500,
-			Enlarge:    true,
-			Embed:      true,
-			Extend:     ExtendBackground,
-			Background: ColorWithAlpha{Color{255, 255, 255}, 255},
+		name := fmt.Sprintf("%s_%d_%d", test.mode, test.width, test.height)
+		t.Run(name, func(t *testing.T) {
+			imageTrans, err := NewImageFromFile(testfile("test.jpg"))
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			if err := imageTrans.Resize(ResizeOptions{Width: test.width, Height: test.height, Mode: test.mode}); err != nil {
+				t.Fatalf("cannot resize image: %v", err)
+			}
+			size := imageTrans.Size()
+			if size != test.expected {
+				t.Errorf("unexpected size. wanted %#v, got %#v", test.expected, size)
+			}
+			if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
+				t.Errorf("cannot save image: %v", err)
+			} else {
+				// TODO comparison
+				_ = Write(fmt.Sprintf("testdata/transformation_resize_%s_out.jpeg", name), out)
+			}
 		})
-		if err != nil {
-			t.Errorf("The image could not be put on background: %v", err)
-		}
+	}
 
-		if metadata, err := i.Metadata(); err != nil {
-			t.Errorf("Cannot read metadata from target image: %v", err)
-		} else if metadata.Alpha {
-			t.Errorf("Target image shouldn't have an alpha channel!")
+	t.Run("on a tainted buffer", func(t *testing.T) {
+		for _, test := range tests {
+			name := fmt.Sprintf("%s_%d_%d", test.mode, test.width, test.height)
+			t.Run(name, func(t *testing.T) {
+				imageTrans, err := NewImageFromFile(testfile("test.jpg"))
+				if err != nil {
+					t.Fatalf("cannot load image: %v", err)
+				}
+				// Apply an operation before the resize tains the buffer, which can (but shouldn't)
+				// influence calculations.
+				if err := imageTrans.Rotate(RotateOptions{}); err != nil {
+					t.Fatalf("cannot autorotate image: %v", err)
+				}
+				if !imageTrans.bufTainted {
+					t.Fatalf("buffer should be tainted now") // otherwise the test is pointless
+				}
+				if err := imageTrans.Resize(ResizeOptions{Width: test.width, Height: test.height, Mode: test.mode}); err != nil {
+					t.Fatalf("cannot resize image: %v", err)
+				}
+				size := imageTrans.Size()
+				if size != test.expected {
+					t.Errorf("unexpected size. wanted %#v, got %#v", test.expected, size)
+				}
+				if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
+					t.Errorf("cannot save image: %v", err)
+				} else {
+					_ = Write(fmt.Sprintf("testdata/transformation_resize_tainted_%s_out.jpeg", name), out)
+				}
+			})
 		}
-
-		_ = Write("testdata/transparent_on_background_out.png", buf)
 	})
 
-	t.Run("transparent on transparent", func(t *testing.T) {
-		i := initImage("transparent.png")
-		buf, err := i.Process(Options{
-			Width:      500,
-			Height:     500,
-			Enlarge:    true,
-			Embed:      true,
-			Extend:     ExtendBackground,
-			Background: ColorWithAlpha{Color{0, 0, 0}, 0},
-		})
+	t.Run("upscale", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test.webp"))
 		if err != nil {
-			t.Errorf("The image could not be put on background: %v", err)
+			t.Fatalf("cannot load image: %v", err)
 		}
-
-		if metadata, err := i.Metadata(); err != nil {
-			t.Errorf("Cannot read metadata from target image: %v", err)
-		} else if !metadata.Alpha {
-			t.Errorf("Target image should have an alpha channel!")
+		if err := imageTrans.Resize(ResizeOptions{Width: 2000, Height: 2000}); err != nil {
+			t.Fatalf("cannot resize image: %v", err)
 		}
-
-		_ = Write("testdata/transparent_on_transparent_out.png", buf)
-	})
-
-	t.Run("opaque on transparent", func(t *testing.T) {
-		i := initImage("test.jpg")
-
-		if metadata, err := i.Metadata(); err != nil {
-			t.Fatalf("Cannot read metadata from source image: %v", err)
-		} else if metadata.Alpha {
-			t.Fatalf("Source image should not have an alpha channel.")
+		size := imageTrans.Size()
+		expected := ImageSize{2000, 1338}
+		if size != expected {
+			t.Errorf("unexpected size. wanted %#v, got %#v", expected, size)
 		}
-
-		buf, err := i.Process(Options{
-			Type:       PNG,
-			Width:      500,
-			Height:     500,
-			Enlarge:    true,
-			Embed:      true,
-			Extend:     ExtendBackground,
-			Background: ColorWithAlpha{Color{0, 0, 0}, 0},
-		})
-		if err != nil {
-			t.Errorf("The image could not be put on background: %v", err)
+		if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_resize_upscale_out.jpeg", out)
 		}
-
-		if metadata, err := i.Metadata(); err != nil {
-			t.Errorf("Cannot read metadata from target image: %v", err)
-		} else if !metadata.Alpha {
-			t.Errorf("Target image should have an alpha channel!")
-		}
-
-		_ = Write("testdata/opaque_on_transparent_out.png", buf)
 	})
 }
 
-func initImage(file string) *Image {
-	buf, _ := imageBuf(file)
-	return NewImage(buf)
+func TestImageTransformation_Embed(t *testing.T) {
+	t.Run("B/W on grey", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test_bw.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 1 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      200,
+			Height:     200,
+			Extend:     ExtendBackground,
+			Background: Color{R: 50, G: 50, B: 50},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 1 {
+			t.Fatalf("image should still have one channel")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_embed_bw_grey_out.png", out)
+		}
+	})
+
+	t.Run("B/W with alpha on grey", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      200,
+			Height:     200,
+			Extend:     ExtendBackground,
+			Background: Color{R: 120, G: 120, B: 120},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("image should still have two channels")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_embed_bwa_grey_out.png", out)
+		}
+	})
+
+	t.Run("B/W with alpha on red", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      200,
+			Height:     200,
+			Extend:     ExtendBackground,
+			Background: Color{R: 255, G: 0, B: 0},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 4 {
+			t.Fatalf("image should have four channels now")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_embed_bwa_red_out.png", out)
+		}
+	})
+
+	t.Run("CMYK", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test_cmyk.jpeg"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 4 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if imageTrans.Metadata().Interpretation != InterpretationCMYK {
+			t.Fatalf("source image has unexpected interpretation (should be CMYK)")
+		}
+		if err := imageTrans.Embed(EmbedOptions{
+			Width:      1000,
+			Height:     1000,
+			Extend:     ExtendBackground,
+			Background: ColorWithAlpha{Color: Color{R: 255, G: 0, B: 0}, A: 100},
+		}); err != nil {
+			t.Fatalf("embed returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 4 {
+			t.Fatalf("image should still have four channels now")
+		}
+		if imageTrans.Metadata().Interpretation != InterpretationSRGB {
+			t.Fatalf("image should be sRGB now")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_embed_cmyk_on_alpha_out.jpeg", out)
+		}
+	})
 }
 
-func imageBuf(file string) ([]byte, error) {
-	return Read(path.Join("testdata", file))
+func TestImageTransformation_Flatten(t *testing.T) {
+	t.Run("B/W with alpha", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Flatten(Color{R: 255, G: 255, B: 255}); err != nil {
+			t.Fatalf("flatten returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 1 {
+			t.Errorf("image should have just one channel now (no alpha)")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_flatten_bwa_out.png", out)
+		}
+	})
+
+	t.Run("B/W with alpha on red", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 2 {
+			t.Fatalf("source image has unexpected number of channels")
+		}
+		if err := imageTrans.Flatten(Color{R: 255, G: 0, B: 0}); err != nil {
+			t.Fatalf("flatten returned unexpected error: %v", err)
+		}
+		if imageTrans.Metadata().Channels != 3 {
+			t.Errorf("image should have three channels now (RGB without alpha)")
+		}
+		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_flatten_bwa_on_red_out.png", out)
+		}
+	})
 }
 
-func assertSize(buf []byte, width, height int) error {
-	size, err := NewImage(buf).Size()
-	if err != nil {
-		return err
-	}
-	if size.Width != width || size.Height != height {
-		return fmt.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
-	}
-	return nil
+func TestImageTransformation_Save(t *testing.T) {
+	t.Run("save bitmap", func(t *testing.T) {
+		imageTrans, err := NewImageFromFile(testfile("test.bmp"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if out, err := imageTrans.Save(SaveOptions{MagickFormat: "bmp"}); err != nil {
+			t.Errorf("cannot save image: %v", err)
+		} else {
+			_ = Write("testdata/transformation_save_bmp_out.bmp", out)
+		}
+	})
+}
+
+func TestFormatSupport(t *testing.T) {
+
+	t.Run("jpeg2000", func(t *testing.T) {
+		if !vipsVersionMin(8, 11) {
+			t.Skip("requires libvips >= 8.11")
+		}
+
+		t.Run("can load", func(t *testing.T) {
+			img, err := NewImageFromFile(testfile("test.jp2"))
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			metadata := img.Metadata()
+			if metadata.Type != "jp2k" {
+				t.Errorf("unexpected image type %q", metadata.Type)
+			}
+			if metadata.Size.Width != 1680 {
+				t.Errorf("unexpected width: %d", metadata.Size.Width)
+			}
+			if metadata.Size.Height != 1050 {
+				t.Errorf("unexpected height: %d", metadata.Size.Height)
+			}
+		})
+
+		t.Run("can save", func(t *testing.T) {
+			img, err := NewImageFromFile(testfile("test.jpg"))
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+			err = img.Resize(ResizeOptions{Width: 100})
+			if err != nil {
+				t.Fatalf("cannot resize image: %v", err)
+			}
+			outBuf, err := img.Save(SaveOptions{Type: JP2K})
+			if err != nil {
+				t.Fatalf("cannot save image: %v", err)
+			}
+			outType := vipsImageType(outBuf)
+			if outType != JP2K {
+				t.Errorf("output has unexpected type: %d", outType)
+			}
+		})
+	})
+
+	t.Run("pdf", func(t *testing.T) {
+		t.Run("can load", func(t *testing.T) {
+			img, err := NewImageFromFile(testfile("test.pdf"))
+			if err != nil {
+				t.Fatalf("cannot load the pdf: %v", err)
+			}
+
+			size := img.Size()
+			if size.Height != 1050 || size.Width != 1680 {
+				t.Errorf("unexpected size: %#v", size)
+			}
+		})
+
+		t.Run("cannot save", func(t *testing.T) {
+			img, err := NewImageFromFile(testfile("test.pdf"))
+			if err != nil {
+				t.Fatalf("cannot load the pdf: %v", err)
+			}
+
+			_, err = img.Save(SaveOptions{})
+			if err == nil {
+				t.Error("saving should not work")
+			}
+		})
+	})
+
+	// TODO add a table test for all expected formats
 }

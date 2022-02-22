@@ -373,7 +373,7 @@ func TestEXIF(t *testing.T) {
 }
 
 func TestColourspaceIsSupported(t *testing.T) {
-	files := []struct {
+	tests := []struct {
 		name string
 	}{
 		{"test.jpg"},
@@ -381,22 +381,16 @@ func TestColourspaceIsSupported(t *testing.T) {
 		{"test.webp"},
 	}
 
-	for _, file := range files {
-		supported, err := ColourspaceIsSupported(readFile(file.name))
-		if err != nil {
-			t.Fatalf("Cannot read the image: %s -> %s", file.name, err)
-		}
-		if supported != true {
-			t.Fatalf("Unsupported image colourspace")
-		}
-	}
-
-	supported, err := initImage("test.jpg").ColourspaceIsSupported()
-	if err != nil {
-		t.Errorf("Cannot process the image: %#v", err)
-	}
-	if supported != true {
-		t.Errorf("Non-supported colourspace")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			supported, err := ColourspaceIsSupported(readFile(tt.name))
+			if err != nil {
+				t.Fatalf("Cannot read the image: %s -> %s", tt.name, err)
+			}
+			if supported != true {
+				t.Fatalf("Unsupported image colourspace")
+			}
+		})
 	}
 }
 

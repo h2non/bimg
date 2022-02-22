@@ -22,7 +22,7 @@ var (
 func resizer(buf []byte, o Options) ([]byte, error) {
 	defer C.vips_thread_shutdown()
 
-	t, err := NewImageTransformation(buf)
+	t, err := NewImageFromBuffer(buf)
 	if err != nil {
 		return nil, fmt.Errorf("cannot load image: %w", err)
 	}
@@ -81,7 +81,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 
 	// Add watermark, if necessary
 	if len(o.WatermarkImage.Buf) > 0 {
-		watermarkImage, err := NewImageTransformation(o.WatermarkImage.Buf)
+		watermarkImage, err := NewImageFromBuffer(o.WatermarkImage.Buf)
 		if err != nil {
 			return nil, fmt.Errorf("cannot decode watermark image: %w", err)
 		}
@@ -112,7 +112,7 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	return t.Save(saveOptions)
 }
 
-func resizeIfNecessary(t *ImageTransformation, o Options) error {
+func resizeIfNecessary(t *Image, o Options) error {
 	imageSize := t.Size()
 
 	if o.Crop || o.Embed {
@@ -224,7 +224,7 @@ func resizeImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) {
 	return vipsResize(image, xscale, yscale)
 }
 
-func extractOrEmbedImage(it *ImageTransformation, o Options) error {
+func extractOrEmbedImage(it *Image, o Options) error {
 	if o.Force {
 		o.Crop = false
 		o.Embed = false

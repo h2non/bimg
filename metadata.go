@@ -139,7 +139,7 @@ type EXIF struct {
 func Size(buf []byte) (ImageSize, error) {
 	defer C.vips_thread_shutdown()
 
-	t, err := NewImageTransformation(buf)
+	t, err := NewImageFromBuffer(buf)
 	if err != nil {
 		return ImageSize{}, err
 	}
@@ -162,7 +162,7 @@ func ImageInterpretation(buf []byte) (Interpretation, error) {
 func Metadata(buf []byte) (ImageMetadata, error) {
 	defer C.vips_thread_shutdown()
 
-	t, err := NewImageTransformation(buf)
+	t, err := NewImageFromBuffer(buf)
 	if err != nil {
 		return ImageMetadata{}, err
 	}
