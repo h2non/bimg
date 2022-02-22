@@ -43,6 +43,7 @@ jobs:
     strategy:
       matrix:
         libvips: ["8.10.6", "8.11.4", "8.12.2"]
+      fail-fast: false
     steps:
       - name: Checkout
         uses: actions/checkout@v2
