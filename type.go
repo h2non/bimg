@@ -6,36 +6,6 @@ import (
 	"unicode/utf8"
 )
 
-// ImageType represents an image type value.
-type ImageType int
-
-const (
-	// UNKNOWN represents an unknown image type value.
-	UNKNOWN ImageType = iota
-	// JPEG represents the JPEG image type.
-	JPEG
-	// WEBP represents the WEBP image type.
-	WEBP
-	// PNG represents the PNG image type.
-	PNG
-	// TIFF represents the TIFF image type.
-	TIFF
-	// GIF represents the GIF image type.
-	GIF
-	// PDF represents the PDF type.
-	PDF
-	// SVG represents the SVG image type.
-	SVG
-	// HEIF represents the HEIC/HEIF/HVEC image type
-	HEIF
-	// AVIF represents the AVIF image type.
-	AVIF
-	// JP2K represents the JPEG 2000 image type.
-	JP2K
-	// MAGICK represents the libmagick compatible generic image type.
-	MAGICK
-)
-
 var (
 	htmlCommentRegex = regexp.MustCompile(`(?i)<!--([\s\S]*?)-->`)
 	svgRegex         = regexp.MustCompile(`(?i)^\s*(?:<\?xml[^>]*>\s*)?(?:<!doctype svg[^>]*>\s*)?<svg[^>]*>[^*]*<\/svg>\s*$`)
