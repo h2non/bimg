@@ -122,6 +122,8 @@ vips_type_find_save_bridge(int t) {
 			return vips_type_find("VipsOperation", "pngsave_buffer");
 		case TIFF:
 			return vips_type_find("VipsOperation", "tiffsave_buffer");
+		case GIF:
+			return vips_type_find("VipsOperation", "gifsave_buffer");
 		case HEIF:
 		case AVIF:
 			return vips_type_find("VipsOperation", "heifsave_buffer");
@@ -176,6 +178,15 @@ vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 int
 vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
 	return vips_tiffsave_buffer(in, buf, len, NULL);
+}
+
+int
+vips_gifsave_bridge(VipsImage *in, void **buf, size_t *len) {
+#if (VIPS_VERSION_MIN(8, 12))
+	return vips_gifsave_buffer(in, buf, len, NULL);
+#else
+	return 0;
+#endif
 }
 
 int

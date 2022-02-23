@@ -511,16 +511,14 @@ func vipsSave(image *vipsImage, o vipsSaveOptions) ([]byte, error) {
 		saveErr = C.vips_pngsave_bridge(image.c, &ptr, &length, strip, C.int(o.Compression), quality, interlace, palette, speed)
 	case TIFF:
 		saveErr = C.vips_tiffsave_bridge(image.c, &ptr, &length)
+	case GIF:
+		saveErr = C.vips_gifsave_bridge(image.c, &ptr, &length)
 	case HEIF:
 		saveErr = C.vips_heifsave_bridge(image.c, &ptr, &length, strip, quality, lossless)
 	case AVIF:
 		saveErr = C.vips_avifsave_bridge(image.c, &ptr, &length, strip, quality, lossless, speed)
 	case JP2K:
 		saveErr = C.vips_jp2ksave_bridge(image.c, &ptr, &length, strip, quality, lossless)
-	case GIF:
-		formatString := C.CString("GIF")
-		defer C.free(unsafe.Pointer(formatString))
-		saveErr = C.vips_magicksave_bridge(image.c, &ptr, &length, formatString, quality)
 	case MAGICK:
 		formatString := C.CString(o.MagickFormat)
 		defer C.free(unsafe.Pointer(formatString))
