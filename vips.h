@@ -50,48 +50,35 @@ typedef struct {
 	float    Opacity;
 } WatermarkImageOptions;
 
-static unsigned long
-has_profile_embed(VipsImage *image) {
-	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
-}
-
-static void
-remove_profile(VipsImage *image) {
-	vips_image_remove(image, VIPS_META_ICC_NAME);
-}
-
-static int
-has_alpha_channel(VipsImage *image) {
-	return (
-		(image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
-		(image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
-		(image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
-	) ? 1 : 0;
-}
-
-void
-vips_enable_cache_set_trace() {
-	vips_cache_set_trace(TRUE);
-}
-
 int
-vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
-	return vips_jpegload_buffer(buf, len, out, "shrink", shrink, NULL);
-}
+vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
+	switch (imageType) {
+		case JPEG:
+			return vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case WEBP:
+			return vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case PNG:
+			return vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case TIFF:
+			return vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case GIF:
+			return vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case PDF:
+			return vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case SVG:
+			return vips_svgload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case HEIF:
+		case AVIF:
+			return vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#if (VIPS_VERSION_MIN(8, 11))
+		case JP2K:
+			return vips_jp2kload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+#endif
+		case MAGICK:
+			return vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+	}
 
-int
-vips_webpload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
-	return vips_webpload_buffer(buf, len, out, "shrink", shrink, NULL);
-}
-
-int
-vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
-	return vips_flip(in, out, direction, NULL);
-}
-
-int
-vips_resize_bridge(VipsImage *in, VipsImage **out, double xscale, double yscale) {
-	return vips_resize(in, out, xscale, "vscale", yscale, NULL);
+	return 1;
 }
 
 int
@@ -146,6 +133,140 @@ vips_type_find_save_bridge(int t) {
 			return vips_type_find("VipsOperation", "magicksave_buffer");
 	}
 	return 0;
+}
+
+int
+vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace) {
+	return vips_jpegsave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"Q", quality,
+		"optimize_coding", TRUE,
+		"interlace", INT_TO_GBOOLEAN(interlace),
+		NULL
+	);
+}
+
+int
+vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette, int speed) {
+	int effort = 10 - speed;
+	return vips_pngsave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"compression", compression,
+		"interlace", INT_TO_GBOOLEAN(interlace),
+		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
+		"palette", INT_TO_GBOOLEAN(palette),
+		"Q", quality,
+#if (VIPS_VERSION_MIN(8, 12))
+		"effort", effort,
+#endif
+		NULL
+	);
+}
+
+int
+vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
+	return vips_webpsave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"Q", quality,
+		"lossless", INT_TO_GBOOLEAN(lossless),
+		NULL
+	);
+}
+
+int
+vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
+	return vips_tiffsave_buffer(in, buf, len, NULL);
+}
+
+int
+vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless, int speed) {
+    return vips_heifsave_buffer(in, buf, len,
+	    "strip", INT_TO_GBOOLEAN(strip),
+	    "Q", quality,
+	    "lossless", INT_TO_GBOOLEAN(lossless),
+	    "compression", VIPS_FOREIGN_HEIF_COMPRESSION_AV1,
+#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION > 10) || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 10 && VIPS_MICRO_VERSION >= 2))
+		"speed", speed,
+#endif
+	    NULL
+    );
+}
+
+int
+vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
+	return vips_heifsave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"Q", quality,
+		"lossless", INT_TO_GBOOLEAN(lossless),
+		NULL
+	);
+}
+
+int
+vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len, const char *format, int quality) {
+	return vips_magicksave_buffer(in, buf, len,
+		"format", format,
+		"quality", quality,
+		NULL
+	);
+}
+
+int
+vips_jp2ksave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
+#if (VIPS_VERSION_MIN(8, 11))
+	return vips_jp2ksave_buffer(in, buf, len,
+		"strip", INT_TO_GBOOLEAN(strip),
+		"Q", quality,
+		"lossless", INT_TO_GBOOLEAN(lossless),
+		NULL
+	);
+#else
+	return 0;
+#endif
+}
+
+static unsigned long
+has_profile_embed(VipsImage *image) {
+	return vips_image_get_typeof(image, VIPS_META_ICC_NAME);
+}
+
+static void
+remove_profile(VipsImage *image) {
+	vips_image_remove(image, VIPS_META_ICC_NAME);
+}
+
+static int
+has_alpha_channel(VipsImage *image) {
+	return (
+		(image->Bands == 2 && image->Type == VIPS_INTERPRETATION_B_W) ||
+		(image->Bands == 4 && image->Type != VIPS_INTERPRETATION_CMYK) ||
+		(image->Bands == 5 && image->Type == VIPS_INTERPRETATION_CMYK)
+	) ? 1 : 0;
+}
+
+void
+vips_enable_cache_set_trace() {
+	vips_cache_set_trace(TRUE);
+}
+
+int
+vips_jpegload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
+	return vips_jpegload_buffer(buf, len, out, "shrink", shrink, NULL);
+}
+
+int
+vips_webpload_buffer_shrink(void *buf, size_t len, VipsImage **out, int shrink) {
+	return vips_webpload_buffer(buf, len, out, "shrink", shrink, NULL);
+}
+
+int
+vips_flip_bridge(VipsImage *in, VipsImage **out, int direction) {
+	return vips_flip(in, out, direction, NULL);
+}
+
+int
+vips_resize_bridge(VipsImage *in, VipsImage **out, double xscale, double yscale) {
+	return vips_resize(in, out, xscale, "vscale", yscale, NULL);
 }
 
 int
@@ -271,96 +392,6 @@ vips_icc_transform_with_default_bridge (VipsImage *in, VipsImage **out, const ch
 }
 
 int
-vips_jpegsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int interlace) {
-	return vips_jpegsave_buffer(in, buf, len,
-		"strip", INT_TO_GBOOLEAN(strip),
-		"Q", quality,
-		"optimize_coding", TRUE,
-		"interlace", INT_TO_GBOOLEAN(interlace),
-		NULL
-	);
-}
-
-int
-vips_pngsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int compression, int quality, int interlace, int palette, int speed) {
-	int effort = 10 - speed;
-	return vips_pngsave_buffer(in, buf, len,
-		"strip", INT_TO_GBOOLEAN(strip),
-		"compression", compression,
-		"interlace", INT_TO_GBOOLEAN(interlace),
-		"filter", VIPS_FOREIGN_PNG_FILTER_ALL,
-		"palette", INT_TO_GBOOLEAN(palette),
-		"Q", quality,
-#if (VIPS_VERSION_MIN(8, 12))
-		"effort", effort,
-#endif
-		NULL
-	);
-}
-
-int
-vips_webpsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
-	return vips_webpsave_buffer(in, buf, len,
-		"strip", INT_TO_GBOOLEAN(strip),
-		"Q", quality,
-		"lossless", INT_TO_GBOOLEAN(lossless),
-		NULL
-	);
-}
-
-int
-vips_tiffsave_bridge(VipsImage *in, void **buf, size_t *len) {
-	return vips_tiffsave_buffer(in, buf, len, NULL);
-}
-
-int
-vips_avifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless, int speed) {
-    return vips_heifsave_buffer(in, buf, len,
-	    "strip", INT_TO_GBOOLEAN(strip),
-	    "Q", quality,
-	    "lossless", INT_TO_GBOOLEAN(lossless),
-	    "compression", VIPS_FOREIGN_HEIF_COMPRESSION_AV1,
-#if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION > 10) || (VIPS_MAJOR_VERSION >= 8 && VIPS_MINOR_VERSION >= 10 && VIPS_MICRO_VERSION >= 2))
-		"speed", speed,
-#endif
-	    NULL
-    );
-}
-
-int
-vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
-	return vips_heifsave_buffer(in, buf, len,
-		"strip", INT_TO_GBOOLEAN(strip),
-		"Q", quality,
-		"lossless", INT_TO_GBOOLEAN(lossless),
-		NULL
-	);
-}
-
-int
-vips_magicksave_bridge(VipsImage *in, void **buf, size_t *len, const char *format, int quality) {
-	return vips_magicksave_buffer(in, buf, len,
-		"format", format,
-		"quality", quality,
-		NULL
-	);
-}
-
-int
-vips_jp2ksave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int quality, int lossless) {
-#if (VIPS_VERSION_MIN(8, 11))
-	return vips_jp2ksave_buffer(in, buf, len,
-		"strip", INT_TO_GBOOLEAN(strip),
-		"Q", quality,
-		"lossless", INT_TO_GBOOLEAN(lossless),
-		NULL
-	);
-#else
-	return 0;
-#endif
-}
-
-int
 vips_is_16bit (VipsInterpretation interpretation) {
 	return interpretation == VIPS_INTERPRETATION_RGB16 || interpretation == VIPS_INTERPRETATION_GREY16;
 }
@@ -381,37 +412,6 @@ vips_flatten_background_bridge(VipsImage *in, VipsImage **out, double r, double 
 		"max_alpha", vips_is_16bit(in->Type) ? 65535.0 : 255.0,
 		NULL
 	);
-}
-
-int
-vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
-	switch (imageType) {
-		case JPEG:
-			return vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case WEBP:
-			return vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case PNG:
-			return vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case TIFF:
-			return vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case GIF:
-			return vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case PDF:
-			return vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case SVG:
-			return vips_svgload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-		case HEIF:
-		case AVIF:
-			return vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-#if (VIPS_VERSION_MIN(8, 11))
-		case JP2K:
-			return vips_jp2kload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-#endif
-		case MAGICK:
-			return vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	}
-
-	return 1;
 }
 
 int
