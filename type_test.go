@@ -59,8 +59,8 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		{"test.pdf", "pdf", true},
 		{"test.svg", "svg", true},
 		{"test.jp2", "jp2k", vipsVersionMin(8, 11)},
-		{"test.heic", "heif", vipsVersionMin(8, 8)},
-		{"test.avif", "avif", vipsVersionMin(8, 9)},
+		{"test.heic", "heif", true},
+		{"test.avif", "avif", true},
 		{"test.bmp", "magick", true},
 	}
 
@@ -93,8 +93,8 @@ func TestIsTypeSupported(t *testing.T) {
 		{WEBP, true},
 		{GIF, true},
 		{PDF, true},
-		{HEIF, vipsVersionMin(8, 8)},
-		{AVIF, vipsVersionMin(8, 9)},
+		{HEIF, true},
+		{AVIF, true},
 		{JP2K, vipsVersionMin(8, 11)},
 	}
 
@@ -118,8 +118,8 @@ func TestIsTypeNameSupported(t *testing.T) {
 		{"webp", true, true},
 		{"gif", true, true},
 		{"pdf", true, true},
-		{"heif", true, vipsVersionMin(8, 8)},
-		{"avif", true, vipsVersionMin(8, 9)},
+		{"heif", true, true},
+		{"avif", true, true},
 		{"jp2k", true, vipsVersionMin(8, 11)},
 	}
 
@@ -137,16 +137,7 @@ func TestIsTypeNameSupported(t *testing.T) {
 
 func TestIsTypeSupportedSave(t *testing.T) {
 	types := []ImageType{
-		JPEG, PNG, WEBP,
-	}
-	if vipsVersionMin(8, 5) {
-		types = append(types, TIFF)
-	}
-	if vipsVersionMin(8, 8) {
-		types = append(types, HEIF)
-	}
-	if vipsVersionMin(8, 9) {
-		types = append(types, AVIF)
+		JPEG, PNG, WEBP, TIFF, HEIF, AVIF,
 	}
 	if vipsVersionMin(8, 11) {
 		types = append(types, JP2K)
@@ -167,11 +158,11 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"jpeg", true},
 		{"png", true},
 		{"webp", true},
-		{"gif", vipsVersionMin(8, 0)},
+		{"gif", true},
 		{"pdf", false},
-		{"tiff", vipsVersionMin(8, 5)},
-		{"heif", vipsVersionMin(8, 8)},
-		{"avif", vipsVersionMin(8, 9)},
+		{"tiff", true},
+		{"heif", true},
+		{"avif", true},
 		{"jp2k", vipsVersionMin(8, 11)},
 	}
 

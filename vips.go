@@ -123,7 +123,7 @@ func vipsVersionMin(major, minor int) bool {
 // Initialize is used to explicitly start libvips in thread-safe way.
 // Only call this function if you have previously turned off libvips.
 func Initialize() {
-	if C.VIPS_MAJOR_VERSION <= 7 && C.VIPS_MINOR_VERSION < 40 {
+	if !vipsVersionMin(8, 10) {
 		panic("unsupported libvips version!")
 	}
 
@@ -197,7 +197,7 @@ func VipsVectorSetEnabled(enable bool) {
 
 // VipsDebugInfo outputs to stdout libvips collected data. Useful for debugging.
 func VipsDebugInfo() {
-	C.im__print_all()
+	C.vips_object_print_all()
 }
 
 // VipsMemory gets memory info stats from libvips (cache size, memory allocs...)
