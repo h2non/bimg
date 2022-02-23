@@ -1,4 +1,11 @@
 
+v1.1.7 / 2022-02-23
+===================
+
+  * Merge pull request #398 from vaibsharma/vaibsharma/feature/speed_for_png_buffer
+  * reason for speed=3 added
+  * allow effort param for png encoding when palette is true
+
 v1.1.6 / 2022-01-28
 ===================
 
