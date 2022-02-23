@@ -37,9 +37,8 @@ RUN cd /build && \
     curl -fsSLO https://github.com/dloebl/cgif/archive/refs/tags/V${CGIF_VERSION}.tar.gz && \
     tar xf V${CGIF_VERSION}.tar.gz && \
     cd cgif-${CGIF_VERSION} && \
-    meson . build && \
-    meson compile -C build && \
-    DESTDIR=/usr meson install --no-rebuild -C build
+    meson setup --prefix=/usr . build && \
+    meson install -C build
 
 ARG GOLANGCILINT_VERSION=1.44.2
 RUN curl -fsSL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/bin v${GOLANGCILINT_VERSION}
