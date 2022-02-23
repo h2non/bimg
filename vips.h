@@ -24,10 +24,10 @@ enum types {
 	GIF,
 	PDF,
 	SVG,
-	MAGICK,
 	HEIF,
 	AVIF,
-	JP2K
+	JP2K,
+	MAGICK
 };
 
 typedef struct {
@@ -95,67 +95,56 @@ vips_resize_bridge(VipsImage *in, VipsImage **out, double xscale, double yscale)
 }
 
 int
-vips_type_find_bridge(int t) {
-	if (t == GIF) {
-		return vips_type_find("VipsOperation", "gifload");
-	}
-	if (t == PDF) {
-		return vips_type_find("VipsOperation", "pdfload");
-	}
-	if (t == TIFF) {
-		return vips_type_find("VipsOperation", "tiffload");
-	}
-	if (t == SVG) {
-		return vips_type_find("VipsOperation", "svgload");
-	}
-	if (t == WEBP) {
-		return vips_type_find("VipsOperation", "webpload");
-	}
-	if (t == PNG) {
-		return vips_type_find("VipsOperation", "pngload");
-	}
-	if (t == JPEG) {
-		return vips_type_find("VipsOperation", "jpegload");
-	}
-	if (t == MAGICK) {
-		return vips_type_find("VipsOperation", "magickload");
-	}
-	if (t == HEIF) {
-		return vips_type_find("VipsOperation", "heifload");
-	}
+vips_type_find_load_bridge(int t) {
+	switch (t) {
+		case JPEG:
+			return vips_type_find("VipsOperation", "jpegload");
+		case WEBP:
+			return vips_type_find("VipsOperation", "webpload");
+		case PNG:
+			return vips_type_find("VipsOperation", "pngload");
+		case TIFF:
+			return vips_type_find("VipsOperation", "tiffload");
+		case GIF:
+			return vips_type_find("VipsOperation", "gifload");
+		case PDF:
+			return vips_type_find("VipsOperation", "pdfload");
+		case SVG:
+			return vips_type_find("VipsOperation", "svgload");
+		case HEIF:
+		case AVIF:
+			return vips_type_find("VipsOperation", "heifload");
 #if (VIPS_VERSION_MIN(8, 11))
-	if (t == JP2K) {
-		return vips_type_find("VipsOperation", "jp2kload");
-	}
+		case JP2K:
+			return vips_type_find("VipsOperation", "jp2kload");
 #endif
+		case MAGICK:
+			return vips_type_find("VipsOperation", "magickload");
+	}
 	return 0;
 }
 
 int
 vips_type_find_save_bridge(int t) {
-	if (t == TIFF) {
-		return vips_type_find("VipsOperation", "tiffsave_buffer");
-	}
-	if (t == WEBP) {
-		return vips_type_find("VipsOperation", "webpsave_buffer");
-	}
-	if (t == PNG) {
-		return vips_type_find("VipsOperation", "pngsave_buffer");
-	}
-	if (t == JPEG) {
-		return vips_type_find("VipsOperation", "jpegsave_buffer");
-	}
-	if (t == HEIF) {
-		return vips_type_find("VipsOperation", "heifsave_buffer");
-	}
-	if (t == MAGICK) {
-		return vips_type_find("VipsOperation", "magicksave_buffer");
-	}
+	switch (t) {
+		case JPEG:
+			return vips_type_find("VipsOperation", "jpegsave_buffer");
+		case WEBP:
+			return vips_type_find("VipsOperation", "webpsave_buffer");
+		case PNG:
+			return vips_type_find("VipsOperation", "pngsave_buffer");
+		case TIFF:
+			return vips_type_find("VipsOperation", "tiffsave_buffer");
+		case HEIF:
+		case AVIF:
+			return vips_type_find("VipsOperation", "heifsave_buffer");
 #if (VIPS_VERSION_MIN(8, 11))
-	if (t == JP2K) {
-		return vips_type_find("VipsOperation", "jp2ksave_buffer");
-	}
+		case JP2K:
+			return vips_type_find("VipsOperation", "jp2ksave_buffer");
 #endif
+		case MAGICK:
+			return vips_type_find("VipsOperation", "magicksave_buffer");
+	}
 	return 0;
 }
 
@@ -396,35 +385,33 @@ vips_flatten_background_bridge(VipsImage *in, VipsImage **out, double r, double 
 
 int
 vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
-	int code = 1;
-
-	if (imageType == JPEG) {
-		code = vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == PNG) {
-		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == WEBP) {
-		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == TIFF) {
-		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == GIF) {
-		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == PDF) {
-		code = vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == SVG) {
-		code = vips_svgload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == MAGICK) {
-		code = vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == HEIF) {
-		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
-	} else if (imageType == AVIF) {
-		code = vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+	switch (imageType) {
+		case JPEG:
+			return vips_jpegload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case WEBP:
+			return vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case PNG:
+			return vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case TIFF:
+			return vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case GIF:
+			return vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case PDF:
+			return vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case SVG:
+			return vips_svgload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case HEIF:
+		case AVIF:
+			return vips_heifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #if (VIPS_VERSION_MIN(8, 11))
-	} else if (imageType == JP2K) {
-		code = vips_jp2kload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		case JP2K:
+			return vips_jp2kload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #endif
+		case MAGICK:
+			return vips_magickload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	}
 
-	return code;
+	return 1;
 }
 
 int

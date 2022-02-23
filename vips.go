@@ -214,25 +214,25 @@ func VipsMemory() VipsMemoryInfo {
 func VipsIsTypeSupported(t ImageType) bool {
 	switch t {
 	case JPEG:
-		return int(C.vips_type_find_bridge(C.JPEG)) != 0
+		return int(C.vips_type_find_load_bridge(C.JPEG)) != 0
 	case WEBP:
-		return int(C.vips_type_find_bridge(C.WEBP)) != 0
+		return int(C.vips_type_find_load_bridge(C.WEBP)) != 0
 	case PNG:
-		return int(C.vips_type_find_bridge(C.PNG)) != 0
+		return int(C.vips_type_find_load_bridge(C.PNG)) != 0
 	case GIF:
-		return int(C.vips_type_find_bridge(C.GIF)) != 0
+		return int(C.vips_type_find_load_bridge(C.GIF)) != 0
 	case PDF:
-		return int(C.vips_type_find_bridge(C.PDF)) != 0
+		return int(C.vips_type_find_load_bridge(C.PDF)) != 0
 	case SVG:
-		return int(C.vips_type_find_bridge(C.SVG)) != 0
+		return int(C.vips_type_find_load_bridge(C.SVG)) != 0
 	case TIFF:
-		return int(C.vips_type_find_bridge(C.TIFF)) != 0
+		return int(C.vips_type_find_load_bridge(C.TIFF)) != 0
 	case MAGICK:
-		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
+		return int(C.vips_type_find_load_bridge(C.MAGICK)) != 0
 	case HEIF, AVIF:
-		return int(C.vips_type_find_bridge(C.HEIF)) != 0
+		return int(C.vips_type_find_load_bridge(C.HEIF)) != 0
 	case JP2K:
-		return int(C.vips_type_find_bridge(C.JP2K)) != 0
+		return int(C.vips_type_find_load_bridge(C.JP2K)) != 0
 	default:
 		return false
 	}

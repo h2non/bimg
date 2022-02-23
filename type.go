@@ -26,14 +26,14 @@ const (
 	PDF
 	// SVG represents the SVG image type.
 	SVG
-	// MAGICK represents the libmagick compatible generic image type.
-	MAGICK
 	// HEIF represents the HEIC/HEIF/HVEC image type
 	HEIF
 	// AVIF represents the AVIF image type.
 	AVIF
 	// JP2K represents the JPEG 2000 image type.
 	JP2K
+	// MAGICK represents the libmagick compatible generic image type.
+	MAGICK
 )
 
 var (
@@ -52,8 +52,8 @@ var ImageTypes = map[ImageType]string{
 	SVG:    "svg",
 	HEIF:   "heif",
 	AVIF:   "avif",
-	MAGICK: "magick",
 	JP2K:   "jp2k",
+	MAGICK: "magick",
 }
 
 // imageMutex is used to provide thread-safe synchronization
