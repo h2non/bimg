@@ -198,7 +198,9 @@ func TestImage_Rotate(t *testing.T) {
 		t.Fatalf("cannot load image: %v", err)
 	}
 	initialSize := image.Size()
-	image.Rotate(270)
+	if err := image.Rotate(270); err != nil {
+		t.Fatalf("cannot rotate image: %v", err)
+	}
 	newSize := image.Size()
 
 	if newSize.Width != initialSize.Height || newSize.Height != initialSize.Width {
