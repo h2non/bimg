@@ -38,9 +38,21 @@ enum types {
 	AVIF
 };
 
+/*
+font : gchararray, font to render with
+width : gint, image should be no wider than this many pixels
+height : gint, image should be no higher than this many pixels
+align : VipsAlign, left/centre/right alignment
+dpi : gint, render at this resolution
+autofit_dpi : gint, read out auto-fitted DPI
+spacing : gint, line spacing in pixels
+*/
+//TODO: change to generic TextOptions... make vips_text
 typedef struct {
 	const char *Text;
 	const char *Font;
+	int Spacing;
+	int Align;
 } WatermarkTextOptions;
 
 typedef struct {
@@ -50,12 +62,13 @@ typedef struct {
 	int    NoReplicate;
 	float  Opacity;
 	double Background[3];
+	int	 Placement;
 } WatermarkOptions;
 
 typedef struct {
 	int    Left;
 	int    Top;
-	float    Opacity;
+	float  Opacity;
 } WatermarkImageOptions;
 
 static unsigned long
@@ -499,14 +512,16 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 	// Make the mask.
 	if (
 		vips_text(&t[1], to->Text,
-			"width", o->Width,
+			"width", o->Width - (o->Margin * 2),
 			"dpi", o->DPI,
 			"font", to->Font,
-			NULL) ||
+			"align", to->Align,
+			"spacing", to->Spacing,
+			NULL) ||		
 		vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
-		vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
-		vips_embed(t[3], &t[4], 100, 100, t[3]->Xsize + o->Margin, t[3]->Ysize + o->Margin, NULL)
-		) {
+		vips_embed(t[2], &t[3], o->Margin, o->Margin, t[2]->Xsize + (o->Margin * 2), t[2]->Ysize + (o->Margin * 2), NULL)  ||
+		vips_gravity(t[3], &t[4], o->Placement, in->Xsize, in->Ysize, NULL)
+	) {
 		g_object_unref(base);
 		return 1;
 	}
@@ -524,13 +539,12 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 	}
 
 	// Make the constant image to paint the text with.
-	if (
-		vips_black(&t[5], 1, 1, NULL) ||
+	if (vips_black(&t[5], 1, 1, NULL) ||
 		vips_linear(t[5], &t[6], ones, o->Background, 3, NULL) ||
 		vips_cast(t[6], &t[7], VIPS_FORMAT_UCHAR, NULL) ||
 		vips_copy(t[7], &t[8], "interpretation", t[0]->Type, NULL) ||
 		vips_embed(t[8], &t[9], 0, 0, t[0]->Xsize, t[0]->Ysize, "extend", VIPS_EXTEND_COPY, NULL)
-		) {
+	) {
 		g_object_unref(base);
 		return 1;
 	}
@@ -659,4 +673,33 @@ int vips_find_trim_bridge(VipsImage *in, int *top, int *left, int *width, int *h
 int vips_gamma_bridge(VipsImage *in, VipsImage **out, double exponent)
 {
   return vips_gamma(in, out, "exponent", 1.0 / exponent, NULL);
+}
+
+int
+vips_arrayjoin_bridge(VipsImage **in, VipsImage **out, int n, int across, int shim, int hspacing, int vspacing) {
+	
+	if (hspacing != 0 && vspacing != 0) {
+		return vips_arrayjoin(in, out, n, "across", across, "shim", shim, "hspacing", hspacing, "vspacing", vspacing, NULL);
+	} else if (hspacing != 0) {
+		return vips_arrayjoin(in, out, n, "across", across, "shim", shim, "hspacing", hspacing, NULL);
+	} else if (vspacing != 0) {
+		return vips_arrayjoin(in, out, n, "across", across, "shim", shim, "vspacing", vspacing, NULL);
+	}
+
+	return vips_arrayjoin(in, out, n, "across", across, "shim", shim, NULL);
+}
+
+int
+vips_mosaic_bridge(VipsImage *ref, VipsImage *sec, VipsImage **out, int direction, int xref, int yref, int xsec, int ysec) {
+	return vips_mosaic(ref, sec, out, direction, xref, yref, xsec, ysec, NULL);
+};
+
+int 
+vips_composite_bridge(VipsImage **in, VipsImage **out, int n, int *mode) {
+	return vips_composite(in, out, n, mode, NULL);
+}
+
+int 
+vips_composite2_bridge(VipsImage *base, VipsImage *overlay, VipsImage **out,	int mode) {
+	return vips_composite2(base, overlay, out, mode, NULL);
 }

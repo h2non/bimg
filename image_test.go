@@ -52,12 +52,17 @@ func TestImageGifToJpeg(t *testing.T) {
 			t.Errorf("Cannot process the image: %#v", err)
 		}
 
-		Write("testdata/test_gif.jpg", buf)
+		Write("testdata/test_gif_out.jpg", buf)
 	}
 }
 
 func TestImagePdfToJpeg(t *testing.T) {
 	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+		if !IsTypeNameSupported("pdf") {
+			t.Skip("Skip test in TestImagePdfToJpeg: pdf is not supported.")
+			return
+		}
+
 		i := initImage("test.pdf")
 		options := Options{
 			Type: JPEG,
@@ -67,12 +72,17 @@ func TestImagePdfToJpeg(t *testing.T) {
 			t.Errorf("Cannot process the image: %#v", err)
 		}
 
-		Write("testdata/test_pdf.jpg", buf)
+		Write("testdata/test_pdf_out.jpg", buf)
 	}
 }
 
 func TestImageSvgToJpeg(t *testing.T) {
 	if VipsMajorVersion >= 8 && VipsMinorVersion > 2 {
+		if !IsTypeNameSupported("svg") {
+			t.Skip("Skip test in TestImageSvgToJpeg: svg is not supported.")
+			return
+		}
+
 		i := initImage("test.svg")
 		options := Options{
 			Type: JPEG,
@@ -82,7 +92,7 @@ func TestImageSvgToJpeg(t *testing.T) {
 			t.Errorf("Cannot process the image: %#v", err)
 		}
 
-		Write("testdata/test_svg.jpg", buf)
+		Write("testdata/test_svg_out.jpg", buf)
 	}
 }
 
@@ -240,6 +250,40 @@ func TestImageWatermark(t *testing.T) {
 	}
 
 	Write("testdata/test_watermark_text_out.jpg", buf)
+}
+
+func TestImageWatermark2(t *testing.T) {
+	options := Options{
+		Width: 800,
+		Height: 600, 
+		Watermark: Watermark{
+			Text:       "Copy me if you can, yabba dabba do!",
+			Opacity:    0.25,
+			Width:      200,
+			Margin: 		20,
+			DPI:        100,
+			Background: Color{255, 255, 255},
+			Placement:  CompassSouthEast,
+			TextAlign:	Center,
+			LineSpacing: 20,
+		},
+	}
+
+	buf, err := initImage("test.jpg").Process(options)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if DetermineImageType(buf) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	Write("testdata/test_watermark2_text_out.jpg", buf)
 }
 
 func TestImageWatermarkWithImage(t *testing.T) {
@@ -509,7 +553,7 @@ func TestImageSmartCrop(t *testing.T) {
 		t.Error(err)
 	}
 
-	Write("testdata/test_smart_crop.jpg", buf)
+	Write("testdata/test_smart_crop_out.jpg", buf)
 }
 
 func TestImageTrim(t *testing.T) {
@@ -529,7 +573,7 @@ func TestImageTrim(t *testing.T) {
 		t.Errorf("The image wasn't trimmed.")
 	}
 
-	Write("testdata/transparent_trim.png", buf)
+	Write("testdata/transparent_trim_out.png", buf)
 }
 
 func TestImageTrimParameters(t *testing.T) {
@@ -554,7 +598,7 @@ func TestImageTrimParameters(t *testing.T) {
 		t.Errorf("The image wasn't trimmed.")
 	}
 
-	Write("testdata/parameter_trim.png", buf)
+	Write("testdata/parameter_trim_out.png", buf)
 }
 
 func TestImageLength(t *testing.T) {

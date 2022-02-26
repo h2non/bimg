@@ -7,3 +7,6 @@ bin
 /testdata/*_out.*
 /.idea/
 testdata/test_vertical_*.jpg
+.vs
+.vscode
+*.code-workspace
