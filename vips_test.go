@@ -74,30 +74,6 @@ func TestVipsSaveAvif(t *testing.T) {
 	}
 }
 
-func TestVipsRotate(t *testing.T) {
-	files := []struct {
-		name   string
-		rotate Angle
-	}{
-		{"test.jpg", D90},
-		{"test_square.jpg", D45},
-	}
-
-	for _, file := range files {
-		image, _, _ := vipsRead(readImage(file.name))
-
-		newImg, err := vipsRotate(image, file.rotate)
-		if err != nil {
-			t.Fatal("Cannot rotate the image")
-		}
-
-		buf, _ := vipsSave(newImg, vipsSaveOptions{Quality: 95})
-		if len(buf) == 0 {
-			t.Fatal("Empty image")
-		}
-	}
-}
-
 func TestVipsAutoRotate(t *testing.T) {
 	if VipsMajorVersion <= 8 && VipsMinorVersion < 10 {
 		t.Skip("Skip test in libvips < 8.10")

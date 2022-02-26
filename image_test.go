@@ -1,13 +1,25 @@
 package bimg
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
 	"path/filepath"
 	"testing"
 )
 
 func testfile(fileName string) string {
 	return filepath.Join("testdata", fileName)
+}
+
+func writeImage(image *Image, fileName string) error {
+	b, err := image.Save(SaveOptions{})
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(testfile(fileName), b, 0644)
 }
 
 func TestImageTransformation_Resize(t *testing.T) {
@@ -100,7 +112,7 @@ func TestImageTransformation_Resize(t *testing.T) {
 				}
 				// Apply an operation before the resize tains the buffer, which can (but shouldn't)
 				// influence calculations.
-				if err := imageTrans.Rotate(RotateOptions{}); err != nil {
+				if err := imageTrans.AutoRotate(); err != nil {
 					t.Fatalf("cannot autorotate image: %v", err)
 				}
 				if !imageTrans.bufTainted {
@@ -123,36 +135,147 @@ func TestImageTransformation_Resize(t *testing.T) {
 	})
 
 	t.Run("upscale", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test.webp"))
+		image, err := NewImageFromFile(testfile("test.webp"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if err := imageTrans.Resize(ResizeOptions{Width: 2000, Height: 2000}); err != nil {
+		if err := image.Resize(ResizeOptions{Width: 2000, Height: 2000, Mode: ResizeModeFit}); err != nil {
 			t.Fatalf("cannot resize image: %v", err)
 		}
-		size := imageTrans.Size()
+		size := image.Size()
 		expected := ImageSize{2000, 1338}
 		if size != expected {
 			t.Errorf("unexpected size. wanted %#v, got %#v", expected, size)
 		}
-		if out, err := imageTrans.Save(SaveOptions{Type: JPEG}); err != nil {
+		if out, err := image.Save(SaveOptions{Type: JPEG}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
 			_ = Write("testdata/transformation_resize_upscale_out.jpeg", out)
 		}
 	})
-}
 
-func TestImageTransformation_Embed(t *testing.T) {
-	t.Run("B/W on grey", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test_bw.png"))
+	t.Run("rounding precision", func(t *testing.T) {
+		// see https://github.com/h2non/bimg/issues/99
+		img := image.NewGray16(image.Rect(0, 0, 1920, 1080))
+		input := &bytes.Buffer{}
+		_ = jpeg.Encode(input, img, nil)
+
+		desiredWidth := 300
+
+		imageTrans, err := NewImageFromBuffer(input.Bytes())
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 1 {
+		if err := imageTrans.Resize(ResizeOptions{Width: desiredWidth}); err != nil {
+			t.Fatalf("cannot resize: %v", err)
+		}
+		size := imageTrans.Size()
+
+		if size.Width != desiredWidth {
+			t.Fatalf("Invalid width: %d", size.Width)
+		}
+	})
+
+	t.Run("handles corrupt image", func(t *testing.T) {
+		image, err := NewImageFromFile(testfile("corrupt.jpg"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if err := image.Resize(ResizeOptions{Width: 800, Height: 600}); err != nil {
+			t.Fatalf("cannot resize image: %v", err)
+		}
+		size := image.Size()
+
+		if size.Width != 800 || size.Height != 600 {
+			t.Errorf("invalid image size: %d x %d", size.Width, size.Height)
+		}
+	})
+}
+
+func TestImage_Rotate(t *testing.T) {
+	image, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	initialSize := image.Size()
+	image.Rotate(270)
+	newSize := image.Size()
+
+	if newSize.Width != initialSize.Height || newSize.Height != initialSize.Width {
+		t.Errorf("invalid image size: %d x %d", newSize.Width, newSize.Height)
+	}
+}
+
+func TestImage_Blur(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.Resize(ResizeOptions{Width: 800, Height: 600}); err != nil {
+		t.Fatalf("cannot resize image: %v", err)
+	}
+	if err := img.Blur(GaussianBlur{Sigma: 5}); err != nil {
+		t.Fatalf("cannot apply blur: %v", err)
+	}
+	_ = writeImage(img, "test_gaussian_out.jpg")
+}
+
+func TestImage_Sharpen(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.Resize(ResizeOptions{Width: 800, Height: 600}); err != nil {
+		t.Fatalf("cannot resize image: %v", err)
+	}
+	if err := img.Sharpen(SharpenOptions{
+		Radius: 1, X1: 1.5, Y2: 20, Y3: 50, M1: 1, M2: 2,
+	}); err != nil {
+		t.Fatalf("cannot sharpen image: %v", err)
+	}
+	_ = writeImage(img, "test_sharpen_out.jpg")
+}
+
+func TestImageTransformation_Embed(t *testing.T) {
+	t.Run("extend image on white", func(t *testing.T) {
+		img, err := NewImageFromFile(testfile("test_issue.jpg"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if err := img.Resize(ResizeOptions{Width: 400, Height: 600, Mode: ResizeModeFit}); err != nil {
+			t.Fatalf("cannot resize image: %v", err)
+		}
+		if err := img.Embed(EmbedOptions{Width: 400, Height: 600, Extend: ExtendWhite, Background: Color{255, 20, 10}}); err != nil {
+			t.Fatalf("cannot embed image: %v", err)
+		}
+
+		_ = writeImage(img, "test_extend_white_out.jpg")
+	})
+
+	t.Run("extend image on background", func(t *testing.T) {
+		img, err := NewImageFromFile(testfile("test_issue.jpg"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if err := img.Resize(ResizeOptions{Width: 400, Height: 600, Mode: ResizeModeFit}); err != nil {
+			t.Fatalf("cannot resize image: %v", err)
+		}
+		if err := img.Embed(EmbedOptions{Width: 400, Height: 600, Extend: ExtendBackground, Background: Color{255, 20, 10}}); err != nil {
+			t.Fatalf("cannot embed image: %v", err)
+		}
+
+		_ = writeImage(img, "test_extend_background_out.jpg")
+	})
+
+	t.Run("B/W on grey", func(t *testing.T) {
+		img, err := NewImageFromFile(testfile("test_bw.png"))
+		if err != nil {
+			t.Fatalf("cannot load image: %v", err)
+		}
+		if img.Metadata().Channels != 1 {
 			t.Fatalf("source image has unexpected number of channels")
 		}
-		if err := imageTrans.Embed(EmbedOptions{
+		if err := img.Embed(EmbedOptions{
 			Width:      200,
 			Height:     200,
 			Extend:     ExtendBackground,
@@ -160,25 +283,21 @@ func TestImageTransformation_Embed(t *testing.T) {
 		}); err != nil {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 1 {
+		if img.Metadata().Channels != 1 {
 			t.Fatalf("image should still have one channel")
 		}
-		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
-			t.Errorf("cannot save image: %v", err)
-		} else {
-			_ = Write("testdata/transformation_embed_bw_grey_out.png", out)
-		}
+		_ = writeImage(img, "transformation_embed_bw_grey_out.png")
 	})
 
 	t.Run("B/W with alpha on grey", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		img, err := NewImageFromFile(testfile("test_bwa.png"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 2 {
+		if img.Metadata().Channels != 2 {
 			t.Fatalf("source image has unexpected number of channels")
 		}
-		if err := imageTrans.Embed(EmbedOptions{
+		if err := img.Embed(EmbedOptions{
 			Width:      200,
 			Height:     200,
 			Extend:     ExtendBackground,
@@ -186,25 +305,21 @@ func TestImageTransformation_Embed(t *testing.T) {
 		}); err != nil {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 2 {
+		if img.Metadata().Channels != 2 {
 			t.Fatalf("image should still have two channels")
 		}
-		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
-			t.Errorf("cannot save image: %v", err)
-		} else {
-			_ = Write("testdata/transformation_embed_bwa_grey_out.png", out)
-		}
+		_ = writeImage(img, "transformation_embed_bwa_grey_out.png")
 	})
 
 	t.Run("B/W with alpha on red", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		img, err := NewImageFromFile(testfile("test_bwa.png"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 2 {
+		if img.Metadata().Channels != 2 {
 			t.Fatalf("source image has unexpected number of channels")
 		}
-		if err := imageTrans.Embed(EmbedOptions{
+		if err := img.Embed(EmbedOptions{
 			Width:      200,
 			Height:     200,
 			Extend:     ExtendBackground,
@@ -212,28 +327,24 @@ func TestImageTransformation_Embed(t *testing.T) {
 		}); err != nil {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 4 {
+		if img.Metadata().Channels != 4 {
 			t.Fatalf("image should have four channels now")
 		}
-		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
-			t.Errorf("cannot save image: %v", err)
-		} else {
-			_ = Write("testdata/transformation_embed_bwa_red_out.png", out)
-		}
+		_ = writeImage(img, "transformation_embed_bwa_red_out.png")
 	})
 
 	t.Run("CMYK", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test_cmyk.jpeg"))
+		img, err := NewImageFromFile(testfile("test_cmyk.jpeg"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 4 {
+		if img.Metadata().Channels != 4 {
 			t.Fatalf("source image has unexpected number of channels")
 		}
-		if imageTrans.Metadata().Interpretation != InterpretationCMYK {
+		if img.Metadata().Interpretation != InterpretationCMYK {
 			t.Fatalf("source image has unexpected interpretation (should be CMYK)")
 		}
-		if err := imageTrans.Embed(EmbedOptions{
+		if err := img.Embed(EmbedOptions{
 			Width:      1000,
 			Height:     1000,
 			Extend:     ExtendBackground,
@@ -241,71 +352,59 @@ func TestImageTransformation_Embed(t *testing.T) {
 		}); err != nil {
 			t.Fatalf("embed returned unexpected error: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 4 {
+		if img.Metadata().Channels != 4 {
 			t.Fatalf("image should still have four channels now")
 		}
-		if imageTrans.Metadata().Interpretation != InterpretationSRGB {
+		if img.Metadata().Interpretation != InterpretationSRGB {
 			t.Fatalf("image should be sRGB now")
 		}
-		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
-			t.Errorf("cannot save image: %v", err)
-		} else {
-			_ = Write("testdata/transformation_embed_cmyk_on_alpha_out.jpeg", out)
-		}
+		_ = writeImage(img, "transformation_embed_cmyk_on_alpha_out.jpeg")
 	})
 }
 
 func TestImageTransformation_Flatten(t *testing.T) {
 	t.Run("B/W with alpha", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		img, err := NewImageFromFile(testfile("test_bwa.png"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 2 {
+		if img.Metadata().Channels != 2 {
 			t.Fatalf("source image has unexpected number of channels")
 		}
-		if err := imageTrans.Flatten(Color{R: 255, G: 255, B: 255}); err != nil {
+		if err := img.Flatten(Color{R: 255, G: 255, B: 255}); err != nil {
 			t.Fatalf("flatten returned unexpected error: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 1 {
+		if img.Metadata().Channels != 1 {
 			t.Errorf("image should have just one channel now (no alpha)")
 		}
-		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
-			t.Errorf("cannot save image: %v", err)
-		} else {
-			_ = Write("testdata/transformation_flatten_bwa_out.png", out)
-		}
+		_ = writeImage(img, "transformation_flatten_bwa_out.png")
 	})
 
 	t.Run("B/W with alpha on red", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test_bwa.png"))
+		img, err := NewImageFromFile(testfile("test_bwa.png"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 2 {
+		if img.Metadata().Channels != 2 {
 			t.Fatalf("source image has unexpected number of channels")
 		}
-		if err := imageTrans.Flatten(Color{R: 255, G: 0, B: 0}); err != nil {
+		if err := img.Flatten(Color{R: 255, G: 0, B: 0}); err != nil {
 			t.Fatalf("flatten returned unexpected error: %v", err)
 		}
-		if imageTrans.Metadata().Channels != 3 {
+		if img.Metadata().Channels != 3 {
 			t.Errorf("image should have three channels now (RGB without alpha)")
 		}
-		if out, err := imageTrans.Save(SaveOptions{}); err != nil {
-			t.Errorf("cannot save image: %v", err)
-		} else {
-			_ = Write("testdata/transformation_flatten_bwa_on_red_out.png", out)
-		}
+		_ = writeImage(img, "transformation_flatten_bwa_on_red_out.png")
 	})
 }
 
 func TestImageTransformation_Save(t *testing.T) {
 	t.Run("save bitmap", func(t *testing.T) {
-		imageTrans, err := NewImageFromFile(testfile("test.bmp"))
+		img, err := NewImageFromFile(testfile("test.bmp"))
 		if err != nil {
 			t.Fatalf("cannot load image: %v", err)
 		}
-		if out, err := imageTrans.Save(SaveOptions{MagickFormat: "bmp"}); err != nil {
+		if out, err := img.Save(SaveOptions{MagickFormat: "bmp"}); err != nil {
 			t.Errorf("cannot save image: %v", err)
 		} else {
 			_ = Write("testdata/transformation_save_bmp_out.bmp", out)

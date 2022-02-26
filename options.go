@@ -56,28 +56,6 @@ func (i Interpolator) String() string {
 	return interpolations[i]
 }
 
-// Angle represents the image rotation angle value.
-type Angle int
-
-const (
-	// D0 represents the rotation angle 0 degrees.
-	D0 Angle = 0
-	// D45 represents the rotation angle 45 degrees.
-	D45 Angle = 45
-	// D90 represents the rotation angle 90 degrees.
-	D90 Angle = 90
-	// D135 represents the rotation angle 135 degrees.
-	D135 Angle = 135
-	// D180 represents the rotation angle 180 degrees.
-	D180 Angle = 180
-	// D235 represents the rotation angle 235 degrees.
-	D235 Angle = 235
-	// D270 represents the rotation angle 270 degrees.
-	D270 Angle = 270
-	// D315 represents the rotation angle 315 degrees.
-	D315 Angle = 315
-)
-
 // Direction represents the image direction value.
 type Direction int
 
@@ -202,61 +180,12 @@ type GaussianBlur struct {
 	MinAmpl float64
 }
 
-// Sharpen represents the image sharp transformation options.
-type Sharpen struct {
+// SharpenOptions represents the image sharp transformation options.
+type SharpenOptions struct {
 	Radius int
 	X1     float64
 	Y2     float64
 	Y3     float64
 	M1     float64
 	M2     float64
-}
-
-// Options represents the supported image transformation options.
-type Options struct {
-	Height         int
-	Width          int
-	AreaHeight     int
-	AreaWidth      int
-	Top            int
-	Left           int
-	Quality        int
-	Compression    int
-	Zoom           int
-	Crop           bool
-	SmartCrop      bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
-	Enlarge        bool
-	Embed          bool
-	Flip           bool
-	Flop           bool
-	Force          bool
-	NoAutoRotate   bool
-	NoProfile      bool
-	Interlace      bool
-	StripMetadata  bool
-	Trim           bool
-	Lossless       bool
-	Extend         Extend
-	Rotate         Angle
-	Background     RGBAProvider
-	Gravity        Gravity
-	Watermark      Watermark
-	WatermarkImage WatermarkImage
-	Type           ImageType
-	Interpolator   Interpolator
-	Interpretation Interpretation
-	GaussianBlur   GaussianBlur
-	Sharpen        Sharpen
-	Threshold      float64
-	Gamma          float64
-	OutputICC      string
-	InputICC       string
-	Palette        bool
-	// Speed defines the AVIF encoders CPU effort. Valid values are: 
-	// 0-8 for AVIF encoding.
-	// 0-9 for PNG encoding.
-	Speed int
-
-	// private fields
-	autoRotateOnly bool
 }

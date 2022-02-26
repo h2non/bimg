@@ -290,10 +290,10 @@ func vipsSpace(image *vipsImage) string {
 	return C.GoString(C.vips_enum_nick_bridge(image.c))
 }
 
-func vipsRotate(image *vipsImage, angle Angle) (*vipsImage, error) {
+func vipsRotate(image *vipsImage, angle int) (*vipsImage, error) {
 	var out *C.VipsImage
 
-	err := C.vips_rotate_bridge(image.c, &out, C.int(angle))
+	err := C.vips_rotate_bridge(image.c, &out, C.double(angle))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -810,7 +810,7 @@ func vipsGaussianBlur(image *vipsImage, o GaussianBlur) (*vipsImage, error) {
 	return wrapVipsImage(out), nil
 }
 
-func vipsSharpen(image *vipsImage, o Sharpen) (*vipsImage, error) {
+func vipsSharpen(image *vipsImage, o SharpenOptions) (*vipsImage, error) {
 	var out *C.VipsImage
 
 	err := C.vips_sharpen_bridge(image.c, &out, C.int(o.Radius), C.double(o.X1), C.double(o.Y2), C.double(o.Y3), C.double(o.M1), C.double(o.M2))

@@ -85,23 +85,23 @@ func (it *Image) updateImage(image *vipsImage) {
 type ResizeMode int
 
 const (
+	// The dimensions will be enforced, no matter the aspect ratio.
+	ResizeModeForce ResizeMode = iota
 	// The dimensions will not be exceeded while honoring the aspect ratio.
-	ResizeModeFit ResizeMode = iota
+	ResizeModeFit
 	// One dimension will not be exceeded. The image will be *at least* as big
 	// as the desired dimensions, while the aspect ratio is kept.
 	ResizeModeFitUp
-	// The dimensions will be enforced, no matter the aspect ratio.
-	ResizeModeForce
 )
 
 func (rm ResizeMode) String() string {
 	switch rm {
+	case ResizeModeForce:
+		return "force"
 	case ResizeModeFit:
 		return "fit"
 	case ResizeModeFitUp:
 		return "fitup"
-	case ResizeModeForce:
-		return "force"
 	default:
 		panic("invalid resize mode")
 	}
@@ -152,20 +152,12 @@ func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
 		}
 	// Fixed width, auto height
 	case opts.Width > 0:
-		if opts.Mode == ResizeModeForce {
-			opts.Height = inHeight
-		} else {
-			factor = xfactor
-			opts.Height = roundFloat(float64(inHeight) / factor)
-		}
+		factor = xfactor
+		opts.Height = roundFloat(float64(inHeight) / factor)
 	// Fixed height, auto width
 	case opts.Height > 0:
-		if opts.Mode == ResizeModeForce {
-			opts.Width = inWidth
-		} else {
-			factor = yfactor
-			opts.Width = roundFloat(float64(inWidth) / factor)
-		}
+		factor = yfactor
+		opts.Width = roundFloat(float64(inWidth) / factor)
 	// Identity transform
 	default:
 		opts.Width = inWidth
@@ -181,12 +173,8 @@ func calculateResizeFactor(opts *ResizeOptions, inWidth, inHeight int) float64 {
 // If neither Height nor Width are specified, both are set to the current
 // dimensions of the image.
 //
-// If only Height or Width is specified, the other is determined from the
-// selected resize mode:
-//   * ResizeModeForce: the missing dimension from the current image is used
-//   * ResizeModeFit and ResizeModeFitUp:
-//       the specified values are calculated from the current image dimensions,
-//       treating the specified dimension as a constraint.
+// If only Height or Width is specified, the other is calculated from the
+//  current image dimensions, treating the specified dimension as a constraint.
 func (it *Image) Resize(opts ResizeOptions) error {
 	if opts.Interpretation == 0 {
 		opts.Interpretation = InterpretationSRGB
@@ -338,39 +326,50 @@ func (it *Image) Extract(opts ExtractOptions) error {
 	}
 }
 
-type RotateOptions struct {
-	// Angle to rotate the image by.
-	Angle Angle
-	// Transpose the image along the X axis.
-	Flip bool
-	// Transpose the image along the Y axis.
-	Flop bool
-	// Do *not* apply rotation as specified in the metadata first.
-	NoAutoRotate bool
-}
-
-// Rotate or transpose the image. By default it will perform auto-rotation
-// first, meaning it will take the "virtual" rotation specified in the image
-// metadata and turn it into a real rotation (actually modifying pixels).
-func (it *Image) Rotate(opts RotateOptions) error {
-	var image *vipsImage
-	var err error
-
-	if opts.NoAutoRotate {
-		image = it.image
-	} else {
-		image, err = vipsAutoRotate(it.image)
-		if err != nil {
-			return fmt.Errorf("cannot autorotate image: %w", err)
-		}
-	}
-
-	image, err = rotateAndFlipImage(image, opts)
+// AutoRotate performs rotation according to exif information within the image,
+// turning a previous "virtual" rotation into a real one (that modifies pixel).
+func (it *Image) AutoRotate() error {
+	image, err := vipsAutoRotate(it.image)
 	if err != nil {
 		return err
 	}
-	it.updateImage(image)
 
+	it.updateImage(image)
+	return nil
+}
+
+// Rotate the image by the given degree clockwise.
+func (it *Image) Rotate(angle int) error {
+	image, err := vipsRotate(it.image, angle)
+	if err != nil {
+		return err
+	}
+
+	it.updateImage(image)
+	return nil
+}
+
+// FlipHorizontal transposes the image along the X axis, turning it from
+// left to right.
+func (it *Image) FlipHorizontal() error {
+	image, err := vipsFlip(it.image, Horizontal)
+	if err != nil {
+		return err
+	}
+
+	it.updateImage(image)
+	return nil
+}
+
+// FlipVertical transposes the image along the Y axis, turning it from
+// top to bottom.
+func (it *Image) FlipVertical() error {
+	image, err := vipsFlip(it.image, Vertical)
+	if err != nil {
+		return err
+	}
+
+	it.updateImage(image)
 	return nil
 }
 
@@ -385,7 +384,7 @@ func (it *Image) Blur(opts GaussianBlur) error {
 }
 
 // Sharpen the image.
-func (it *Image) Sharpen(opts Sharpen) error {
+func (it *Image) Sharpen(opts SharpenOptions) error {
 	if image, err := vipsSharpen(it.image, opts); err != nil {
 		return err
 	} else {
