@@ -416,6 +416,23 @@ vips_is_16bit (VipsInterpretation interpretation) {
 }
 
 int
+vips_thumbnail_bridge(void *buf, size_t len, VipsImage **out, int width, int height, int no_rotate, int crop) {
+	if (crop) {
+		return vips_thumbnail_buffer(buf, len, out, width,
+			"height", height,
+			"no_rotate", INT_TO_GBOOLEAN(no_rotate),
+			"crop", VIPS_INTERESTING_CENTRE,
+			NULL
+		);
+	}
+	return vips_thumbnail_buffer(buf, len, out, width,
+		"height", height,
+		"no_rotate", INT_TO_GBOOLEAN(no_rotate),
+		NULL
+	);
+}
+
+int
 vips_flatten_background_brigde(VipsImage *in, VipsImage **out, double r, double g, double b) {
 	if (vips_is_16bit(in->Type)) {
 		r = 65535 * r / 255;

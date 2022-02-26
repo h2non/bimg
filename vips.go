@@ -382,6 +382,25 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
 	return image, imageType, nil
 }
 
+func vipsThumbnail(buf []byte, width, height int, noAutoRotate, crop bool) (*C.VipsImage, error) {
+	var image *C.VipsImage
+
+	noRotateParam := C.int(boolToInt(noAutoRotate))
+	cropParam := C.int(boolToInt(crop))
+
+	length := C.size_t(len(buf))
+	imageBuf := unsafe.Pointer(&buf[0])
+
+	err := C.vips_thumbnail_bridge(imageBuf, length, &image,
+		C.int(width), C.int(height), noRotateParam, cropParam,
+	)
+	if int(err) != 0 {
+		return nil, catchVipsError()
+	}
+
+	return image, nil
+}
+
 func vipsColourspaceIsSupportedBuffer(buf []byte) (bool, error) {
 	image, _, err := vipsRead(buf)
 	if err != nil {

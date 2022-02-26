@@ -158,6 +158,14 @@ func loadImage(buf []byte) (*C.VipsImage, ImageType, error) {
 	return image, imageType, nil
 }
 
+func imageThumbnail(buf []byte, width, height int, noRotate, crop bool) (*C.VipsImage, error) {
+	if len(buf) == 0 {
+		return nil, errors.New("Image buffer is empty")
+	}
+
+	return vipsThumbnail(buf, width, height, noRotate, crop)
+}
+
 func applyDefaults(o Options, imageType ImageType) Options {
 	if o.Quality == 0 {
 		o.Quality = Quality
