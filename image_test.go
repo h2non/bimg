@@ -400,6 +400,116 @@ func TestImageTransformation_Flatten(t *testing.T) {
 	})
 }
 
+func TestImage_FlipHorizontal(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.FlipHorizontal(); err != nil {
+		t.Fatalf("cannot flip image: %v", err)
+	}
+	_ = writeImage(img, "test_flip_horizontal_out.jpg")
+}
+
+func TestImage_FlipVertical(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.FlipVertical(); err != nil {
+		t.Fatalf("cannot flip image: %v", err)
+	}
+	_ = writeImage(img, "test_flip_vertical_out.jpg")
+}
+
+func TestImage_Trim(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.png"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.Trim(TrimOptions{Background: ColorBlack, Threshold: 0}); err != nil {
+		t.Fatalf("cannot trim image: %v", err)
+	}
+	size := img.Size()
+	if size.Width != 400 || size.Height != 257 {
+		t.Errorf("unexpected size: %d x %d", size.Width, size.Height)
+	}
+	_ = writeImage(img, "test_trim_out.png")
+}
+
+func TestImage_Extract(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+
+	if err := img.Extract(ExtractOptions{
+		Left:   100,
+		Top:    100,
+		Width:  200,
+		Height: 200,
+	}); err != nil {
+		t.Fatalf("cannot extract area: %v", err)
+	}
+
+	_ = writeImage(img, "test_extract_out.jpg")
+}
+
+func TestImage_Crop(t *testing.T) {
+	tests := []struct {
+		name    string
+		gravity Gravity
+	}{
+		{"center", GravityCentre},
+		{"north", GravityNorth},
+		{"south", GravitySouth},
+		{"west", GravityWest},
+		{"east", GravityEast},
+		{"smart", GravitySmart},
+	}
+
+	sourceImg, err := NewImageFromFile(testfile("test_issue.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			img := sourceImg.Clone()
+			if err := img.Crop(CropOptions{
+				Width:   200,
+				Height:  200,
+				Gravity: tt.gravity,
+			}); err != nil {
+				t.Fatalf("cannot crop image: %v", err)
+			}
+			_ = writeImage(img, fmt.Sprintf("test_crop_%s_out.jpg", tt.name))
+		})
+	}
+}
+
+func TestImage_Gamma(t *testing.T) {
+	img, err := NewImageFromFile(testfile("northern_cardinal_bird.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.Gamma(0.1); err != nil {
+		t.Fatalf("cannot apply gamma: %v", err)
+	}
+	_ = writeImage(img, "test_gamma_out.jpg")
+}
+
+func TestImage_ChangeColorspace(t *testing.T) {
+	img, err := NewImageFromFile(testfile("test.jpg"))
+	if err != nil {
+		t.Fatalf("cannot load image: %v", err)
+	}
+	if err := img.ChangeColorspace(InterpretationGREY16); err != nil {
+		t.Fatalf("cannot apply colorspace: %v", err)
+	}
+	_ = writeImage(img, "test_grey16_out.jpg")
+}
+
 func TestImageTransformation_Save(t *testing.T) {
 	t.Run("save bitmap", func(t *testing.T) {
 		img, err := NewImageFromFile(testfile("test.bmp"))
