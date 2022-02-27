@@ -470,6 +470,12 @@ func (it *Image) Save(opts SaveOptions) ([]byte, error) {
 	if opts.Type == 0 {
 		opts.Type = it.imageType
 	}
+	if opts.Speed == 0 {
+		// We translate speed (0 -> 10) into libvip's effort (10 -> 0) for an easier
+		// default value handling. Since libvips defaults to an effort of "7", we
+		// choose the speed 3 as matching default.
+		opts.Speed = 3
+	}
 
 	return vipsSave(it.image, vipsSaveOptions(opts))
 }
