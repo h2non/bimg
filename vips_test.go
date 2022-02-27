@@ -134,7 +134,7 @@ func TestVipsZoom(t *testing.T) {
 func TestVipsWatermark(t *testing.T) {
 	image, _, _ := vipsRead(readImage("test.jpg"))
 
-	watermark := Watermark{
+	watermark := WatermarkOptions{
 		Text:       "Copy me if you can",
 		Font:       "sans bold 12",
 		Opacity:    0.5,

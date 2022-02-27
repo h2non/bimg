@@ -374,7 +374,7 @@ func (it *Image) FlipVertical() error {
 }
 
 // Blur the image.
-func (it *Image) Blur(opts GaussianBlur) error {
+func (it *Image) Blur(opts GaussianBlurOptions) error {
 	if image, err := vipsGaussianBlur(it.image, opts); err != nil {
 		return err
 	} else {
@@ -394,7 +394,7 @@ func (it *Image) Sharpen(opts SharpenOptions) error {
 }
 
 // WatermarkText adds a text on top of the image.
-func (it *Image) WatermarkText(opts Watermark) error {
+func (it *Image) WatermarkText(opts WatermarkOptions) error {
 	if image, err := watermarkImageWithText(it.image, opts); err != nil {
 		return err
 	} else {

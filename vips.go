@@ -334,7 +334,7 @@ func vipsZoom(image *vipsImage, zoom int) (*vipsImage, error) {
 	return wrapVipsImage(out), nil
 }
 
-func vipsWatermark(image *vipsImage, w Watermark) (*vipsImage, error) {
+func vipsWatermark(image *vipsImage, w WatermarkOptions) (*vipsImage, error) {
 	var out *C.VipsImage
 
 	// Defaults
@@ -800,7 +800,7 @@ func boolToInt(b bool) int {
 	return 0
 }
 
-func vipsGaussianBlur(image *vipsImage, o GaussianBlur) (*vipsImage, error) {
+func vipsGaussianBlur(image *vipsImage, o GaussianBlurOptions) (*vipsImage, error) {
 	var out *C.VipsImage
 
 	err := C.vips_gaussblur_bridge(image.c, &out, C.double(o.Sigma), C.double(o.MinAmpl))

@@ -216,7 +216,7 @@ func TestImage_Blur(t *testing.T) {
 	if err := img.Resize(ResizeOptions{Width: 800, Height: 600}); err != nil {
 		t.Fatalf("cannot resize image: %v", err)
 	}
-	if err := img.Blur(GaussianBlur{Sigma: 5}); err != nil {
+	if err := img.Blur(GaussianBlurOptions{Sigma: 5}); err != nil {
 		t.Fatalf("cannot apply blur: %v", err)
 	}
 	_ = writeImage(img, "test_gaussian_out.jpg")

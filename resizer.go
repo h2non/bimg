@@ -24,7 +24,7 @@ func resizeImage(image *vipsImage, o ResizeOptions) (*vipsImage, error) {
 	return vipsResize(image, xscale, yscale)
 }
 
-func watermarkImageWithText(image *vipsImage, w Watermark) (*vipsImage, error) {
+func watermarkImageWithText(image *vipsImage, w WatermarkOptions) (*vipsImage, error) {
 	if w.Text == "" {
 		return image, nil
 	}

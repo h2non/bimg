@@ -154,8 +154,8 @@ var ColorBlack = Color{0x00, 0x00, 0x00}
 // ColorWhite is a shortcut to white RGB color representation.
 var ColorWhite = Color{0xFF, 0xFF, 0xFF}
 
-// Watermark represents the text-based watermark supported options.
-type Watermark struct {
+// WatermarkOptions represents the text-based watermark supported options.
+type WatermarkOptions struct {
 	Width       int
 	DPI         int
 	Margin      int
@@ -174,8 +174,8 @@ type WatermarkImage struct {
 	Opacity float32
 }
 
-// GaussianBlur represents the gaussian image transformation values.
-type GaussianBlur struct {
+// GaussianBlurOptions represents the gaussian image transformation values.
+type GaussianBlurOptions struct {
 	Sigma   float64
 	MinAmpl float64
 }

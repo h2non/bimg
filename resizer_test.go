@@ -505,7 +505,7 @@ func BenchmarkZoomWebp(b *testing.B) {
 
 func BenchmarkWatermarkJpeg(b *testing.B) {
 	options := Options{
-		Watermark: Watermark{
+		WatermarkOptions: WatermarkOptions{
 			Text:       "Chuck Norris (c) 2315",
 			Opacity:    0.25,
 			Width:      200,
@@ -520,7 +520,7 @@ func BenchmarkWatermarkJpeg(b *testing.B) {
 
 func BenchmarkWatermarkPng(b *testing.B) {
 	options := Options{
-		Watermark: Watermark{
+		WatermarkOptions: WatermarkOptions{
 			Text:       "Chuck Norris (c) 2315",
 			Opacity:    0.25,
 			Width:      200,
@@ -535,7 +535,7 @@ func BenchmarkWatermarkPng(b *testing.B) {
 
 func BenchmarkWatermarkWebp(b *testing.B) {
 	options := Options{
-		Watermark: Watermark{
+		WatermarkOptions: WatermarkOptions{
 			Text:       "Chuck Norris (c) 2315",
 			Opacity:    0.25,
 			Width:      200,
