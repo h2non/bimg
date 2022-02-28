@@ -293,7 +293,7 @@ func vipsSpace(image *vipsImage) string {
 func vipsRotate(image *vipsImage, angle int) (*vipsImage, error) {
 	var out *C.VipsImage
 
-	err := C.vips_rotate_bridge(image.c, &out, C.double(angle))
+	err := C.vips_rotate_bridge(image.c, &out, C.int(angle))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

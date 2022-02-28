@@ -193,18 +193,40 @@ func TestImageTransformation_Resize(t *testing.T) {
 }
 
 func TestImage_Rotate(t *testing.T) {
-	image, err := NewImageFromFile(testfile("test.jpg"))
-	if err != nil {
-		t.Fatalf("cannot load image: %v", err)
+	tests := []struct {
+		name string
+		file string
+	}{
+		{"rectangle", "test.jpg"},
+		{"square", "test_square.jpg"},
 	}
-	initialSize := image.Size()
-	if err := image.Rotate(270); err != nil {
-		t.Fatalf("cannot rotate image: %v", err)
-	}
-	newSize := image.Size()
 
-	if newSize.Width != initialSize.Height || newSize.Height != initialSize.Width {
-		t.Errorf("invalid image size: %d x %d", newSize.Width, newSize.Height)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sourceImg, err := NewImageFromFile(testfile(tt.file))
+			if err != nil {
+				t.Fatalf("cannot load image: %v", err)
+			}
+
+			t.Run("multiple of 90", func(t *testing.T) {
+				angles := []int{0, 90, 180, 270}
+				for _, angle := range angles {
+					img := sourceImg.Clone()
+					if err := img.Rotate(angle); err != nil {
+						t.Fatalf("cannot rotate by %d: %v", angle, err)
+					}
+					_ = writeImage(img, fmt.Sprintf("test_rotate_%s_%d_out.jpg", tt.name, angle))
+				}
+			})
+
+			t.Run("arbitrary angle", func(t *testing.T) {
+				img := sourceImg.Clone()
+				if err := img.Rotate(20); err != nil {
+					t.Fatalf("cannot rotate by 20: %v", err)
+				}
+				_ = writeImage(img, fmt.Sprintf("test_rotate_%s_20_out.jpg", tt.name))
+			})
+		})
 	}
 }
 

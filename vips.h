@@ -281,7 +281,21 @@ vips_resize_bridge(VipsImage *in, VipsImage **out, double xscale, double yscale)
 }
 
 int
-vips_rotate_bridge(VipsImage *in, VipsImage **out, double angle) {
+vips_rotate_bridge(VipsImage *in, VipsImage **out, int angle) {
+	angle %= 360;
+
+    // Check, if a special rotation is hit, that allows us to use
+    // optimized functions.
+    if (angle % 90 == 0) {
+    	int rotate = VIPS_ANGLE_D0;
+	    switch (angle) {
+    		case 90:  rotate = VIPS_ANGLE_D90; break;
+    		case 180: rotate = VIPS_ANGLE_D180; break;
+    		case 270: rotate = VIPS_ANGLE_D270; break;
+    	}
+    	return vips_rot(in, out, rotate, NULL);
+    }
+
 	return vips_rotate(in, out, angle, NULL);
 }
 
