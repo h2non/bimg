@@ -5,13 +5,33 @@ package bimg
 #include "vips/vips.h"
 */
 import "C"
+import "fmt"
 
 const (
 	// Quality defines the default JPEG quality to be used.
 	Quality = 75
-	// MaxSize defines the maximum pixels width or height supported.
-	MaxSize = 16383
+	// maxSize defines the maximum pixels width or height supported.
 )
+
+var maxSize = 16383
+
+// MaxSize returns maxSize.
+// maxSize defines maximum pixels width or height supported.
+func MaxSize() int {
+	return maxSize
+}
+
+// SetMaxSize sets maxSize.
+// maxSize defines maximum pixels width or height supported.
+func SetMaxsize(s int) error {
+	if s <= 0 {
+		return fmt.Errorf("invalid size.A size must be 0.")
+	}
+
+	maxSize = s
+
+	return nil
+}
 
 // Gravity represents the image gravity value.
 type Gravity int
@@ -226,7 +246,7 @@ type Options struct {
 	OutputICC      string
 	InputICC       string
 	Palette        bool
-	// Speed defines the AVIF encoders CPU effort. Valid values are: 
+	// Speed defines the AVIF encoders CPU effort. Valid values are:
 	// 0-8 for AVIF encoding.
 	// 0-9 for PNG encoding.
 	Speed int
