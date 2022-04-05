@@ -847,3 +847,25 @@ func vipsGamma(image *C.VipsImage, Gamma float64) (*C.VipsImage, error) {
 	}
 	return out, nil
 }
+
+func vipsBrightness(image *C.VipsImage, brightness float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_brightness_bridge(image, &out, C.double(brightness))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
+
+func vipsContrast(image *C.VipsImage, contrast float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_contrast_bridge(image, &out, C.double(contrast))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
+}
