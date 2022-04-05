@@ -1,4 +1,12 @@
 
+v1.1.8 / 2022-04-05
+===================
+
+  * chore(version): bump
+  * Merge pull request #405 from igsr5/feat/#404-support-way-to-change–MaxSize
+  * Fix review
+  * Add getter, setter for MaxSize
+
 v1.1.7 / 2022-02-23
 ===================
 
