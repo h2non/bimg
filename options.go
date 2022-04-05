@@ -5,27 +5,25 @@ package bimg
 #include "vips/vips.h"
 */
 import "C"
-import "fmt"
+import "errors"
 
 const (
 	// Quality defines the default JPEG quality to be used.
 	Quality = 75
-	// maxSize defines the maximum pixels width or height supported.
 )
 
+// maxSize defines maximum pixels width or height supported.
 var maxSize = 16383
 
 // MaxSize returns maxSize.
-// maxSize defines maximum pixels width or height supported.
 func MaxSize() int {
 	return maxSize
 }
 
 // SetMaxSize sets maxSize.
-// maxSize defines maximum pixels width or height supported.
 func SetMaxsize(s int) error {
 	if s <= 0 {
-		return fmt.Errorf("invalid size.A size must be 0.")
+		return errors.New("Size must be higher than zero.")
 	}
 
 	maxSize = s

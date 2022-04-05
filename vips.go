@@ -564,7 +564,7 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	if width > MaxSize() || height > MaxSize() {
+	if width > maxSize || height > maxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
@@ -581,7 +581,7 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
-	if width > MaxSize() || height > MaxSize() {
+	if width > maxSize || height > maxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
 
