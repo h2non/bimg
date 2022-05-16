@@ -414,7 +414,33 @@ vips_heifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip, int qual
 	return 0;
 #endif
 }
+/*
+vips gifsave_buffer
+save as gif
+usage:
+   gifsave_buffer in [--option-name option-value ...]
+where:
+   in           - Image to save, input VipsImage
+outputs:
+   buffer       - Buffer to save to, output VipsBlob
+optional arguments:
+   dither       - Amount of dithering, input gdouble
+			default: 1
+			min: 0, max: 1
+   effort       - Quantisation effort, input gint
+			default: 7
+			min: 1, max: 10
+   bitdepth     - Number of bits per pixel, input gint
+			default: 8
+			min: 1, max: 8
+   strip        - Strip all metadata from image, input gboolean
+			default: false
+   background   - Background value, input VipsArrayDouble
+   page-height  - Set page height for multipage save, input gint
+			default: 0
+			min: 0, max: 10000000
 
+*/
 int
 vips_gifsave_bridge(VipsImage *in, void **buf, size_t *len, int strip) {
 #if (VIPS_MAJOR_VERSION > 8 || (VIPS_MAJOR_VERSION == 8 && VIPS_MINOR_VERSION >= 12))
@@ -459,13 +485,13 @@ vips_init_image (void *buf, size_t len, int imageType, VipsImage **out) {
 	} else if (imageType == PNG) {
 		code = vips_pngload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == WEBP) {
-		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		code = vips_webpload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "n", -1, NULL);
 	} else if (imageType == TIFF) {
 		code = vips_tiffload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 #if (VIPS_MAJOR_VERSION >= 8)
 #if (VIPS_MINOR_VERSION >= 3)
 	} else if (imageType == GIF) {
-		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
+		code = vips_gifload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, "n", -1, NULL);
 	} else if (imageType == PDF) {
 		code = vips_pdfload_buffer(buf, len, out, "access", VIPS_ACCESS_RANDOM, NULL);
 	} else if (imageType == SVG) {

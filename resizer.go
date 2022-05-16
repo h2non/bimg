@@ -101,7 +101,6 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	// Transform image, if necessary
 	if shouldTransformImage(o, inWidth, inHeight) {
 		image, err = transformImage(image, o, shrink, residual)
