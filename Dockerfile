@@ -1,9 +1,11 @@
-FROM golang:1.14
+FROM golang:1.18
 LABEL maintainer "tomas@aparicio.me"
 
-ARG LIBVIPS_VERSION=8.9.2
-ARG LIBHEIF_VERSION=1.9.1
-ARG GOLANGCILINT_VERSION=1.29.0
+ARG LIBVIPS_VERSION=8.12.2
+ARG LIBHEIF_VERSION=1.12.0
+ARG GOLANGCILINT_VERSION=1.46.2
+
+RUN  go env -w GO111MODULE=off
 
 # Installs libvips + required libraries
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -40,7 +42,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     --enable-gtk-doc=no \
     --enable-pyvips8=no \
     --prefix=/vips && \
-  make && \
+  make -j$(nproc --all) && \
   make install && \
   ldconfig
 
