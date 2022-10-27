@@ -655,11 +655,11 @@ func vipsShrink(input *C.VipsImage, shrink int) (*C.VipsImage, error) {
 	return image, nil
 }
 
-func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64) (*C.VipsImage, error) {
+func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64, kernel Kernel) (*C.VipsImage, error) {
 	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink))
+	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink), kernel)
 	if err != 0 {
 		return nil, catchVipsError()
 	}
