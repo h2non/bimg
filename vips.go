@@ -566,12 +566,17 @@ func getImageBuffer(image *C.VipsImage) ([]byte, error) {
 }
 
 func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage, error) {
-	var buf *C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
 	if width > maxSize || height > maxSize {
 		return nil, errors.New("Maximum image size exceeded")
 	}
+
+	if width == 0 || height == 0 {
+		return nil, errors.New("Minimum image size exceeded")
+	}
+
+	var buf *C.VipsImage
 
 	top, left = max(top), max(left)
 	err := C.vips_extract_area_bridge(image, &buf, C.int(left), C.int(top), C.int(width), C.int(height))
@@ -598,18 +603,13 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 	return buf, nil
 }
 
-func vipsTrim(image *C.VipsImage, background Color, threshold float64) (int, int, int, int, error) {
-	defer C.g_object_unref(C.gpointer(image))
-
+func vipsTrim(image *C.VipsImage, threshold float64) (int, int, int, int, error) {
 	top := C.int(0)
 	left := C.int(0)
 	width := C.int(0)
 	height := C.int(0)
 
-	err := C.vips_find_trim_bridge(image,
-		&top, &left, &width, &height,
-		C.double(background.R), C.double(background.G), C.double(background.B),
-		C.double(threshold))
+	err := C.vips_find_trim_bridge(image, &top, &left, &width, &height, C.double(threshold))
 	if err != 0 {
 		return 0, 0, 0, 0, catchVipsError()
 	}
