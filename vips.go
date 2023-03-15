@@ -371,7 +371,7 @@ func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
 	imageType := vipsImageType(buf)
 
 	if imageType == UNKNOWN {
-		return nil, UNKNOWN, errors.New("Unsupported image format")
+		return nil, UNKNOWN, errors.New("unsupported image format")
 	}
 
 	length := C.size_t(len(buf))
@@ -570,7 +570,7 @@ func vipsExtract(image *C.VipsImage, left, top, width, height int) (*C.VipsImage
 	defer C.g_object_unref(C.gpointer(image))
 
 	if width > maxSize || height > maxSize {
-		return nil, errors.New("Maximum image size exceeded")
+		return nil, errors.New("maximum image size exceeded")
 	}
 
 	top, left = max(top), max(left)
@@ -587,7 +587,7 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 	defer C.g_object_unref(C.gpointer(image))
 
 	if width > maxSize || height > maxSize {
-		return nil, errors.New("Maximum image size exceeded")
+		return nil, errors.New("maximum image size exceeded")
 	}
 
 	err := C.vips_smartcrop_bridge(image, &buf, C.int(width), C.int(height))

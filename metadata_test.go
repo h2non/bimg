@@ -1,7 +1,7 @@
 package bimg
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -402,6 +402,6 @@ func TestColourspaceIsSupported(t *testing.T) {
 
 func readFile(file string) []byte {
 	data, _ := os.Open(path.Join("testdata", file))
-	buf, _ := ioutil.ReadAll(data)
+	buf, _ := io.ReadAll(data)
 	return buf
 }

@@ -453,7 +453,7 @@ func TestImageColourspace(t *testing.T) {
 			t.Errorf("Cannot process the image: %#v", err)
 		}
 
-		interpretation, err := ImageInterpretation(buf)
+		interpretation, _ := ImageInterpretation(buf)
 		if interpretation != test.interpretation {
 			t.Errorf("Invalid colourspace")
 		}

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -251,7 +251,7 @@ func TestNoColorProfile(t *testing.T) {
 		t.Errorf("Resize(imgData, %#v) error: %#v", options, err)
 	}
 
-	metadata, err := Metadata(newImg)
+	metadata, _ := Metadata(newImg)
 	if metadata.Profile == true {
 		t.Fatal("Invalid profile data")
 	}
@@ -428,7 +428,7 @@ func TestConvert(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		buf, err := ioutil.ReadAll(img)
+		buf, err := io.ReadAll(img)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -464,7 +464,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 	}
 	defer img.Close()
 
-	buf, err := ioutil.ReadAll(img)
+	buf, err := io.ReadAll(img)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -516,7 +516,7 @@ func TestRotationAndFlip(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		buf, err := ioutil.ReadAll(img)
+		buf, err := io.ReadAll(img)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -560,7 +560,7 @@ func TestIfBothSmartCropOptionsAreIdentical(t *testing.T) {
 	}
 	defer testImg.Close()
 
-	testImgByte, err := ioutil.ReadAll(testImg)
+	testImgByte, err := io.ReadAll(testImg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -638,7 +638,7 @@ func TestSkipCropIfTooSmall(t *testing.T) {
 	}
 	defer testImg.Close()
 
-	testImgByte, err := ioutil.ReadAll(testImg)
+	testImgByte, err := io.ReadAll(testImg)
 	if err != nil {
 		t.Fatal(err)
 	}

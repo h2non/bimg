@@ -1,5 +1,6 @@
-IMPORTANT: This is a fork of https://github.com/h2non/bimg/tree/44c1dfbd7e8088698bb032e690dacca1b90fe891 @ March 15, 2020. It is expected to diverge so much that it will become its own separeted "package"
+IMPORTANT: This is a fork of https://github.com/h2non/bimg/tree/44c1dfbd7e8088698bb032e690dacca1b90fe891 @ March 15, 2020. It is expected to diverge so much that it will become its own separeted "package". The goal of this fork is to break support for anything lower than libvips v8.14 and go v1.20 and cover as many of the open issues in the original repo.
 
+---
 
 # bimg [![Build Status](https://travis-ci.org/h2non/bimg.svg)](https://travis-ci.org/h2non/bimg) [![GoDoc](https://godoc.org/github.com/h2non/bimg?status.svg)](https://godoc.org/github.com/h2non/bimg) [![Coverage Status](https://coveralls.io/repos/github/h2non/bimg/badge.svg?branch=master)](https://coveralls.io/github/h2non/bimg?branch=master) ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
@@ -56,9 +57,10 @@ If you're using `gopkg.in`, you can still rely in the `v0` without worrying abou
 - C compatible compiler such as gcc 4.6+ or clang 3.0+
 - Go 1.3+
 
-**Note**: 
- * `libvips` v8.3+ is required for GIF, PDF and SVG support.
- * `libvips` v8.9+ is required for AVIF support. `libheif` compiled with a AVIF en-/decoder also needs to be present.
+**Note**:
+
+- `libvips` v8.3+ is required for GIF, PDF and SVG support.
+- `libvips` v8.9+ is required for AVIF support. `libheif` compiled with a AVIF en-/decoder also needs to be present.
 
 ## Installation
 
@@ -77,11 +79,13 @@ Follow `libvips` installation instructions:
 **Note**: install script is officially deprecated, it might not work as expected. We recommend following [libvips install](https://libvips.github.io/libvips/install.html) instructions.
 
 Run the following script as `sudo` (supports OSX, Debian/Ubuntu, Redhat, Fedora, Amazon Linux):
+
 ```bash
 curl -s https://raw.githubusercontent.com/h2non/bimg/master/preinstall.sh | sudo bash -
 ```
 
 If you want to take the advantage of [OpenSlide](http://openslide.org/), simply add `--with-openslide` to enable it:
+
 ```bash
 curl -s https://raw.githubusercontent.com/h2non/bimg/master/preinstall.sh | sudo bash -s --with-openslide
 ```
@@ -98,6 +102,7 @@ Here you can see some performance test comparisons for multiple scenarios:
 ## Benchmark
 
 Tested using Go 1.5.1 and libvips-7.42.3 in OSX i7 2.7Ghz
+
 ```
 BenchmarkRotateJpeg-8     	      20	  64686945 ns/op
 BenchmarkResizeLargeJpeg-8	      20	  63390416 ns/op
@@ -307,16 +312,19 @@ bimg.Write("new.jpg", newImage)
 ## Debugging
 
 Run the process passing the `DEBUG` environment variable
+
 ```
 DEBUG=bimg ./app
 ```
 
 Enable libvips traces (note that a lot of data will be written in stdout):
+
 ```
 VIPS_TRACE=1 ./app
 ```
 
 You can also dump a core on failure, as [John Cuppit](https://github.com/jcupitt) said:
+
 ```c
 g_log_set_always_fatal(
                 G_LOG_FLAG_RECURSION |
@@ -327,6 +335,7 @@ g_log_set_always_fatal(
 ```
 
 Or set the G_DEBUG environment variable:
+
 ```
 export G_DEBUG=fatal-warnings,fatal-criticals
 ```

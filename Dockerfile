@@ -1,79 +1,102 @@
-FROM golang:1.14
-LABEL maintainer "tomas@aparicio.me"
+ARG GOLANG_VERSION=1.20
+FROM golang:${GOLANG_VERSION}-bullseye as builder
 
-ARG LIBVIPS_VERSION=8.9.2
-ARG LIBHEIF_VERSION=1.9.1
-ARG GOLANGCILINT_VERSION=1.29.0
+ARG VIPS_VERSION=8.14.1
+ARG CGIF_VERSION=0.3.0
+ARG LIBSPNG_VERSION=0.7.3
+
+ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
+# libaom3 is in Debian bullseye-backports 
+RUN echo 'deb http://deb.debian.org/debian bullseye-backports main' > /etc/apt/sources.list.d/backports.list
 
 # Installs libvips + required libraries
 RUN DEBIAN_FRONTEND=noninteractive \
-  apt-get update && \
-  apt-get install --no-install-recommends -y \
-  ca-certificates \
-  automake build-essential curl \
-  gobject-introspection gtk-doc-tools libglib2.0-dev libjpeg62-turbo-dev libpng-dev \
-  libwebp-dev libtiff5-dev libgif-dev libexif-dev libxml2-dev libpoppler-glib-dev \
-  swig libmagickwand-dev libpango1.0-dev libmatio-dev libopenslide-dev libcfitsio-dev \
-  libgsf-1-dev fftw3-dev liborc-0.4-dev librsvg2-dev libimagequant-dev libaom-dev && \
-  cd /tmp && \
-  curl -fsSLO https://github.com/strukturag/libheif/releases/download/v${LIBHEIF_VERSION}/libheif-${LIBHEIF_VERSION}.tar.gz && \
-  tar zvxf libheif-${LIBHEIF_VERSION}.tar.gz && \
-  cd /tmp/libheif-${LIBHEIF_VERSION} && \
-  ./configure --prefix=/vips && \
-  make && \
-  make install && \
-  echo '/vips/lib' > /etc/ld.so.conf.d/vips.conf && \
-  ldconfig -v && \
-  export LD_LIBRARY_PATH="/vips/lib:$LD_LIBRARY_PATH" && \
-  export PKG_CONFIG_PATH="/vips/lib/pkgconfig:$PKG_CONFIG_PATH" && \
-  cd /tmp && \
-  curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
-  tar zvxf vips-${LIBVIPS_VERSION}.tar.gz && \
-  cd /tmp/vips-${LIBVIPS_VERSION} && \
-	CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
-    ./configure \
-    --disable-debug \
-    --disable-dependency-tracking \
-    --disable-introspection \
-    --disable-static \
-    --enable-gtk-doc-html=no \
-    --enable-gtk-doc=no \
-    --enable-pyvips8=no \
-    --prefix=/vips && \
-  make && \
-  make install && \
-  ldconfig
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+    ca-certificates \
+    automake build-essential curl \
+    python3-pip ninja-build pkg-config \
+    gobject-introspection gtk-doc-tools libglib2.0-dev libjpeg62-turbo-dev libpng-dev \
+    libwebp-dev libtiff5-dev libexif-dev libxml2-dev libpoppler-glib-dev \
+    swig libpango1.0-dev libmatio-dev libopenslide-dev libcfitsio-dev libopenjp2-7-dev \
+    libgsf-1-dev fftw3-dev liborc-0.4-dev librsvg2-dev libimagequant-dev libaom-dev/bullseye-backports libheif-dev && \
+    pip3 install meson && \
+    cd /tmp && \
+    curl -fsSLO https://github.com/dloebl/cgif/archive/refs/tags/V${CGIF_VERSION}.tar.gz && \
+    tar xf V${CGIF_VERSION}.tar.gz && \
+    cd cgif-${CGIF_VERSION} && \
+    meson build --prefix=/usr/local --libdir=/usr/local/lib --buildtype=release && \
+    cd build && \
+    ninja && \
+    ninja install && \
+    cd /tmp && \
+    curl -fsSLO https://github.com/randy408/libspng/archive/refs/tags/v${LIBSPNG_VERSION}.tar.gz && \
+    tar xf v${LIBSPNG_VERSION}.tar.gz && \
+    cd libspng-${LIBSPNG_VERSION} && \
+    meson setup _build \
+    --buildtype=release \
+    --strip \
+    --prefix=/usr/local \
+    --libdir=lib && \
+    ninja -C _build && \
+    ninja -C _build install && \
+    cd /tmp && \
+    curl -fsSLO https://github.com/libvips/libvips/releases/download/v${VIPS_VERSION}/vips-${VIPS_VERSION}.tar.xz && \
+    tar xf vips-${VIPS_VERSION}.tar.xz && \
+    cd vips-${VIPS_VERSION} && \
+    meson setup _build \
+    --buildtype=release \
+    --strip \
+    --prefix=/usr/local \
+    --libdir=lib \
+    -Dgtk_doc=false \
+    -Dmagick=disabled \
+    -Dintrospection=false && \
+    ninja -C _build && \
+    ninja -C _build install && \
+    ldconfig && \
+    rm -rf /usr/local/lib/python* && \
+    rm -rf /usr/local/lib/libvips-cpp.* && \
+    rm -rf /usr/local/lib/*.a && \
+    rm -rf /usr/local/lib/*.la
 
-ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+WORKDIR ${GOPATH}/src/github.com/nestor-sk/vimgo
 
-# Install runtime dependencies
-# RUN DEBIAN_FRONTEND=noninteractive \
-#   apt-get update && \
-#   apt-get install --no-install-recommends -y \
-#   libglib2.0-0 libjpeg62-turbo libpng16-16 libopenexr23 \
-#   libwebp6 libwebpmux3 libwebpdemux2 libtiff5 libgif7 libexif12 libxml2 libpoppler-glib8 \
-#   libmagickwand-6.q16-6 libpango1.0-0 libmatio4 libopenslide0 \
-#   libgsf-1-114 fftw3 liborc-0.4-0 librsvg2-2 libcfitsio7 libimagequant0 libheif1 && \
-#   apt-get autoremove -y && \
-#   apt-get autoclean && \
-#   apt-get clean && \
-#   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY go.mod .
+COPY go.sum .
 
-# Install Go lint
-RUN go get -u golang.org/x/lint/golint
+RUN go mod download
 
-# ENV LD_LIBRARY_PATH="/vips/lib:$LD_LIBRARY_PATH"
-# ENV PKG_CONFIG_PATH="/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig"
-
-WORKDIR ${GOPATH}/src/github.com/h2non/bimg
 COPY . .
 
-# RUN \
-#   # Clean up
-#   apt-get remove -y automake curl build-essential && \
-#   apt-get autoremove -y && \
-#   apt-get autoclean && \
-#   apt-get clean && \
-#   rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN go test ./...
+RUN go build .
 
-CMD [ "/bin/bash" ]
+FROM debian:bullseye-slim
+
+COPY --from=builder /usr/local/lib /usr/local/lib
+COPY --from=builder /etc/apt/sources.list.d/backports.list /etc/apt/sources.list.d/backports.list
+
+# Install runtime dependencies
+RUN DEBIAN_FRONTEND=noninteractive \
+    apt-get update && \
+    apt-get install --no-install-recommends -y \
+    procps libglib2.0-0 libjpeg62-turbo libpng16-16 libopenexr25 \
+    libwebp6 libwebpmux3 libwebpdemux2 libtiff5 libexif12 libxml2 libpoppler-glib8 \
+    libpango1.0-0 libmatio11 libopenslide0 libopenjp2-7 libjemalloc2 \
+    libgsf-1-114 fftw3 liborc-0.4-0 librsvg2-2 libcfitsio9 libimagequant0 libaom3 libheif1 && \
+    ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/local/lib/libjemalloc.so && \
+    apt-get autoremove -y && \
+    apt-get autoclean && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=builder /go/bin/imagor /usr/local/bin/imagor
+
+ENV VIPS_WARNING=0
+ENV MALLOC_ARENA_MAX=2
+ENV LD_PRELOAD=/usr/local/lib/libjemalloc.so
+
+
+ENTRYPOINT ["/usr/local/bin/imagor"]

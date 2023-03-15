@@ -1,7 +1,7 @@
 package bimg
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -27,7 +27,7 @@ func TestDeterminateImageType(t *testing.T) {
 
 	for _, file := range files {
 		img, _ := os.Open(path.Join("testdata", file.name))
-		buf, _ := ioutil.ReadAll(img)
+		buf, _ := io.ReadAll(img)
 		defer img.Close()
 
 		if VipsIsTypeSupported(file.expected) {
@@ -64,7 +64,7 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		}
 
 		img, _ := os.Open(path.Join("testdata", file.name))
-		buf, _ := ioutil.ReadAll(img)
+		buf, _ := io.ReadAll(img)
 		defer img.Close()
 
 		value := DetermineImageTypeName(buf)

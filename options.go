@@ -23,7 +23,7 @@ func MaxSize() int {
 // SetMaxSize sets maxSize.
 func SetMaxsize(s int) error {
 	if s <= 0 {
-		return errors.New("Size must be higher than zero.")
+		return errors.New("size must be higher than zero")
 	}
 
 	maxSize = s

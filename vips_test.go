@@ -1,7 +1,7 @@
 package bimg
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"testing"
@@ -248,7 +248,7 @@ func TestVipsExifShort(t *testing.T) {
 
 func readImage(file string) []byte {
 	img, _ := os.Open(path.Join("testdata", file))
-	buf, _ := ioutil.ReadAll(img)
+	buf, _ := io.ReadAll(img)
 	defer img.Close()
 	return buf
 }
