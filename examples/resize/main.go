@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	buffer, err := vimgo.Read("./testdata/test.jpg")
+	buffer, err := os.ReadFile("./testdata/test.jpg")
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 	}
@@ -26,5 +26,5 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 	}
 
-	vimgo.Write("./bin/new.jpg", newImage)
+	os.WriteFile("./bin/new.jpg", newImage, 0664)
 }

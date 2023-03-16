@@ -14,7 +14,7 @@ import (
 
 func TestResize(t *testing.T) {
 	options := Options{Width: 800, Height: 600}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -30,7 +30,7 @@ func TestResize(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_out.jpg", newImg)
+	os.WriteFile("testdata/test_out.jpg", newImg, 0644)
 }
 
 func TestResizeVerticalImage(t *testing.T) {
@@ -51,11 +51,11 @@ func TestResizeVerticalImage(t *testing.T) {
 		{Force: true, Width: 2000, Height: 2000},
 	}
 
-	bufJpeg, err := Read("testdata/vertical.jpg")
+	bufJpeg, err := os.ReadFile("testdata/vertical.jpg")
 	if err != nil {
 		t.Fatal(err)
 	}
-	bufWebp, err := Read("testdata/vertical.webp")
+	bufWebp, err := os.ReadFile("testdata/vertical.webp")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,13 +88,14 @@ func TestResizeVerticalImage(t *testing.T) {
 				t.Fatalf("Invalid width: %d", size.Width)
 			}
 
-			Write(
+			os.WriteFile(
 				fmt.Sprintf(
 					"testdata/test_vertical_%dx%d_out.%s",
 					options.Width,
 					options.Height,
 					ImageTypeName(source.format)),
-				image)
+				image,
+				0644)
 		}
 	}
 }
@@ -114,11 +115,11 @@ func TestResizeCustomSizes(t *testing.T) {
 		{Force: true, Width: 2000, Height: 2000},
 	}
 
-	bufJpeg, err := Read("testdata/test.jpg")
+	bufJpeg, err := os.ReadFile("testdata/test.jpg")
 	if err != nil {
 		t.Fatal(err)
 	}
-	bufWebp, err := Read("testdata/test.webp")
+	bufWebp, err := os.ReadFile("testdata/test.webp")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,7 +182,7 @@ func TestResizePrecision(t *testing.T) {
 
 func TestRotate(t *testing.T) {
 	options := Options{Width: 800, Height: 600, Rotate: 270, Crop: true}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -197,12 +198,12 @@ func TestRotate(t *testing.T) {
 		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_rotate_out.jpg", newImg)
+	os.WriteFile("testdata/test_rotate_out.jpg", newImg, 0664)
 }
 
 func TestInvalidRotateDegrees(t *testing.T) {
 	options := Options{Width: 800, Height: 600, Rotate: 111, Crop: true}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -218,12 +219,12 @@ func TestInvalidRotateDegrees(t *testing.T) {
 		t.Errorf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_rotate_invalid_out.jpg", newImg)
+	os.WriteFile("testdata/test_rotate_invalid_out.jpg", newImg, 0664)
 }
 
 func TestCorruptedImage(t *testing.T) {
 	options := Options{Width: 800, Height: 600}
-	buf, _ := Read("testdata/corrupt.jpg")
+	buf, _ := os.ReadFile("testdata/corrupt.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -239,12 +240,12 @@ func TestCorruptedImage(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_corrupt_out.jpg", newImg)
+	os.WriteFile("testdata/test_corrupt_out.jpg", newImg, 0664)
 }
 
 func TestNoColorProfile(t *testing.T) {
 	options := Options{Width: 800, Height: 600, NoProfile: true}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -264,7 +265,7 @@ func TestNoColorProfile(t *testing.T) {
 
 func TestEmbedExtendColor(t *testing.T) {
 	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: ExtendWhite, Background: Color{255, 20, 10}}
-	buf, _ := Read("testdata/test_issue.jpg")
+	buf, _ := os.ReadFile("testdata/test_issue.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -276,12 +277,12 @@ func TestEmbedExtendColor(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extend_white_out.jpg", newImg)
+	os.WriteFile("testdata/test_extend_white_out.jpg", newImg, 0664)
 }
 
 func TestEmbedExtendWithCustomColor(t *testing.T) {
 	options := Options{Width: 400, Height: 600, Crop: false, Embed: true, Extend: 5, Background: Color{255, 20, 10}}
-	buf, _ := Read("testdata/test_issue.jpg")
+	buf, _ := os.ReadFile("testdata/test_issue.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -293,12 +294,12 @@ func TestEmbedExtendWithCustomColor(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extend_background_out.jpg", newImg)
+	os.WriteFile("testdata/test_extend_background_out.jpg", newImg, 0664)
 }
 
 func TestGaussianBlur(t *testing.T) {
 	options := Options{Width: 800, Height: 600, GaussianBlur: GaussianBlur{Sigma: 5}}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -310,12 +311,12 @@ func TestGaussianBlur(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_gaussian_out.jpg", newImg)
+	os.WriteFile("testdata/test_gaussian_out.jpg", newImg, 0664)
 }
 
 func TestSharpen(t *testing.T) {
 	options := Options{Width: 800, Height: 600, Sharpen: Sharpen{Radius: 1, X1: 1.5, Y2: 20, Y3: 50, M1: 1, M2: 2}}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -327,12 +328,12 @@ func TestSharpen(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_sharpen_out.jpg", newImg)
+	os.WriteFile("testdata/test_sharpen_out.jpg", newImg, 0664)
 }
 
 func TestExtractWithDefaultAxis(t *testing.T) {
 	options := Options{AreaWidth: 200, AreaHeight: 200}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -344,12 +345,12 @@ func TestExtractWithDefaultAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extract_defaults_out.jpg", newImg)
+	os.WriteFile("testdata/test_extract_defaults_out.jpg", newImg, 0664)
 }
 
 func TestExtractCustomAxis(t *testing.T) {
 	options := Options{Top: 100, Left: 100, AreaWidth: 200, AreaHeight: 200}
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 
 	newImg, err := Resize(buf, options)
 	if err != nil {
@@ -361,11 +362,11 @@ func TestExtractCustomAxis(t *testing.T) {
 		t.Fatalf("Invalid image size: %dx%d", size.Width, size.Height)
 	}
 
-	Write("testdata/test_extract_custom_axis_out.jpg", newImg)
+	os.WriteFile("testdata/test_extract_custom_axis_out.jpg", newImg, 0664)
 }
 
 func TestExtractOrEmbedImage(t *testing.T) {
-	buf, _ := Read("testdata/test.jpg")
+	buf, _ := os.ReadFile("testdata/test.jpg")
 	input, _, err := loadImage(buf)
 	if err != nil {
 		t.Fatalf("Unable to load image %s", err)
@@ -483,7 +484,7 @@ func TestResizePngWithTransparency(t *testing.T) {
 		t.Fatal("Invalid image size")
 	}
 
-	Write("testdata/transparent_out.png", newImg)
+	os.WriteFile("testdata/transparent_out.png", newImg, 0664)
 }
 
 func TestRotationAndFlip(t *testing.T) {
@@ -541,7 +542,7 @@ func TestRotationAndFlip(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		Write(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg)
+		os.WriteFile(fmt.Sprintf("testdata/exif/%s_out.jpg", file.Name), newImg, 0664)
 	}
 }
 
@@ -661,7 +662,7 @@ func TestSkipCropIfTooSmall(t *testing.T) {
 }
 
 func runBenchmarkResize(file string, o Options, b *testing.B) {
-	buf, _ := Read(path.Join("testdata", file))
+	buf, _ := os.ReadFile(path.Join("testdata", file))
 
 	for n := 0; n < b.N; n++ {
 		Resize(buf, o)
