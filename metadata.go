@@ -1,4 +1,4 @@
-package bimg
+package vimgo
 
 /*
 #cgo pkg-config: vips

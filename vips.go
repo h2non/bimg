@@ -1,4 +1,4 @@
-package bimg
+package vimgo
 
 /*
 #cgo pkg-config: vips
@@ -95,7 +95,7 @@ func Initialize() {
 	defer m.Unlock()
 	defer runtime.UnlockOSThread()
 
-	err := C.vips_init(C.CString("bimg"))
+	err := C.vips_init(C.CString("vimgo"))
 	if err != 0 {
 		panic("unable to start vips!")
 	}

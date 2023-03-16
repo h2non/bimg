@@ -1,4 +1,4 @@
-package bimg
+package vimgo
 
 import (
 	"fmt"

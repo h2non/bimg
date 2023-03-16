@@ -1,4 +1,4 @@
-package bimg
+package vimgo
 
 /*
 #cgo pkg-config: vips
@@ -216,7 +216,7 @@ type Options struct {
 	Compression    int
 	Zoom           int
 	Crop           bool
-	SmartCrop      bool // Deprecated, use: bimg.Options.Gravity = bimg.GravitySmart
+	SmartCrop      bool // Deprecated, use: vimgo.Options.Gravity = vimgo.GravitySmart
 	Enlarge        bool
 	Embed          bool
 	Flip           bool

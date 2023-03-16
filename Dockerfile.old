@@ -30,16 +30,16 @@ RUN DEBIAN_FRONTEND=noninteractive \
   curl -fsSLO https://github.com/libvips/libvips/releases/download/v${LIBVIPS_VERSION}/vips-${LIBVIPS_VERSION}.tar.gz && \
   tar zvxf vips-${LIBVIPS_VERSION}.tar.gz && \
   cd /tmp/vips-${LIBVIPS_VERSION} && \
-	CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
-    ./configure \
-    --disable-debug \
-    --disable-dependency-tracking \
-    --disable-introspection \
-    --disable-static \
-    --enable-gtk-doc-html=no \
-    --enable-gtk-doc=no \
-    --enable-pyvips8=no \
-    --prefix=/vips && \
+  CFLAGS="-g -O3" CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0 -g -O3" \
+  ./configure \
+  --disable-debug \
+  --disable-dependency-tracking \
+  --disable-introspection \
+  --disable-static \
+  --enable-gtk-doc-html=no \
+  --enable-gtk-doc=no \
+  --enable-pyvips8=no \
+  --prefix=/vips && \
   make && \
   make install && \
   ldconfig
@@ -65,7 +65,7 @@ RUN go get -u golang.org/x/lint/golint
 # ENV LD_LIBRARY_PATH="/vips/lib:$LD_LIBRARY_PATH"
 # ENV PKG_CONFIG_PATH="/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig"
 
-WORKDIR ${GOPATH}/src/github.com/h2non/bimg
+WORKDIR ${GOPATH}/src/github.com/nestor-sk/vimgo
 COPY . .
 
 # RUN \

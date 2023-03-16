@@ -24,10 +24,10 @@ cache:
     - $HOME/libvips
 
 install:
-  - docker build -t h2non/bimg:ci --build-arg LIBVIPS_VERSION=$LIBVIPS .
+  - docker build -t nestor-sk/vimgo:ci --build-arg LIBVIPS_VERSION=$LIBVIPS .
 
 script:
-  - docker run h2non/bimg:ci sh -c 'export LD_LIBRARY_PATH=/vips/lib:/usr/local/lib:$LD_LIBRARY_PATH; export PKG_CONFIG_PATH=/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig;  go vet . && golint . && go test -v -race -covermode=atomic -coverprofile=coverage.out'
+  - docker run nestor-sk/vimgo:ci sh -c 'export LD_LIBRARY_PATH=/vips/lib:/usr/local/lib:$LD_LIBRARY_PATH; export PKG_CONFIG_PATH=/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig;  go vet . && golint . && go test -v -race -covermode=atomic -coverprofile=coverage.out'
 
 # after_success:
 #   - goveralls -coverprofile=coverage.out -service=travis-ci
