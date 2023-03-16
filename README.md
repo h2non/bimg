@@ -70,27 +70,7 @@ go get -u github.com/h2non/bimg
 
 ### libvips
 
-Follow `libvips` installation instructions:
-
-[https://libvips.github.io/libvips/install.html](https://libvips.github.io/libvips/install.html)
-
-##### Installation script
-
-**Note**: install script is officially deprecated, it might not work as expected. We recommend following [libvips install](https://libvips.github.io/libvips/install.html) instructions.
-
-Run the following script as `sudo` (supports OSX, Debian/Ubuntu, Redhat, Fedora, Amazon Linux):
-
-```bash
-curl -s https://raw.githubusercontent.com/h2non/bimg/master/preinstall.sh | sudo bash -
-```
-
-If you want to take the advantage of [OpenSlide](http://openslide.org/), simply add `--with-openslide` to enable it:
-
-```bash
-curl -s https://raw.githubusercontent.com/h2non/bimg/master/preinstall.sh | sudo bash -s --with-openslide
-```
-
-The [install script](https://github.com/h2non/bimg/blob/master/preinstall.sh) requires `curl` and `pkg-config`.
+Follow `libvips` [installation instructions](https://libvips.github.io/libvips/install.html)
 
 ## Performance
 
