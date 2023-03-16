@@ -107,186 +107,23 @@ BenchmarkWatermarWebp-8   	      30	  49360369 ns/op
 
 ## Examples
 
+You can find some examples in the [examples](./examples/main.go) directory. Try them out just running `make examples` in the root directory!
+
+Using `vimgo` is simple as:
+
 ```go
+package main
+
 import (
-  "fmt"
-  "os"
-  "github.com/h2non/bimg"
+	"os"
+	"github.com/nestor-sk/vimgo"
 )
-```
 
-#### Resize
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
+func main() {
+	buffer, _ := os.ReadFile("image.jpg")
+	newImage, _ := vimgo.NewImage(buffer).Resize(800, 600)
+	os.WriteFile("new.jpg", newImage, 0644)
 }
-
-newImage, err := bimg.NewImage(buffer).Resize(800, 600)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-size, err := bimg.NewImage(newImage).Size()
-if size.Width == 800 && size.Height == 600 {
-  fmt.Println("The image size is valid")
-}
-
-bimg.Write("new.jpg", newImage)
-```
-
-#### Rotate
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-newImage, err := bimg.NewImage(buffer).Rotate(90)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-bimg.Write("new.jpg", newImage)
-```
-
-#### Convert
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-newImage, err := bimg.NewImage(buffer).Convert(bimg.PNG)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-if bimg.NewImage(newImage).Type() == "png" {
-  fmt.Fprintln(os.Stderr, "The image was converted into png")
-}
-```
-
-#### Force resize
-
-Force resize operation without perserving the aspect ratio:
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-newImage, err := bimg.NewImage(buffer).ForceResize(1000, 500)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-size := bimg.Size(newImage)
-if size.Width != 1000 || size.Height != 500 {
-  fmt.Fprintln(os.Stderr, "Incorrect image size")
-}
-```
-
-#### Custom colour space (black & white)
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-newImage, err := bimg.NewImage(buffer).Colourspace(bimg.INTERPRETATION_B_W)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-colourSpace, _ := bimg.ImageInterpretation(newImage)
-if colourSpace != bimg.INTERPRETATION_B_W {
-  fmt.Fprintln(os.Stderr, "Invalid colour space")
-}
-```
-
-#### Custom options
-
-See [Options](https://godoc.org/github.com/h2non/bimg#Options) struct to discover all the available fields
-
-```go
-options := bimg.Options{
-  Width:        800,
-  Height:       600,
-  Crop:         true,
-  Quality:      95,
-  Rotate:       180,
-  Interlace:    true,
-}
-
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-newImage, err := bimg.NewImage(buffer).Process(options)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-bimg.Write("new.jpg", newImage)
-```
-
-#### Watermark
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-watermark := bimg.Watermark{
-  Text:       "Chuck Norris (c) 2315",
-  Opacity:    0.25,
-  Width:      200,
-  DPI:        100,
-  Margin:     150,
-  Font:       "sans bold 12",
-  Background: bimg.Color{255, 255, 255},
-}
-
-newImage, err := bimg.NewImage(buffer).Watermark(watermark)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-bimg.Write("new.jpg", newImage)
-```
-
-#### Fluent interface
-
-```go
-buffer, err := bimg.Read("image.jpg")
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-image := bimg.NewImage(buffer)
-
-// first crop image
-_, err := image.CropByWidth(300)
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-// then flip it
-newImage, err := image.Flip()
-if err != nil {
-  fmt.Fprintln(os.Stderr, err)
-}
-
-// save the cropped and flipped image
-bimg.Write("new.jpg", newImage)
 ```
 
 ## Debugging

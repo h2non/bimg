@@ -1,4 +1,4 @@
-.PHONY: test clean
+.PHONY: test clean examples
 
 test:
 	CGO_CFLAGS_ALLOW=-Xpreprocessor go test -cover .
@@ -9,6 +9,6 @@ clean:
 build:
 	CGO_CFLAGS_ALLOW=-Xpreprocessor go build .
 
-resize:
-	CGO_CFLAGS_ALLOW=-Xpreprocessor go build -o bin/resize ./examples/resize
-	./bin/resize
+examples:
+	CGO_CFLAGS_ALLOW=-Xpreprocessor go build -o bin/examples ./examples
+	./bin/examples
