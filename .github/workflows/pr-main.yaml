@@ -1,0 +1,42 @@
+name: PR and push to main
+
+on:
+  pull_request:
+    branches: 
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        vips-version: ['8.14.1']
+        go-version: ['1.20']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Build and test
+        run: |
+          docker build \
+            -t nestor-sk/vimgo:ci \
+            --build-arg LIBVIPS_VERSION=${{ matrix.vips-version }} \
+            .
+
+          docker run \
+            --mount type=bind,source="$(pwd)",target=/app \
+            -w /app \
+            -e LD_LIBRARY_PATH=/vips/lib:/usr/local/lib:$LD_LIBRARY_PATH \
+            -e PKG_CONFIG_PATH=/vips/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/X11/lib/pkgconfig \
+            nestor-sk/vimgo:ci \
+            sh -c 'go vet . && golint . && go test -v -race -covermode=atomic -coverprofile=coverage.out'
