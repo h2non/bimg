@@ -160,7 +160,7 @@ func VipsVectorSetEnabled(enable bool) {
 
 // VipsDebugInfo outputs to stdout libvips collected data. Useful for debugging.
 func VipsDebugInfo() {
-	C.im__print_all()
+	C.vips_object_print_all()
 }
 
 // VipsMemory gets memory info stats from libvips (cache size, memory allocs...)
@@ -237,11 +237,17 @@ func VipsIsTypeSupportedSave(t ImageType) bool {
 }
 
 func vipsExifStringTag(image *C.VipsImage, tag string) string {
-	return vipsExifShort(C.GoString(C.vips_exif_tag(image, C.CString(tag))))
+	t := C.CString(tag)
+	defer C.free(unsafe.Pointer(t))
+
+	return vipsExifShort(C.GoString(C.vips_exif_tag(image, t)))
 }
 
 func vipsExifIntTag(image *C.VipsImage, tag string) int {
-	return int(C.vips_exif_tag_to_int(image, C.CString(tag)))
+	t := C.CString(tag)
+	defer C.free(unsafe.Pointer(t))
+
+	return int(C.vips_exif_tag_to_int(image, t))
 }
 
 func vipsExifOrientation(image *C.VipsImage) int {
@@ -341,6 +347,7 @@ func vipsZoom(image *C.VipsImage, zoom int) (*C.VipsImage, error) {
 
 func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
 
 	// Defaults
 	noReplicate := 0
@@ -367,18 +374,24 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 }
 
 func vipsRead(buf []byte) (*C.VipsImage, ImageType, error) {
-	var image *C.VipsImage
 	imageType := vipsImageType(buf)
 
 	if imageType == UNKNOWN {
 		return nil, UNKNOWN, errors.New("Unsupported image format")
 	}
 
-	length := C.size_t(len(buf))
-	imageBuf := unsafe.Pointer(&buf[0])
+	var (
+		image    *C.VipsImage
+		length   = C.size_t(len(buf))
+		imageBuf = unsafe.Pointer(&buf[0])
+	)
+
+	defer C.g_free(C.gpointer(imageBuf))
 
 	err := C.vips_init_image(imageBuf, length, C.int(imageType), &image)
 	if err != 0 {
+		C.g_object_unref(C.gpointer(image))
+
 		return nil, UNKNOWN, catchVipsError()
 	}
 
@@ -453,6 +466,7 @@ func vipsPreSave(image *C.VipsImage, o *vipsSaveOptions) (*C.VipsImage, error) {
 		if int(err) != 0 {
 			return nil, catchVipsError()
 		}
+		C.g_object_unref(C.gpointer(image))
 		image = outImage
 	}
 
@@ -604,6 +618,8 @@ func vipsSmartCrop(image *C.VipsImage, width, height int) (*C.VipsImage, error) 
 }
 
 func vipsTrim(image *C.VipsImage, threshold float64) (int, int, int, int, error) {
+	defer C.g_object_unref(C.gpointer(image))
+
 	top := C.int(0)
 	left := C.int(0)
 	width := C.int(0)
@@ -819,8 +835,6 @@ func max(x int) int {
 }
 
 func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {
-	var out *C.VipsImage
-
 	watermark, _, e := vipsRead(o.Buf)
 	if e != nil {
 		return nil, e
@@ -828,9 +842,11 @@ func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, erro
 
 	opts := vipsWatermarkImageOptions{C.int(o.Left), C.int(o.Top), C.float(o.Opacity)}
 
-	err := C.vips_watermark_image(image, watermark, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts)))
+	var out *C.VipsImage
 
-	if err != 0 {
+	if err := C.vips_watermark_image(image, watermark, &out, (*C.WatermarkImageOptions)(unsafe.Pointer(&opts))); err != 0 {
+		C.g_object_unref(C.gpointer(out))
+
 		return nil, catchVipsError()
 	}
 

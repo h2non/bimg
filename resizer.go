@@ -47,6 +47,8 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	// Auto rotate image based on EXIF orientation header
 	image, rotated, err := rotateAndFlipImage(image, o)
 	if err != nil {
+		C.g_object_unref(C.gpointer(image))
+
 		return nil, err
 	}
 
@@ -85,12 +87,11 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 	supportsShrinkOnLoad := imageType == WEBP && VipsMajorVersion >= 8 && (VipsMinorVersion >= 3 && VipsMinorVersion <= 6)
 	supportsShrinkOnLoad = supportsShrinkOnLoad || imageType == JPEG
 	if supportsShrinkOnLoad && shrink >= 2 {
-		tmpImage, factor, err := shrinkOnLoad(buf, image, imageType, factor, shrink)
+		image, factor, err = shrinkOnLoad(buf, image, imageType, factor, shrink)
 		if err != nil {
 			return nil, err
 		}
 
-		image = tmpImage
 		factor = math.Max(factor, 1.0)
 		shrink = int(math.Floor(factor))
 		residual = float64(shrink) / factor
@@ -198,6 +199,7 @@ func saveImage(image *C.VipsImage, o Options) ([]byte, error) {
 		Interlace:      o.Interlace,
 		NoProfile:      o.NoProfile,
 		Interpretation: o.Interpretation,
+		InputICC:       o.InputICC,
 		OutputICC:      o.OutputICC,
 		StripMetadata:  o.StripMetadata,
 		Lossless:       o.Lossless,
