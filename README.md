@@ -184,7 +184,7 @@ if bimg.NewImage(newImage).Type() == "png" {
 
 #### Force resize
 
-Force resize operation without perserving the aspect ratio:
+Force resize operation without preserving the aspect ratio:
 
 ```go
 buffer, err := bimg.Read("image.jpg")
