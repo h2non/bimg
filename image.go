@@ -177,7 +177,7 @@ func (i *Image) Convert(t ImageType) ([]byte, error) {
 	return i.Process(options)
 }
 
-// Colourspace performs a color space conversion bsaed on the given interpretation.
+// Colourspace performs a color space conversion based on the given interpretation.
 func (i *Image) Colourspace(c Interpretation) ([]byte, error) {
 	options := Options{Interpretation: c}
 	return i.Process(options)
