@@ -23,6 +23,7 @@ func TestDeterminateImageType(t *testing.T) {
 		{"test2.heic", HEIF},
 		{"test3.heic", HEIF},
 		{"test.avif", AVIF},
+		{"test.exr", EXR},
 	}
 
 	for _, file := range files {
@@ -53,6 +54,7 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		// {"test.jp2", "magick"},
 		{"test.heic", "heif"},
 		{"test.avif", "avif"},
+		{"test.exr", "exr"},
 	}
 
 	for _, file := range files {
@@ -106,6 +108,7 @@ func TestIsTypeNameSupported(t *testing.T) {
 		{"pdf", true},
 		{"heif", true},
 		{"avif", true},
+		{"exr", true},
 	}
 
 	for _, n := range types {

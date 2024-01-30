@@ -205,6 +205,9 @@ func VipsIsTypeSupported(t ImageType) bool {
 	if t == AVIF {
 		return int(C.vips_type_find_bridge(C.HEIF)) != 0
 	}
+	if t == EXR {
+		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
+	}
 	return false
 }
 
@@ -766,6 +769,10 @@ func vipsImageType(buf []byte) ImageType {
 	if IsTypeSupported(HEIF) && buf[4] == 0x66 && buf[5] == 0x74 && buf[6] == 0x79 && buf[7] == 0x70 &&
 		buf[8] == 0x61 && buf[9] == 0x76 && buf[10] == 0x69 && buf[11] == 0x66 {
 		return AVIF
+	}
+	if IsTypeSupported(EXR) && buf[0] == 0x76 && buf[1] == 0x2f &&
+		buf[2] == 0x31 && buf[3] == 0x01 {
+		return EXR
 	}
 
 	return UNKNOWN

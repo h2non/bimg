@@ -32,6 +32,8 @@ const (
 	HEIF
 	// AVIF represents the AVIF image type.
 	AVIF
+	// EXR represents the EXR image type.
+	EXR
 )
 
 var (
@@ -51,6 +53,7 @@ var ImageTypes = map[ImageType]string{
 	MAGICK: "magick",
 	HEIF:   "heif",
 	AVIF:   "avif",
+	EXR:    "exr",
 }
 
 // imageMutex is used to provide thread-safe synchronization
