@@ -32,6 +32,8 @@ const (
 	HEIF
 	// AVIF represents the AVIF image type.
 	AVIF
+	// JXL represents the JPEG XL image type.
+	JXL
 )
 
 var (
@@ -51,6 +53,7 @@ var ImageTypes = map[ImageType]string{
 	MAGICK: "magick",
 	HEIF:   "heif",
 	AVIF:   "avif",
+	JXL:    "jxl",
 }
 
 // imageMutex is used to provide thread-safe synchronization

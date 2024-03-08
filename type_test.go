@@ -23,6 +23,7 @@ func TestDeterminateImageType(t *testing.T) {
 		{"test2.heic", HEIF},
 		{"test3.heic", HEIF},
 		{"test.avif", AVIF},
+		{"test.jxl", JXL},
 	}
 
 	for _, file := range files {
@@ -53,6 +54,7 @@ func TestDeterminateImageTypeName(t *testing.T) {
 		// {"test.jp2", "magick"},
 		{"test.heic", "heif"},
 		{"test.avif", "avif"},
+		{"test.jxl", "jxl"},
 	}
 
 	for _, file := range files {
@@ -60,6 +62,9 @@ func TestDeterminateImageTypeName(t *testing.T) {
 			continue
 		}
 		if file.expected == "avif" && VipsMajorVersion <= 8 && VipsMinorVersion < 9 {
+			continue
+		}
+		if file.expected == "jxl" && VipsMajorVersion <= 8 && VipsMinorVersion < 11 {
 			continue
 		}
 
@@ -78,7 +83,7 @@ func TestIsTypeSupported(t *testing.T) {
 	types := []struct {
 		name ImageType
 	}{
-		{JPEG}, {PNG}, {WEBP}, {GIF}, {PDF}, {HEIF}, {AVIF},
+		{JPEG}, {PNG}, {WEBP}, {GIF}, {PDF}, {HEIF}, {AVIF}, {JXL},
 	}
 
 	for _, n := range types {
@@ -86,6 +91,9 @@ func TestIsTypeSupported(t *testing.T) {
 			continue
 		}
 		if n.name == AVIF && VipsMajorVersion <= 8 && VipsMinorVersion < 9 {
+			continue
+		}
+		if n.name == JXL && VipsMajorVersion <= 8 && VipsMinorVersion < 11 {
 			continue
 		}
 		if IsTypeSupported(n.name) == false {
@@ -106,6 +114,7 @@ func TestIsTypeNameSupported(t *testing.T) {
 		{"pdf", true},
 		{"heif", true},
 		{"avif", true},
+		{"jxl", true},
 	}
 
 	for _, n := range types {
@@ -113,6 +122,9 @@ func TestIsTypeNameSupported(t *testing.T) {
 			continue
 		}
 		if n.name == "avif" && VipsMajorVersion <= 8 && VipsMinorVersion < 9 {
+			continue
+		}
+		if n.name == "jxl" && VipsMajorVersion <= 8 && VipsMinorVersion < 11 {
 			continue
 		}
 		if IsTypeNameSupported(n.name) != n.expected {
@@ -125,7 +137,7 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	types := []struct {
 		name ImageType
 	}{
-		{JPEG}, {PNG}, {WEBP}, {GIF},
+		{JPEG}, {PNG}, {WEBP},
 	}
 	if VipsVersion >= "8.5.0" {
 		types = append(types, struct{ name ImageType }{TIFF})
@@ -135,6 +147,9 @@ func TestIsTypeSupportedSave(t *testing.T) {
 	}
 	if VipsVersion >= "8.9.0" {
 		types = append(types, struct{ name ImageType }{AVIF})
+	}
+	if VipsVersion >= "8.11.0" {
+		types = append(types, struct{ name ImageType }{name: JXL})
 	}
 	if VipsVersion >= "8.12.0" {
 		types = append(types, struct{ name ImageType }{GIF})
@@ -159,6 +174,7 @@ func TestIsTypeNameSupportedSave(t *testing.T) {
 		{"tiff", VipsVersion >= "8.5.0"},
 		{"heif", VipsVersion >= "8.8.0"},
 		{"avif", VipsVersion >= "8.9.0"},
+		{"jxl", VipsVersion >= "8.11.0"},
 		{"gif", VipsVersion >= "8.12.0"},
 	}
 
