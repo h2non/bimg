@@ -243,7 +243,7 @@ func transformImage(image *C.VipsImage, o Options, shrink int, residual float64)
 
 	if o.Force || residual != 0 {
 		if residualx < 1 && residualy < 1 {
-			image, err = vipsReduce(image, 1/residualx, 1/residualy)
+			image, err = vipsReduce(image, 1/residualx, 1/residualy, o.Kernel)
 		} else {
 			image, err = vipsAffine(image, residualx, residualy, o.Interpolator, o.Extend)
 		}
