@@ -68,6 +68,16 @@ type vipsWatermarkOptions struct {
 	Background  [3]C.double
 }
 
+type vipsAddTextOptions struct {
+	Width      C.int
+	Height     C.int
+	DPI        C.int
+	Top        C.int
+	Left       C.int
+	Background [3]C.double
+	Opacity    C.float
+}
+
 type vipsWatermarkImageOptions struct {
 	Left    C.int
 	Top     C.int
@@ -365,6 +375,27 @@ func vipsWatermark(image *C.VipsImage, w Watermark) (*C.VipsImage, error) {
 	defer C.free(unsafe.Pointer(font))
 
 	err := C.vips_watermark(image, &out, (*C.WatermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.WatermarkOptions)(unsafe.Pointer(&opts)))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+
+	return out, nil
+}
+
+func vipsAddText(image *C.VipsImage, w AddText) (*C.VipsImage, error) {
+	var out *C.VipsImage
+
+	text := C.CString(w.Text)
+	font := C.CString(w.Font)
+	background := [3]C.double{C.double(w.Background.R), C.double(w.Background.G), C.double(w.Background.B)}
+
+	textOpts := vipsWatermarkTextOptions{text, font}
+	opts := vipsAddTextOptions{C.int(w.Width), C.int(w.Height), C.int(w.DPI), C.int(w.Top), C.int(w.Left), background, C.float(w.Opacity)}
+
+	defer C.free(unsafe.Pointer(text))
+	defer C.free(unsafe.Pointer(font))
+
+	err := C.vips_add_text(image, &out, (*C.WatermarkTextOptions)(unsafe.Pointer(&textOpts)), (*C.AddTextOptions)(unsafe.Pointer(&opts)))
 	if err != 0 {
 		return nil, catchVipsError()
 	}

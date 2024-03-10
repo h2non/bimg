@@ -53,6 +53,16 @@ typedef struct {
 } WatermarkOptions;
 
 typedef struct {
+	int    Width;
+	int    Height;
+	int    DPI;
+	int    Top;
+	int    Left;
+	double Background[3];
+	float    Opacity;
+} AddTextOptions;
+
+typedef struct {
 	int    Left;
 	int    Top;
 	float    Opacity;
@@ -574,6 +584,51 @@ vips_watermark(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, Waterma
 		}
 		g_object_unref(t[4]);
 		t[4] = cache;
+	}
+
+	// Make the constant image to paint the text with.
+	if (
+		vips_black(&t[5], 1, 1, NULL) ||
+		vips_linear(t[5], &t[6], ones, o->Background, 3, NULL) ||
+		vips_cast(t[6], &t[7], VIPS_FORMAT_UCHAR, NULL) ||
+		vips_copy(t[7], &t[8], "interpretation", t[0]->Type, NULL) ||
+		vips_embed(t[8], &t[9], 0, 0, t[0]->Xsize, t[0]->Ysize, "extend", VIPS_EXTEND_COPY, NULL)
+		) {
+		g_object_unref(base);
+		return 1;
+	}
+
+	// Blend the mask and text and write to output.
+	if (vips_ifthenelse(t[4], t[9], t[0], out, "blend", TRUE, NULL)) {
+		g_object_unref(base);
+		return 1;
+	}
+
+	g_object_unref(base);
+	return 0;
+}
+
+int
+vips_add_text(VipsImage *in, VipsImage **out, WatermarkTextOptions *to, AddTextOptions *o) {
+	double ones[3] = { 1, 1, 1 };
+
+	VipsImage *base = vips_image_new();
+	VipsImage **t = (VipsImage **) vips_object_local_array(VIPS_OBJECT(base), 10);
+	t[0] = in;
+
+	// Make the mask.
+	if (
+		vips_text(&t[1], to->Text,
+			"width", o->Width,
+			"dpi", o->DPI,
+			"font", to->Font,
+			NULL) ||
+		vips_linear1(t[1], &t[2], o->Opacity, 0.0, NULL) ||
+		vips_cast(t[2], &t[3], VIPS_FORMAT_UCHAR, NULL) ||
+		vips_embed(t[3], &t[4], o->Left, o->Top, o->Width, o->Height, NULL)
+		) {
+		g_object_unref(base);
+		return 1;
 	}
 
 	// Make the constant image to paint the text with.

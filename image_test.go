@@ -250,6 +250,38 @@ func TestImageWatermark(t *testing.T) {
 
 	Write("testdata/test_watermark_text_out.jpg", buf)
 }
+func TestImageAddText(t *testing.T) {
+	image := initImage("test.jpg")
+	_, err := image.Crop(800, 600, GravityNorth)
+	if err != nil {
+		t.Errorf("Cannot process the image: %#v", err)
+	}
+
+	buf, err := image.AddText(AddText{
+		Width:      800,
+		Height:     600,
+		DPI:        100,
+		Top:        10,
+		Left:       500,
+		Text:       "Copy me if you can",
+		Background: Color{255, 255, 255},
+		Opacity:    1,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = assertSize(buf, 800, 600)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if DetermineImageType(buf) != JPEG {
+		t.Fatal("Image is not jpeg")
+	}
+
+	Write("testdata/test_add_text_out.jpg", buf)
+}
 
 func TestImageWatermarkWithImage(t *testing.T) {
 	image := initImage("test.jpg")
