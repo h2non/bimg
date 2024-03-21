@@ -406,17 +406,99 @@ func watermarkImageWithAnotherImage(image *C.VipsImage, w WatermarkImage) (*C.Vi
 		return image, nil
 	}
 
+	watermark, _, err := vipsRead(w.Buf)
+	if err != nil {
+		return nil, err
+	}
+
 	if w.Opacity == 0.0 {
 		w.Opacity = 1.0
 	}
 
-	image, err := vipsDrawWatermark(image, w)
+	// for backward compatibility
+	if (w.Left != 0 || w.Top != 0) && w.X == 0 && w.Y == 0 && w.XRate == 0 && w.YRate == 0 {
+		w.X, w.Y = w.Left, w.Top
+		w.Gravity = WatermarkGravityNorthWest
+	}
 
+	var left, top int
+	if w.XRate != 0 || w.YRate != 0 {
+		xOffset := int(float32(image.Xsize) * w.XRate)
+		yOffset := int(float32(image.Ysize) * w.YRate)
+		left, top = calculateWatermarkImagePosition(int(image.Xsize), int(image.Ysize), int(watermark.Xsize), int(watermark.Ysize), xOffset, yOffset, w.Gravity)
+	} else {
+		left, top = calculateWatermarkImagePosition(int(image.Xsize), int(image.Ysize), int(watermark.Xsize), int(watermark.Ysize), w.X, w.Y, w.Gravity)
+	}
+
+	image, err = vipsDrawWatermark(image, watermark, left, top, w.Opacity)
 	if err != nil {
 		return nil, err
 	}
 
 	return image, nil
+}
+
+func calculateWatermarkImagePosition(destWidth, destHeight, wmWidth, wmHeight, xOffset, yOffset int, gravity WatermarkGravity) (int, int) {
+	left, top := 0, 0
+
+	// Ensure watermark size <= destination size
+	if wmWidth > destWidth {
+		wmWidth = destWidth
+	}
+	if wmHeight > destHeight {
+		wmHeight = destHeight
+	}
+
+	switch gravity {
+	case WatermarkGravityNorthWest:
+		left = xOffset
+		top = yOffset
+	case WatermarkGravityNorth:
+		left = ((destWidth - wmWidth + 1) / 2) + xOffset
+		top = yOffset
+	case WatermarkGravityNorthEast:
+		left = destWidth - wmWidth - xOffset
+		top = yOffset
+	case WatermarkGravityWest:
+		left = xOffset
+		top = ((destHeight - wmHeight + 1) / 2) + yOffset
+	case WatermarkGravityCentre:
+		left = ((destWidth - wmWidth + 1) / 2) + xOffset
+		top = ((destHeight - wmHeight + 1) / 2) + yOffset
+	case WatermarkGravityEast:
+		left = destWidth - wmWidth - xOffset
+		top = ((destHeight - wmHeight + 1) / 2) + yOffset
+	case WatermarkGravitySouthWest:
+		left = xOffset
+		top = destHeight - wmHeight - yOffset
+	case WatermarkGravitySouth:
+		left = ((destWidth - wmWidth + 1) / 2) + xOffset
+		top = destHeight - wmHeight - yOffset
+	case WatermarkGravitySouthEast:
+		left = destWidth - wmWidth - xOffset
+		top = destHeight - wmHeight - yOffset
+	default:
+		left = xOffset
+		top = yOffset
+	}
+
+	// correct to fit into destination image rectangle
+	minLeft := 0
+	maxLeft := destWidth - wmWidth
+	minTop := 0
+	maxTop := destHeight - wmHeight
+	if left < minLeft {
+		left = minLeft
+	} else if left > maxLeft {
+		left = maxLeft
+	}
+	if top < minTop {
+		top = minTop
+	} else if top > maxTop {
+		top = maxTop
+	}
+
+	return left, top
 }
 
 func imageFlatten(image *C.VipsImage, imageType ImageType, o Options) (*C.VipsImage, error) {
