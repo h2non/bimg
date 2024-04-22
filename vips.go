@@ -208,6 +208,9 @@ func VipsIsTypeSupported(t ImageType) bool {
 	if t == JXL {
 		return int(C.vips_type_find_bridge(C.JXL)) != 0
 	}
+	if t == EXR {
+		return int(C.vips_type_find_bridge(C.MAGICK)) != 0
+	}
 	return false
 }
 
@@ -667,7 +670,7 @@ func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64, kernel Ker
 	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink), kernel)
+	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink), C.int(kernel))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
@@ -785,6 +788,10 @@ func vipsImageType(buf []byte) ImageType {
 		// This is an ISOBMFF-based container
 		return JXL
 	}
+	if IsTypeSupported(EXR) && buf[0] == 0x76 && buf[1] == 0x2f &&
+		buf[2] == 0x31 && buf[3] == 0x01 {
+		return EXR
+	}
 
 	return UNKNOWN
 }
@@ -834,6 +841,17 @@ func vipsSharpen(image *C.VipsImage, o Sharpen) (*C.VipsImage, error) {
 
 func max(x int) int {
 	return int(math.Max(float64(x), 0))
+}
+
+func vipsAddAlpha(image *C.VipsImage, alpha float64) (*C.VipsImage, error) {
+	var out *C.VipsImage
+	defer C.g_object_unref(C.gpointer(image))
+
+	err := C.vips_add_band(image, &out, C.double(alpha))
+	if err != 0 {
+		return nil, catchVipsError()
+	}
+	return out, nil
 }
 
 func vipsDrawWatermark(image *C.VipsImage, o WatermarkImage) (*C.VipsImage, error) {

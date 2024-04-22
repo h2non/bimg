@@ -154,6 +154,12 @@ func resizer(buf []byte, o Options) ([]byte, error) {
 		return nil, err
 	}
 
+	// Add Alpha, if necessary
+	image, err = addAlpha(image, o)
+	if err != nil {
+		return nil, err
+	}
+
 	return saveImage(image, o)
 }
 
@@ -430,6 +436,17 @@ func applyGamma(image *C.VipsImage, o Options) (*C.VipsImage, error) {
 	var err error
 	if o.Gamma > 0 {
 		image, err = vipsGamma(image, o.Gamma)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return image, nil
+}
+
+func addAlpha(image *C.VipsImage, o Options) (*C.VipsImage, error) {
+	var err error
+	if o.AddAlpha {
+		image, err = vipsAddAlpha(image, 255.0)
 		if err != nil {
 			return nil, err
 		}

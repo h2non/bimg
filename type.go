@@ -34,6 +34,8 @@ const (
 	AVIF
 	// JXL represents the JPEG XL image type.
 	JXL
+	// EXR represents the EXR image type.
+	EXR
 )
 
 var (
@@ -54,6 +56,7 @@ var ImageTypes = map[ImageType]string{
 	HEIF:   "heif",
 	AVIF:   "avif",
 	JXL:    "jxl",
+	EXR:    "exr",
 }
 
 // imageMutex is used to provide thread-safe synchronization

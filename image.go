@@ -196,6 +196,12 @@ func (i *Image) Gamma(exponent float64) ([]byte, error) {
 	return i.Process(options)
 }
 
+// AddGamma returns the alpha added image buffer.
+func (i *Image) AddAlpha() ([]byte, error) {
+	options := Options{AddAlpha: true}
+	return i.Process(options)
+}
+
 // Process processes the image based on the given transformation options,
 // talking with libvips bindings accordingly and returning the resultant
 // image buffer.
