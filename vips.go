@@ -667,7 +667,7 @@ func vipsReduce(input *C.VipsImage, xshrink float64, yshrink float64, kernel Ker
 	var image *C.VipsImage
 	defer C.g_object_unref(C.gpointer(input))
 
-	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink), kernel)
+	err := C.vips_reduce_bridge(input, &image, C.double(xshrink), C.double(yshrink), C.int(kernel))
 	if err != 0 {
 		return nil, catchVipsError()
 	}
