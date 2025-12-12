@@ -107,26 +107,29 @@ func TestEXIF(t *testing.T) {
 			ColorSpace:       65535,
 		},
 		"test_exif.jpg": {
-			Make:              "Jolla",
-			Model:             "Jolla",
-			XResolution:       "72/1",
-			YResolution:       "72/1",
-			ResolutionUnit:    2,
-			Orientation:       1,
-			Datetime:          "2014:09:21 16:00:56",
-			ExposureTime:      "1/25",
-			FNumber:           "12/5",
-			ISOSpeedRatings:   320,
-			ExifVersion:       "Exif Version 2.3",
-			DateTimeOriginal:  "2014:09:21 16:00:56",
-			ShutterSpeedValue: "205447286/44240665",
-			ApertureValue:     "334328577/132351334",
-			ExposureBiasValue: "0/1",
-			MeteringMode:      1,
-			Flash:             0,
-			FocalLength:       "4/1",
-			WhiteBalance:      1,
-			ColorSpace:        65535,
+			Make:                "Jolla",
+			Model:               "Jolla",
+			XResolution:         "72/1",
+			YResolution:         "72/1",
+			ResolutionUnit:      2,
+			Orientation:         1,
+			Datetime:            "2014:09:21 16:00:56",
+			ExposureTime:        "1/25",
+			FNumber:             "12/5",
+			ISOSpeedRatings:     320,
+			ExifVersion:         "Exif Version 2.3",
+			DateTimeOriginal:    "2014:09:21 16:00:56",
+			OffsetTime:          "",
+			OffsetTimeOriginal:  "",
+			OffsetTimeDigitized: "",
+			ShutterSpeedValue:   "205447286/44240665",
+			ApertureValue:       "334328577/132351334",
+			ExposureBiasValue:   "0/1",
+			MeteringMode:        1,
+			Flash:               0,
+			FocalLength:         "4/1",
+			WhiteBalance:        1,
+			ColorSpace:          65535,
 		},
 		"test_exif_canon.jpg": {
 			Make:                    "Canon",
@@ -146,6 +149,9 @@ func TestEXIF(t *testing.T) {
 			ExifVersion:             "Exif Version 2.21",
 			DateTimeOriginal:        "2008:05:30 15:56:01",
 			DateTimeDigitized:       "2008:05:30 15:56:01",
+			OffsetTime:              "",
+			OffsetTimeOriginal:      "",
+			OffsetTimeDigitized:     "",
 			ComponentsConfiguration: "Y Cb Cr -",
 			ShutterSpeedValue:       "483328/65536",
 			ApertureValue:           "368640/65536",
@@ -180,6 +186,9 @@ func TestEXIF(t *testing.T) {
 			ExifVersion:             "Unknown Exif Version",
 			DateTimeOriginal:        "2020:07:28 19:18:49",
 			DateTimeDigitized:       "2020:07:28 19:18:49",
+			OffsetTime:              "",
+			OffsetTimeOriginal:      "",
+			OffsetTimeDigitized:     "",
 			ComponentsConfiguration: "Y Cb Cr -",
 			ShutterSpeedValue:       "77515/7986",
 			ApertureValue:           "54823/32325",
@@ -272,6 +281,15 @@ func TestEXIF(t *testing.T) {
 		}
 		if metadata.EXIF.DateTimeDigitized != file.DateTimeDigitized {
 			t.Fatalf("Unexpected image exif DateTimeDigitized: %s != %s", metadata.EXIF.DateTimeDigitized, file.DateTimeDigitized)
+		}
+		if metadata.EXIF.OffsetTime != file.OffsetTime {
+			t.Fatalf("Unexpected image exif OffsetTime: %s != %s", metadata.EXIF.OffsetTime, file.OffsetTime)
+		}
+		if metadata.EXIF.OffsetTimeOriginal != file.OffsetTimeOriginal {
+			t.Fatalf("Unexpected image exif OffsetTimeOriginal: %s != %s", metadata.EXIF.OffsetTimeOriginal, file.OffsetTimeOriginal)
+		}
+		if metadata.EXIF.OffsetTimeOriginal != file.OffsetTimeOriginal {
+			t.Fatalf("Unexpected image exif OffsetTimeOriginal: %s != %s", metadata.EXIF.OffsetTimeOriginal, file.OffsetTimeOriginal)
 		}
 		if metadata.EXIF.ComponentsConfiguration != file.ComponentsConfiguration {
 			t.Fatalf("Unexpected image exif ComponentsConfiguration: %s != %s", metadata.EXIF.ComponentsConfiguration, file.ComponentsConfiguration)

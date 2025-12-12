@@ -25,6 +25,9 @@ const (
 	ExifVersion             = "exif-ifd2-ExifVersion"
 	DateTimeOriginal        = "exif-ifd2-DateTimeOriginal"
 	DateTimeDigitized       = "exif-ifd2-DateTimeDigitized"
+	OffsetTime              = "exif-ifd2-OffsetTime"
+	OffsetTimeOriginal      = "exif-ifd2-OffsetTimeOriginal"
+	OffsetTimeDigitized     = "exif-ifd2-OffsetTimeDigitized"
 	ComponentsConfiguration = "exif-ifd2-ComponentsConfiguration"
 	ShutterSpeedValue       = "exif-ifd2-ShutterSpeedValue"
 	ApertureValue           = "exif-ifd2-ApertureValue"
@@ -99,6 +102,9 @@ type EXIF struct {
 	ExifVersion             string
 	DateTimeOriginal        string
 	DateTimeDigitized       string
+	OffsetTime              string
+	OffsetTimeDigitized     string
+	OffsetTimeOriginal      string
 	ComponentsConfiguration string
 	ShutterSpeedValue       string
 	ApertureValue           string
@@ -202,6 +208,9 @@ func Metadata(buf []byte) (ImageMetadata, error) {
 			ExifVersion:             vipsExifStringTag(image, ExifVersion),
 			DateTimeOriginal:        vipsExifStringTag(image, DateTimeOriginal),
 			DateTimeDigitized:       vipsExifStringTag(image, DateTimeDigitized),
+			OffsetTime:              vipsExifStringTag(image, OffsetTime),
+			OffsetTimeOriginal:      vipsExifStringTag(image, OffsetTimeOriginal),
+			OffsetTimeDigitized:     vipsExifStringTag(image, OffsetTimeDigitized),
 			ComponentsConfiguration: vipsExifStringTag(image, ComponentsConfiguration),
 			ShutterSpeedValue:       vipsExifStringTag(image, ShutterSpeedValue),
 			ApertureValue:           vipsExifStringTag(image, ApertureValue),
